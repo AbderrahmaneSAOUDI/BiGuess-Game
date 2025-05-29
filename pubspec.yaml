@@ -1,5 +1,5 @@
 name: gdg_guess_game
-description: "A new Flutter project."
+description: A guess image game with multiple categories.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.8.0
+  sdk: '>=3.0.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -30,10 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  path_provider: ^2.1.1
+  cupertino_icons: ^1.0.2
+  flutter_staggered_animations: ^1.1.1
+  provider: ^6.1.5
+  win32: ^5.0.0 # Added win32 package
 
 dev_dependencies:
   flutter_test:
@@ -44,7 +45,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -58,9 +59,46 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
+    - assets/images/naruto/
+    - assets/images/naruto/Orochimaru/
+    - assets/images/naruto/Obito Uchiha/
+    - assets/images/naruto/Naruto/
+    - assets/images/naruto/Minato Namikaze/
+    - assets/images/naruto/Might Guy/
+    - assets/images/naruto/Madara Uchiha/
+    - assets/images/naruto/Konohamaru Sarutobi/
+    - assets/images/naruto/Kiba Inuzuka/
+    - assets/images/naruto/Kakashi Hatake/
+    - assets/images/naruto/Jiraiya/
+    - assets/images/naruto/Itachi Uchiha/
+    - assets/images/naruto/Hiruzen Sarutobi/
+    - assets/images/naruto/Gaara/
+    - assets/images/naruto/Tsunade/
+    - assets/images/naruto/Shikamaru Nara/
+    - assets/images/naruto/Sasuke Uchiha/
+    - assets/images/naruto/Sakura Haruno/
+    - assets/images/naruto/Rock Lee/
+    - assets/images/vinland_saga/
+    - assets/images/tokyo_revengers/
+    - assets/images/solo_leveling/
+    - assets/images/one_piece/
+    - assets/images/my_hero_academia/
+    - assets/images/jujutsu_kaisen/
+    - assets/images/hunter_x_hunter/
+    - assets/images/fmab/
+    - assets/images/dragon_ball_z/
+    - assets/images/dr_stone/
+    - assets/images/detective_conan/
+    - assets/images/demon_slayer/
+    - assets/images/death_note/
+    - assets/images/code_geass/
+    - assets/images/bleach/
+    - assets/images/0/
+    - assets/images/black_clover/
+    - assets/images/attack_on_titans/
+    - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -87,3 +125,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: GoogleSans
+      fonts:
+        - asset: assets/fonts/GoogleSans-Regular.ttf
+        - asset: assets/fonts/GoogleSans-Bold.ttf
+          weight: 700
