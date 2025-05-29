@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Import provider
+import 'package:provider/provider.dart';
 import 'screens/categories_screen.dart';
 
 void main() => runApp(ChangeNotifierProvider(
@@ -19,6 +19,23 @@ class ThemeNotifier extends ChangeNotifier {
     brightness: Brightness.light,
     useMaterial3: true,
     fontFamily: 'GoogleSans',
+    textTheme: const TextTheme(
+      displayLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displayMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displaySmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(fontFamily: 'GoogleSans'),
+      bodyMedium: TextStyle(fontFamily: 'GoogleSans'),
+      bodySmall: TextStyle(fontFamily: 'GoogleSans'),
+      labelLarge: TextStyle(fontFamily: 'GoogleSans'),
+      labelMedium: TextStyle(fontFamily: 'GoogleSans'),
+      labelSmall: TextStyle(fontFamily: 'GoogleSans'),
+    ),
   );
 
   static final ThemeData _darkTheme = ThemeData(
@@ -26,6 +43,23 @@ class ThemeNotifier extends ChangeNotifier {
     brightness: Brightness.dark,
     useMaterial3: true,
     fontFamily: 'GoogleSans',
+    textTheme: const TextTheme(
+      displayLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displayMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displaySmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(fontFamily: 'GoogleSans'),
+      bodyMedium: TextStyle(fontFamily: 'GoogleSans'),
+      bodySmall: TextStyle(fontFamily: 'GoogleSans'),
+      labelLarge: TextStyle(fontFamily: 'GoogleSans'),
+      labelMedium: TextStyle(fontFamily: 'GoogleSans'),
+      labelSmall: TextStyle(fontFamily: 'GoogleSans'),
+    ),
   );
 
   void toggleTheme() {

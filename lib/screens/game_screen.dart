@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io'; // Added for File and Directory
-import 'dart:math'; // Added for Random
+import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -49,7 +49,6 @@ class _GameScreenState extends State<GameScreen> {
     try {
       final dir = Directory(widget.categoryPath);
       if (await dir.exists()) {
-        // Get all files recursively from the directory and its subdirectories
         final List<FileSystemEntity> allFiles = [];
         await for (final entity in dir.list(recursive: true)) {
           if (entity is File) {
@@ -67,10 +66,9 @@ class _GameScreenState extends State<GameScreen> {
           _noImagesFound = true;
         }
       } else {
-        _noImagesFound = true; // Directory doesn't exist
+        _noImagesFound = true;
       }
     } catch (e) {
-      // Handle potential errors during file listing
       _noImagesFound = true;
       print('Error loading images: $e');
     }
@@ -90,9 +88,8 @@ class _GameScreenState extends State<GameScreen> {
     if (_isCountingDown) return;
 
     if (_noImagesFound || _imageFiles.isEmpty) {
-      // If no images, just show the state, don't start countdown
       setState(() {
-        _showPicture = false; // Ensure picture is not shown if folder is empty
+        _showPicture = false;
       });
       return;
     }
@@ -102,7 +99,7 @@ class _GameScreenState extends State<GameScreen> {
       _showPicture = false;
       _currentImage = null;
       _correctAnswer = null;
-      _countdown = 3;
+      _countdown = 2;
     });
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -123,9 +120,7 @@ class _GameScreenState extends State<GameScreen> {
       final random = Random();
       _currentImage = _imageFiles[random.nextInt(_imageFiles.length)];
       
-      // Extract answer from the parent directory name
       final pathParts = _currentImage!.path.split(Platform.pathSeparator);
-      // Get the parent directory name (character name)
       final parentDirName = pathParts[pathParts.length - 2];
       _correctAnswer = parentDirName;
 
@@ -208,7 +203,7 @@ class _GameScreenState extends State<GameScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10), // slightly less than container to avoid overflow
+                    borderRadius: BorderRadius.circular(10),
                     child: Image.file(
                       _currentImage!,
                       fit: BoxFit.cover,
@@ -241,7 +236,6 @@ class _GameScreenState extends State<GameScreen> {
         ),
       );
     } else {
-      // Initial state or after an image has been shown and reset
       return AnimationConfiguration.synchronized(
         duration: const Duration(milliseconds: 375),
         child: SlideAnimation(
@@ -286,7 +280,7 @@ class _GameScreenState extends State<GameScreen> {
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor, // Use theme's scaffold background color
+        color: theme.scaffoldBackgroundColor,
       ),
     );
   }
