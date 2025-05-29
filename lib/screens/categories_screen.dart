@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:provider/provider.dart'; // Import provider
-import '../main.dart'; // Import main.dart to access ThemeNotifier
+import 'package:provider/provider.dart';
+import '../main.dart';
 import 'game_screen.dart';
 
 class CategoriesScreen extends StatelessWidget {
@@ -33,7 +33,7 @@ class CategoriesScreen extends StatelessWidget {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Guess Image Game'),
+        title: const Text('GDG Ghardaia'),
         centerTitle: true,
       ),
       body: AnimationLimiter(
@@ -50,7 +50,7 @@ class CategoriesScreen extends StatelessWidget {
             return AnimationConfiguration.staggeredGrid(
               position: index,
               duration: const Duration(milliseconds: 750),
-              columnCount: 2, // Should match crossAxisCount
+              columnCount: 2,
               child: SlideAnimation(
                 verticalOffset: 20.0,
                 child: FadeInAnimation(
@@ -74,7 +74,7 @@ class CategoriesScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.category, size: 40), // Placeholder icon for category
+                        const Icon(Icons.category, size: 40),
                         const SizedBox(height: 8),
                         Text(
                           categories[index]['name']!,
