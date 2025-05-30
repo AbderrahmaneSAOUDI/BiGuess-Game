@@ -1,18 +1,16 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import '../assets_manifest.dart';
 
 class GameScreen extends StatefulWidget {
   final String categoryName;
-  final String categoryPath;
 
   const GameScreen({
     super.key,
     required this.categoryName,
-    required this.categoryPath,
   });
 
   @override
@@ -25,8 +23,8 @@ class _GameScreenState extends State<GameScreen> {
   int _countdown = 0;
   Timer? _countdownTimer;
 
-  List<File> _imageFiles = [];
-  File? _currentImage;
+  List<String> _imageAssets = [];
+  String? _currentImageAsset;
   String? _correctAnswer;
   bool _isLoading = true;
   bool _noImagesFound = false;
@@ -37,40 +35,22 @@ class _GameScreenState extends State<GameScreen> {
     _loadImagesFromCategory();
   }
 
-  Future<void> _loadImagesFromCategory() async {
+  void _loadImagesFromCategory() {
     setState(() {
       _isLoading = true;
       _noImagesFound = false;
-      _imageFiles = [];
-      _currentImage = null;
+      _imageAssets = [];
+      _currentImageAsset = null;
       _correctAnswer = null;
     });
 
-    try {
-      final dir = Directory(widget.categoryPath);
-      if (await dir.exists()) {
-        final List<FileSystemEntity> allFiles = [];
-        await for (final entity in dir.list(recursive: true)) {
-          if (entity is File) {
-            allFiles.add(entity);
-          }
-        }
-
-        _imageFiles = allFiles
-            .whereType<File>()
-            .where((file) =>
-                ['.png', '.jpg', '.jpeg'].any((ext) => file.path.toLowerCase().endsWith(ext)))
-            .toList();
-
-        if (_imageFiles.isEmpty) {
-          _noImagesFound = true;
-        }
-      } else {
-        _noImagesFound = true;
-      }
-    } catch (e) {
+    // Use the category name to get the asset list
+    final assets = categoryAssets[widget.categoryName];
+    if (assets != null && assets.isNotEmpty) {
+      _imageAssets = assets;
+      _noImagesFound = false;
+    } else {
       _noImagesFound = true;
-      print('Error loading images: $e');
     }
 
     setState(() {
@@ -87,7 +67,7 @@ class _GameScreenState extends State<GameScreen> {
   void _startCountdown() {
     if (_isCountingDown) return;
 
-    if (_noImagesFound || _imageFiles.isEmpty) {
+    if (_noImagesFound || _imageAssets.isEmpty) {
       setState(() {
         _showPicture = false;
       });
@@ -97,7 +77,7 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {
       _isCountingDown = true;
       _showPicture = false;
-      _currentImage = null;
+      _currentImageAsset = null;
       _correctAnswer = null;
       _countdown = 2;
     });
@@ -116,12 +96,14 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showRandomImage() {
-    if (_imageFiles.isNotEmpty) {
+    if (_imageAssets.isNotEmpty) {
       final random = Random();
-      _currentImage = _imageFiles[random.nextInt(_imageFiles.length)];
-      
-      final pathParts = _currentImage!.path.split(Platform.pathSeparator);
-      final parentDirName = pathParts[pathParts.length - 2];
+      _currentImageAsset = _imageAssets[random.nextInt(_imageAssets.length)];
+      // Extract the parent directory as the answer
+      final pathParts = _currentImageAsset!.split('/');
+      // e.g. assets/images/naruto/Orochimaru/image_1.jpg
+      // parentDirName = pathParts[pathParts.length - 2];
+      String parentDirName = pathParts.length > 3 ? pathParts[pathParts.length - 2] : '';
       _correctAnswer = parentDirName;
 
       setState(() {
@@ -186,7 +168,7 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ),
       );
-    } else if (_showPicture && _currentImage != null) {
+    } else if (_showPicture && _currentImageAsset != null) {
       return AnimationConfiguration.synchronized(
         duration: const Duration(milliseconds: 375),
         child: SlideAnimation(
@@ -197,15 +179,15 @@ class _GameScreenState extends State<GameScreen> {
               children: [
                 Container(
                   width: 300,
-                  height: 300,
+                  //TODO: height: 300,
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey, width: 2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.file(
-                      _currentImage!,
+                    child: Image.asset(
+                      _currentImageAsset!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return const Center(
@@ -290,7 +272,14 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoryName),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('assets/logos/gdg_logo.png'),
+          ),
+        ],
         centerTitle: true,
+        elevation: 20.0,
       ),
       body: Stack(
         children: [
