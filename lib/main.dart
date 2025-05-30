@@ -15,9 +15,13 @@ class ThemeNotifier extends ChangeNotifier {
   ThemeData getTheme() => _themeData;
 
   static final ThemeData _lightTheme = ThemeData(
-    primarySwatch: Colors.red,
+    primarySwatch: Colors.blue,
     brightness: Brightness.light,
     useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.light,
+    ),
     fontFamily: 'GoogleSans',
     textTheme: const TextTheme(
       displayLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
@@ -39,9 +43,13 @@ class ThemeNotifier extends ChangeNotifier {
   );
 
   static final ThemeData _darkTheme = ThemeData(
-    primarySwatch: Colors.red,
+    primarySwatch: Colors.blue,
     brightness: Brightness.dark,
     useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.dark,
+    ),
     fontFamily: 'GoogleSans',
     textTheme: const TextTheme(
       displayLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
@@ -78,6 +86,11 @@ class MainLayout extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: themeNotifier.getTheme(),
       home: const CategoriesScreen(),
+      builder: (context, child) {
+        return Scaffold(
+          body: child,
+        );
+      },
     );
   }
 }

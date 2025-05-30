@@ -3,11 +3,13 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import 'game_screen.dart';
+import 'dart:math';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
   final List<Map<String, String>> categories = const [
+    {'name': 'Naruto', 'path': 'assets/images/naruto'},
     {'name': 'Attack on Titans', 'path': 'assets/images/attack_on_titans'},
     {'name': 'Black Clover', 'path': 'assets/images/black_clover'},
     {'name': 'Bleach', 'path': 'assets/images/bleach'},
@@ -21,7 +23,6 @@ class CategoriesScreen extends StatelessWidget {
     {'name': 'Hunter X Hunter', 'path': 'assets/images/hunter_x_hunter'},
     {'name': 'Jujutsu Kaisen', 'path': 'assets/images/jujutsu_kaisen'},
     {'name': 'My Hero Academia', 'path': 'assets/images/my_hero_academia'},
-    {'name': 'Naruto', 'path': 'assets/images/naruto'},
     {'name': 'One Piece', 'path': 'assets/images/one_piece'},
     {'name': 'Solo Leveling', 'path': 'assets/images/solo_leveling'},
     {'name': 'Tokyo Revengers', 'path': 'assets/images/tokyo_revengers'},
@@ -31,9 +32,37 @@ class CategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final List<IconData> iconList = [
+      Icons.star,
+      Icons.favorite,
+      Icons.flash_on,
+      Icons.cake,
+      Icons.emoji_events,
+      Icons.sports_esports,
+      Icons.movie,
+      Icons.music_note,
+      Icons.public,
+      Icons.pets,
+      Icons.science,
+      Icons.rocket_launch,
+      Icons.palette,
+      Icons.book,
+      Icons.directions_car,
+      Icons.fastfood,
+      Icons.nature,
+      Icons.spa,
+      Icons.sports_soccer,
+    ];
+    final random = Random();
     return Scaffold(
       appBar: AppBar(
         title: const Text('GDG Ghardaia'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset('assets/logos/gdg_logo.png'),
+          ),
+        ],
         centerTitle: true,
       ),
       body: AnimationLimiter(
@@ -54,34 +83,39 @@ class CategoriesScreen extends StatelessWidget {
               child: SlideAnimation(
                 verticalOffset: 20.0,
                 child: FadeInAnimation(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GameScreen(
-                            categoryName: categories[index]['name']!,
-                            categoryPath: categories[index]['path']!,
+                  child: ScaleAnimation(
+                    scale: 0.8,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GameScreen(
+                              categoryName: categories[index]['name']!,
+                            ),
                           ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.category, size: 40),
-                        const SizedBox(height: 8),
-                        Text(
-                          categories[index]['name']!,
-                          style: const TextStyle(fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            iconList[random.nextInt(iconList.length)],
+                            size: 40,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            categories[index]['name']!,
+                            style: const TextStyle(fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

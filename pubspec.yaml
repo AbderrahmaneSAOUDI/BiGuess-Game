@@ -25,11 +25,13 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/logos/
     - assets/images/
+    - assets/images/logos/
     - assets/images/naruto/
     - assets/images/naruto/Orochimaru/
     - assets/images/naruto/Obito Uchiha/
-    - assets/images/naruto/Naruto/
+    - assets/images/naruto/Naruto Uzumaki/
     - assets/images/naruto/Minato Namikaze/
     - assets/images/naruto/Might Guy/
     - assets/images/naruto/Madara Uchiha/
