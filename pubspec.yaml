@@ -15,6 +15,7 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
   provider: ^6.1.5
   win32: ^5.0.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +28,7 @@ flutter:
   assets:
     - assets/logos/
     - assets/images/
+    - assets/profile/
     - assets/images/naruto/
     - assets/images/naruto/Orochimaru/
     - assets/images/naruto/Obito Uchiha/
