@@ -86,11 +86,6 @@ class MainLayout extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: themeNotifier.getTheme(),
       home: const CategoriesScreen(),
-      builder: (context, child) {
-        return Scaffold(
-          body: child,
-        );
-      },
     );
   }
 }

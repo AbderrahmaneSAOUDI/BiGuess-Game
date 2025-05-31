@@ -1,16 +1,75 @@
-# gdg_guess_game
+# GDG Character Guessing Game
 
-A new Flutter project.
+A fun, interactive two-player game that combines elements of "20 Questions" with popular anime characters. Perfect for social gatherings and anime fan meetups!
 
-## Getting Started
+## Overview
 
-This project is a starting point for a Flutter application.
+The GDG Character Guessing Game is designed to be played in person, making it ideal for social interactions and friendly competitions. Players take turns showing random characters to each other and guessing through yes/no questions.
 
-A few resources to get you started if this is your first Flutter project:
+## Game Categories
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+The game features multiple anime categories, including:
+- Naruto
+- Attack on Titan
+- Black Clover
+- Bleach
+- Code Geass
+- Death Note
+- Demon Slayer
+- Detective Conan
+- Dr. Stone
+- Dragon Ball Z
+- Fullmetal Alchemist: Brotherhood
+- Hunter X Hunter
+- Jujutsu Kaisen
+- My Hero Academia
+And more!
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## How to Play
+
+### Setup
+1. Each player needs their own phone with the game installed
+2. Players choose a category they both know well
+3. Players sit facing each other
+
+### Gameplay
+1. Player 1 clicks the "Random" button on their phone
+2. A 3-second countdown begins, building anticipation
+3. After the countdown, a random character from the selected category appears
+4. Player 1 shows their phone to Player 2
+5. Player 2 then tries to guess the character by asking yes/no questions
+6. Player 1 can only answer with "yes" or "no"
+7. Players take turns being the guesser and the answerer
+
+### Rules
+- Questions must be answerable with "yes" or "no"
+- The guesser can ask as many questions as needed
+- The answerer must be honest
+- No peeking at the other player's phone during the countdown
+- The game is meant to be played in person for maximum fun and interaction
+
+## Features
+- Beautiful, animated interface
+- Multiple anime categories
+- Random character selection
+- Exciting countdown animation
+- Clean, modern design
+- Easy-to-use interface
+
+## Why It's Fun
+
+The game's charm lies in its simplicity and social interaction. By requiring two phones and face-to-face play, it encourages:
+- Real social interaction
+- Strategic questioning
+- Knowledge sharing
+- Friendly competition
+- Laughter and fun moments
+
+The countdown feature adds an element of suspense and excitement, while the random selection ensures each game is unique and challenging. The game is perfect for anime fans who want to test their knowledge and have fun with friends in a social setting.
+
+## Technical Details
+- Built with Flutter for cross-platform compatibility
+- Features smooth animations and transitions
+- Optimized for portrait mode
+- Includes a comprehensive collection of anime character images
+- Regular updates with new categories and characters
