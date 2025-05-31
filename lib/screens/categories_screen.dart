@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import 'game_screen.dart';
 import 'dart:math';
@@ -180,28 +181,38 @@ class CategoriesScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('GDG Ghardaia'),
         leading: Padding(
-            padding: const EdgeInsets.only(left:12.0),
-            child: Image.asset('assets/logos/gdg_logo.png'),
-          ),
+          padding: const EdgeInsets.only(left: 12.0),
+          child: Image.asset('assets/logos/gdg_logo.png'),
+        ),
         actions: [
           IconButton(
-              icon: const Icon(Icons.info_outline),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return RulesContactDialog();
-                  },
-                );
-              },
-            ),
+            icon: const Icon(Icons.info_outline),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return RulesContactDialog();
+                },
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              icon: Icon(themeNotifier.getTheme().brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode),
-              onPressed: () {
-                themeNotifier.toggleTheme();
-              },
+            child: AnimatedRotation(
+              duration: const Duration(milliseconds: 500),
+              turns: themeNotifier.getTheme().brightness == Brightness.dark ? 0.5 : 0,
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 300),
+                scale: themeNotifier.getTheme().brightness == Brightness.dark ? 1.2 : 1.0,
+                child: IconButton(
+                  icon: Icon(
+                    themeNotifier.getTheme().brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
+                  ),
+                  onPressed: () {
+                    themeNotifier.toggleTheme();
+                  },
+                ),
+              ),
             ),
           ),
         ],
@@ -245,12 +256,12 @@ class CategoriesScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Padding (
-                            padding: const EdgeInsets.all (16.0),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
                             child: Image.asset(
-                            categories[index]['logo_path']!,
-                            width: double.infinity,
-                          ),
+                              categories[index]['logo_path']!,
+                              width: double.infinity,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -313,7 +324,7 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
               controller: _tabController,
               tabs: const [
                 Tab(text: 'About the game'),
-                Tab(text: 'Contact'),
+                Tab(text: 'About the developer'),
               ],
             ),
             Expanded(
@@ -752,7 +763,279 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                       ],
                     ),
                   ),
-                  const Center(child: SingleChildScrollView(child: Text('Contact information goes here...'),),), // Placeholder contact
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: AnimationLimiter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          AnimationConfiguration.staggeredList(
+                            position: 0,
+                            duration: const Duration(milliseconds: 500),
+                            child: SlideAnimation(
+                              verticalOffset: 50.0,
+                              child: FadeInAnimation(
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    Text(
+                                      'Developed by',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    CircleAvatar(
+                                      radius: 50,
+                                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                      child: ClipOval(
+                                        child: Image.asset(
+                                          'assets/profile/profile.jpg', // **Double-check this path is correct**
+                                          width: 100, // Should be radius * 2 (50 * 2)
+                                          height: 100, // Should be radius * 2 (50 * 2)
+                                          fit: BoxFit.cover, // Ensures the image covers the circular area
+                                          errorBuilder: (context, error, stackTrace) {
+                                            // This will show the person icon if profile.jpg can't be loaded
+                                            return Icon(
+                                              Icons.person,
+                                              size: 50,
+                                              color: Colors.white,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Abderrahmane SAOUDI',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          AnimationConfiguration.staggeredList(
+                            position: 1,
+                            duration: const Duration(milliseconds: 600),
+                            child: SlideAnimation(
+                              horizontalOffset: 50.0,
+                              child: FadeInAnimation(
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.work,
+                                            color: Theme.of(context).colorScheme.secondary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Professional Title',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.secondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Graphic Designer & Flutter Mobile Developer',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          height: 1.5,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          AnimationConfiguration.staggeredList(
+                            position: 2,
+                            duration: const Duration(milliseconds: 700),
+                            child: SlideAnimation(
+                              verticalOffset: -50.0,
+                              child: FadeInAnimation(
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.star,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Skills & Achievements',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        '• Skilled in Adobe Illustrator, Android Studio, and Problem Solving\n• 3rd Place in StartUp City Hackathon\n• Led DevFest 2023 & 2024\n• GDG Ghardaia Club President since Aug 2022',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          height: 1.5,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          AnimationConfiguration.staggeredList(
+                            position: 3,
+                            duration: const Duration(milliseconds: 800),
+                            child: SlideAnimation(
+                              horizontalOffset: -50.0,
+                              child: FadeInAnimation(
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.contact_mail,
+                                            color: Theme.of(context).colorScheme.secondary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Contact Information',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.secondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.email,
+                                            size: 20,
+                                            color: Theme.of(context).colorScheme.onSurface,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'saoudi26@proton.me',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Theme.of(context).colorScheme.onSurface,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.phone,
+                                            size: 20,
+                                            color: Theme.of(context).colorScheme.onSurface,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            '+213 561 37 77 61',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Theme.of(context).colorScheme.onSurface,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      InkWell(
+                                        onTap: () async {
+                                          final Uri url = Uri.parse('https://www.linktr.ee/AbdouSAOUDI');
+                                          try {
+                                            if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Could not open the website'),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Error: ${e.toString()}'),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.link,
+                                              size: 20,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'www.linktr.ee/AbdouSAOUDI',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Theme.of(context).colorScheme.primary,
+                                                decoration: TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
