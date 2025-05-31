@@ -27,7 +27,6 @@ flutter:
   assets:
     - assets/logos/
     - assets/images/
-    - assets/images/logos/
     - assets/images/naruto/
     - assets/images/naruto/Orochimaru/
     - assets/images/naruto/Obito Uchiha/
@@ -64,7 +63,7 @@ flutter:
     - assets/images/bleach/
     - assets/images/0/
     - assets/images/black_clover/
-    - assets/images/attack_on_titans/
+    - assets/images/attack_on_titan/
     - assets/fonts/
 
   fonts:

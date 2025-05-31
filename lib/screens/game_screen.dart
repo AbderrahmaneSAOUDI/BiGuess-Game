@@ -79,7 +79,7 @@ class _GameScreenState extends State<GameScreen> {
       _showPicture = false;
       _currentImageAsset = null;
       _correctAnswer = null;
-      _countdown = 2;
+      _countdown = 3;
     });
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -118,10 +118,6 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildContent() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     if (_noImagesFound) {
       return const Center(
         child: Text(
@@ -133,39 +129,34 @@ class _GameScreenState extends State<GameScreen> {
     }
 
     if (_isCountingDown) {
-      return AnimationConfiguration.synchronized(
-        duration: const Duration(milliseconds: 375),
-        child: SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TweenAnimationBuilder<Color?>(
-                  tween: ColorTween(begin: Colors.red, end: Colors.blue),
-                  duration: const Duration(milliseconds: 375),
-                  builder: (context, color, child) {
-                    return Text(
-                      _countdown.toString(),
-                      style: TextStyle(
-                        fontSize: 100,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Get ready...',
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TweenAnimationBuilder<Color?>(
+              key: ValueKey(_countdown),
+              tween: ColorTween(begin: Colors.red, end: Colors.blue),
+              duration: const Duration(milliseconds: 375),
+              builder: (context, color, child) {
+                return Text(
+                  _countdown.toString(),
                   style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.grey,
+                    fontSize: 100,
+                    fontWeight: FontWeight.bold,
+                    color: color,
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          ),
+            const SizedBox(height: 20),
+            const Text(
+              'Get ready...',
+              style: TextStyle(
+                fontSize: 24,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ),
       );
     } else if (_showPicture && _currentImageAsset != null) {
@@ -174,45 +165,61 @@ class _GameScreenState extends State<GameScreen> {
         child: SlideAnimation(
           verticalOffset: 50.0,
           child: FadeInAnimation(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 300,
-                  //TODO: height: 300,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey, width: 2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      _currentImageAsset!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.error_outline, color: Colors.red, size: 50),
-                              SizedBox(height: 8),
-                              Text('Error loading image', textAlign: TextAlign.center),
-                            ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculate available vertical space for the image container.
+                // Subtract estimated height for the answer text (including top padding and some buffer) and the image container's vertical border.
+                // Answer text has fontSize 20 and top padding 16.0. Estimate ~45.0 needed for safety for the text part.
+                // Image container has a border of 2 on top and bottom (4 total).
+                final double maxImageHeight = max(0.0, constraints.maxHeight - 45.0 - 4.0); // Max height for the image itself
+
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Container(
+                        width: double.infinity,
+                        // Remove explicit height here. Let the image and ConstrainedBox determine height.
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 2),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxHeight: maxImageHeight),
+                            child: Image.asset(
+                              _currentImageAsset!,
+                              fit: BoxFit.contain, // Use BoxFit.contain to respect constraints and aspect ratio
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.error_outline, color: Colors.red, size: 50),
+                                      SizedBox(height: 8),
+                                      Text('Error loading image', textAlign: TextAlign.center),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                if (_correctAnswer != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: Text(
-                      '$_correctAnswer',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-              ],
+                    if (_correctAnswer != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: Text(
+                          '$_correctAnswer',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -229,7 +236,7 @@ class _GameScreenState extends State<GameScreen> {
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey, width: 2),
                 borderRadius: BorderRadius.circular(12),
-                color: Colors.grey[100],
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
               ),
               child: const Center(
                 child: Column(
@@ -279,7 +286,6 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
         centerTitle: true,
-        elevation: 20.0,
       ),
       body: Stack(
         children: [
@@ -292,26 +298,27 @@ class _GameScreenState extends State<GameScreen> {
                   child: _buildContent(),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: AnimationConfiguration.synchronized(
-                  duration: const Duration(milliseconds: 375),
-                  child: SlideAnimation(
-                    verticalOffset: 50.0,
-                    child: FadeInAnimation(
-                      child: ElevatedButton.icon(
-                        onPressed: _isLoading || _isCountingDown ? null : _startCountdown,
-                        icon: const Icon(Icons.shuffle),
-                        label: const Text('Random'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                          textStyle: const TextStyle(fontSize: 18),
+              if (!_noImagesFound)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: AnimationConfiguration.synchronized(
+                    duration: const Duration(milliseconds: 375),
+                    child: SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: ElevatedButton.icon(
+                          onPressed: _isLoading || _isCountingDown ? null : _startCountdown,
+                          icon: const Icon(Icons.shuffle),
+                          label: const Text('Random'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                            textStyle: const TextStyle(fontSize: 18),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
