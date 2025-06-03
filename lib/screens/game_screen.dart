@@ -17,11 +17,17 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
   bool _showPicture = false;
   bool _isCountingDown = false;
   int _countdown = 0;
   Timer? _countdownTimer;
+  bool _hasStarted = false;
+  late AnimationController _buttonAnimationController;
+  late Animation<double> _buttonScaleAnimation;
+  late Animation<double> _buttonRotationAnimation;
+  late Animation<double> _shimmerAnimation;
+  bool _isPressed = false;
 
   List<String> _imageAssets = [];
   String? _currentImageAsset;
@@ -33,6 +39,36 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     _loadImagesFromCategory();
+    
+    // Initialize button animations
+    _buttonAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _buttonScaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _buttonAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _buttonRotationAnimation = Tween<double>(
+      begin: 0,
+      end: 2 * 3.14159,
+    ).animate(CurvedAnimation(
+      parent: _buttonAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _shimmerAnimation = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(
+      parent: _buttonAnimationController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   void _loadImagesFromCategory() {
@@ -42,6 +78,7 @@ class _GameScreenState extends State<GameScreen> {
       _imageAssets = [];
       _currentImageAsset = null;
       _correctAnswer = null;
+      _hasStarted = false;
     });
 
     // Use the category name to get the asset list
@@ -61,6 +98,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _buttonAnimationController.dispose();
     super.dispose();
   }
 
@@ -80,6 +118,7 @@ class _GameScreenState extends State<GameScreen> {
       _currentImageAsset = null;
       _correctAnswer = null;
       _countdown = 3;
+      _hasStarted = true;
     });
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -306,13 +345,127 @@ class _GameScreenState extends State<GameScreen> {
                     child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
-                        child: ElevatedButton.icon(
-                          onPressed: _isLoading || _isCountingDown ? null : _startCountdown,
-                          icon: const Icon(Icons.shuffle),
-                          label: const Text('Random'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                            textStyle: const TextStyle(fontSize: 18),
+                        child: ScaleAnimation(
+                          scale: 0.9,
+                          child: AnimatedBuilder(
+                            animation: _buttonAnimationController,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _isPressed ? 0.95 : _buttonScaleAnimation.value,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: _hasStarted 
+                                        ? [Colors.blue.shade400, Colors.blue.shade700]
+                                        : [Colors.green.shade400, Colors.green.shade700],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: (_hasStarted ? Colors.blue : Colors.green).withOpacity(0.3),
+                                        spreadRadius: _isPressed ? 0 : 1,
+                                        blurRadius: _isPressed ? 4 : 8,
+                                        offset: Offset(0, _isPressed ? 2 : 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      // Shimmer effect
+                                      Positioned.fill(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(30),
+                                          child: Transform.translate(
+                                            offset: Offset(
+                                              _shimmerAnimation.value * MediaQuery.of(context).size.width,
+                                              0,
+                                            ),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.white.withOpacity(0),
+                                                    Colors.white.withOpacity(0.3),
+                                                    Colors.white.withOpacity(0),
+                                                  ],
+                                                  stops: const [0.0, 0.5, 1.0],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Button content
+                                      GestureDetector(
+                                        onTapDown: (_) => setState(() => _isPressed = true),
+                                        onTapUp: (_) => setState(() => _isPressed = false),
+                                        onTapCancel: () => setState(() => _isPressed = false),
+                                        child: ElevatedButton.icon(
+                                          onPressed: _isLoading || _isCountingDown ? null : _startCountdown,
+                                          icon: AnimatedSwitcher(
+                                            duration: const Duration(milliseconds: 300),
+                                            transitionBuilder: (child, animation) {
+                                              return ScaleTransition(
+                                                scale: animation,
+                                                child: FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                            child: _hasStarted
+                                              ? Transform.rotate(
+                                                  angle: _buttonRotationAnimation.value,
+                                                  child: const Icon(
+                                                    Icons.refresh,
+                                                    key: ValueKey('refresh'),
+                                                    color: Colors.white,
+                                                  ),
+                                                )
+                                              : const Icon(
+                                                  Icons.play_arrow,
+                                                  key: ValueKey('play'),
+                                                  color: Colors.white,
+                                                ),
+                                          ),
+                                          label: AnimatedSwitcher(
+                                            duration: const Duration(milliseconds: 300),
+                                            transitionBuilder: (child, animation) {
+                                              return ScaleTransition(
+                                                scale: animation,
+                                                child: FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                            child: Text(
+                                              _hasStarted ? 'Refresh' : 'Start',
+                                              key: ValueKey(_hasStarted),
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                            backgroundColor: Colors.transparent,
+                                            shadowColor: Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(30),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
