@@ -369,7 +369,7 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              'What is GDG Character Guessing Game?',
+                                              'What is BiGuess Game?',
                                               style: TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
@@ -381,7 +381,7 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       ),
                                       const SizedBox(height: 12),
                                       Text(
-                                        'GDG Character Guessing Game is a fast-paced, two-player challenge where each player tries to guess their own mystery character by asking clever yes/no questions. The first to guess correctly wins the round and scores a point!',
+                                        'BiGuess Game is a fast-paced, two-player challenge where each player tries to guess their own mystery character by asking clever yes/no questions. The first to guess correctly wins the round and scores a point!',
                                         style: TextStyle(
                                           fontSize: 15,
                                           height: 1.5,
