@@ -117,7 +117,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       _showPicture = false;
       _currentImageAsset = null;
       _correctAnswer = null;
-      _countdown = 3;
+      _countdown = 2;
       _hasStarted = true;
     });
 
