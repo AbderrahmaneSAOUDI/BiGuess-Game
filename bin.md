@@ -1,0 +1,161 @@
+
+    - assets/images/naruto/
+    - assets/images/naruto/Orochimaru/
+    - assets/images/naruto/Obito Uchiha/
+    - assets/images/naruto/Naruto Uzumaki/
+    - assets/images/naruto/Minato Namikaze/
+    - assets/images/naruto/Might Guy/
+    - assets/images/naruto/Madara Uchiha/
+    - assets/images/naruto/Konohamaru Sarutobi/
+    - assets/images/naruto/Kiba Inuzuka/
+    - assets/images/naruto/Kakashi Hatake/
+    - assets/images/naruto/Jiraiya/
+    - assets/images/naruto/Itachi Uchiha/
+    - assets/images/naruto/Hiruzen Sarutobi/
+    - assets/images/naruto/Gaara/
+    - assets/images/naruto/Tsunade/
+    - assets/images/naruto/Shikamaru Nara/
+    - assets/images/naruto/Sasuke Uchiha/
+    - assets/images/naruto/Sakura Haruno/
+    - assets/images/naruto/Rock Lee/
+    - assets/images/attack_on_titan/
+    - assets/images/attack_on_titan/Annie LEONHART/
+    - assets/images/attack_on_titan/Armin ARLERT/
+    - assets/images/attack_on_titan/Bertholdt HOOVER/
+    - assets/images/attack_on_titan/Conny SPRINGER/
+    - assets/images/attack_on_titan/Dot PYXIS/
+    - assets/images/attack_on_titan/Eld GIN/
+    - assets/images/attack_on_titan/Eren YAEGER/
+    - assets/images/attack_on_titan/Erwin SMITH/
+    - assets/images/attack_on_titan/Gunther SCHULTZ/
+    - assets/images/attack_on_titan/Hange ZOE/
+    - assets/images/attack_on_titan/Hannes/
+    - assets/images/attack_on_titan/Jean KIRSCHTEIN/
+    - assets/images/attack_on_titan/Levi ACKERMAN/
+    - assets/images/attack_on_titan/Marco BODT/
+    - assets/images/attack_on_titan/Mikasa ACKERMAN/
+    - assets/images/vinland_saga/
+    - assets/images/tokyo_revengers/
+    - assets/images/solo_leveling/
+    - assets/images/one_piece/
+    - assets/images/my_hero_academia/
+    - assets/images/jujutsu_kaisen/
+    - assets/images/hunter_x_hunter/
+    - assets/images/hunter_x_hunter/Pariston Hill/
+    - assets/images/hunter_x_hunter/Morel Mackernasey/
+    - assets/images/hunter_x_hunter/Isaac Netero/
+    - assets/images/hunter_x_hunter/Illumi Zoldyck/
+    - assets/images/hunter_x_hunter/Hisoka Morow/
+    - assets/images/hunter_x_hunter/Gon Freecss/
+    - assets/images/hunter_x_hunter/Ging Freecss/
+    - assets/images/hunter_x_hunter/Biscuit Krueger/
+    - assets/images/hunter_x_hunter/فرانكلين/
+    - assets/images/hunter_x_hunter/غينثرو/
+    - assets/images/hunter_x_hunter/غينتا (الخروف)/
+    - assets/images/hunter_x_hunter/غيرو (الافعى)/
+    - assets/images/hunter_x_hunter/غيدو/
+    - assets/images/hunter_x_hunter/غورينو/
+    - assets/images/hunter_x_hunter/غوتوه/
+    - assets/images/hunter_x_hunter/شيزوكو/
+    - assets/images/hunter_x_hunter/شيدور/
+    - assets/images/hunter_x_hunter/شوت/
+    - assets/images/hunter_x_hunter/شالناك/
+    - assets/images/hunter_x_hunter/شاسمونو/
+    - assets/images/hunter_x_hunter/سيلفا/
+    - assets/images/hunter_x_hunter/سكوالا/
+    - assets/images/hunter_x_hunter/ساييو (القرد)/
+    - assets/images/hunter_x_hunter/ساداسو/
+    - assets/images/hunter_x_hunter/ساتوتز/
+    - assets/images/hunter_x_hunter/ساتشو (الحصان)/ 
+    - assets/images/hunter_x_hunter/ساب/
+    - assets/images/hunter_x_hunter/زينو زولديك/
+    - assets/images/hunter_x_hunter/زيبرو/
+    - assets/images/hunter_x_hunter/زيبايل/
+    - assets/images/hunter_x_hunter/زوشي/
+    - assets/images/hunter_x_hunter/زازان/
+    - assets/images/hunter_x_hunter/رينا/
+    - assets/images/hunter_x_hunter/ريفليت/
+    - assets/images/hunter_x_hunter/ريزر/
+    - assets/images/hunter_x_hunter/راموت/
+    - assets/images/hunter_x_hunter/دالزولين/
+    - assets/images/hunter_x_hunter/جين (الخنزير)/
+    - assets/images/hunter_x_hunter/جون/
+    - assets/images/hunter_x_hunter/جايرو/
+    - assets/images/hunter_x_hunter/تومبا/
+    - assets/images/hunter_x_hunter/تشيدل (الكلب)/
+    - assets/images/hunter_x_hunter/تشيتو/
+    - assets/images/hunter_x_hunter/تسيزوجيرا/
+    - assets/images/hunter_x_hunter/تسوبوني/
+    - assets/images/hunter_x_hunter/بيون (الارنب)/
+    - assets/images/hunter_x_hunter/بينولت/
+    - assets/images/hunter_x_hunter/بينورينوفو/
+    - assets/images/hunter_x_hunter/بينز/
+    - assets/images/hunter_x_hunter/بيسكي/
+    - assets/images/hunter_x_hunter/بيزي/
+    - assets/images/hunter_x_hunter/بيتو/
+    - assets/images/hunter_x_hunter/بوهارا/
+    - assets/images/hunter_x_hunter/بونزو/
+    - assets/images/hunter_x_hunter/بوكي/
+    - assets/images/hunter_x_hunter/بوكل/
+    - assets/images/hunter_x_hunter/بوف/
+    - assets/images/hunter_x_hunter/بوتوباي (التنين)/
+    - assets/images/hunter_x_hunter/بوبوبو/
+    - assets/images/hunter_x_hunter/بايك/
+    - assets/images/hunter_x_hunter/بايرو/
+    - assets/images/hunter_x_hunter/بالم/
+    - assets/images/hunter_x_hunter/باكونودا/
+    - assets/images/hunter_x_hunter/باشو/
+    - assets/images/hunter_x_hunter/بارا/
+    - assets/images/hunter_x_hunter/باريستون (الفأر)/
+    - assets/images/hunter_x_hunter/ايلومي/
+    - assets/images/hunter_x_hunter/ايكالغوا/
+    - assets/images/hunter_x_hunter/ايزانوبي/
+    - assets/images/hunter_x_hunter/اوبوغين/
+    - assets/images/hunter_x_hunter/أماني/
+    - assets/images/hunter_x_hunter/ألوكا/
+    - assets/images/hunter_x_hunter/الاخوان اورثو/
+    - assets/images/hunter_x_hunter/ابينغاني/
+    - assets/images/hunter_x_hunter/يوبي/
+    - assets/images/hunter_x_hunter/وينغ/
+    - assets/images/hunter_x_hunter/ويلفن/
+    - assets/images/hunter_x_hunter/هيسوكا/
+    - assets/images/hunter_x_hunter/هانزو/
+    - assets/images/hunter_x_hunter/هارونا/
+    - assets/images/hunter_x_hunter/نيون نوستراد/
+    - assets/images/hunter_x_hunter/نيتيرو/
+    - assets/images/hunter_x_hunter/نوف/
+    - assets/images/hunter_x_hunter/نوبوناغا/
+    - assets/images/hunter_x_hunter/نانيكا/
+    - assets/images/hunter_x_hunter/مينشي/
+    - assets/images/hunter_x_hunter/ميليورون/
+    - assets/images/hunter_x_hunter/ميلوكي/
+    - assets/images/hunter_x_hunter/ميلودي/
+    - assets/images/hunter_x_hunter/ميزايستومو (البقرة)/
+    - assets/images/hunter_x_hunter/ميرويم/
+    - assets/images/hunter_x_hunter/ميتو/
+    - assets/images/hunter_x_hunter/ملكة النمل/
+    - assets/images/hunter_x_hunter/ماتشي/
+    - assets/images/hunter_x_hunter/ليول/
+    - assets/images/hunter_x_hunter/ليوريو/
+    - assets/images/hunter_x_hunter/ليبو/
+    - assets/images/hunter_x_hunter/لايت نوستراد/
+    - assets/images/hunter_x_hunter/لاتارزا/
+    - assets/images/hunter_x_hunter/كيلوا/
+    - assets/images/hunter_x_hunter/كيكيو زولديك/
+    - assets/images/hunter_x_hunter/كوموغي/
+    - assets/images/hunter_x_hunter/كولت/
+    - assets/images/hunter_x_hunter/كورولو/
+    - assets/images/hunter_x_hunter/كوروتوبي/
+    - assets/images/hunter_x_hunter/كورابيكا/
+    - assets/images/hunter_x_hunter/كلوك (الدجاجة)/
+    - assets/images/fmab/
+    - assets/images/dragon_ball_z/
+    - assets/images/dr_stone/
+    - assets/images/detective_conan/
+    - assets/images/demon_slayer/
+    - assets/images/death_note/
+    - assets/images/code_geass/
+    - assets/images/bleach/
+    - assets/images/0/
+    - assets/images/black_clover/
+    - assets/images/attack_on_titan/
