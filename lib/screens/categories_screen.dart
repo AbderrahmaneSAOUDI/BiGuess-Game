@@ -230,55 +230,192 @@ class CategoriesScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             return AnimationConfiguration.staggeredGrid(
               position: index,
-              duration: const Duration(milliseconds: 1000),
+              duration: const Duration(milliseconds: 1200),
               columnCount: 2,
               child: SlideAnimation(
-                verticalOffset: 20.0,
+                horizontalOffset: 300.0,
                 child: FadeInAnimation(
-                  child: ScaleAnimation(
-                    scale: 0.8,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => GameScreen(
-                              categoryName: categories[index]['name']!,
-                            ),
+                  duration: const Duration(milliseconds: 1200),
+                  child: AnimatedCard(
+                    category: categories[index],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GameScreen(
+                            categoryName: categories[index]['name']!,
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Image.asset(
-                              categories[index]['logo_path']!,
-                              width: double.infinity,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            categories[index]['name']!,
-                            style: const TextStyle(fontSize: 16),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                          ),
-                        ],
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               ),
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class AnimatedCard extends StatefulWidget {
+  final Map<String, String> category;
+  final VoidCallback onTap;
+
+  const AnimatedCard({
+    super.key,
+    required this.category,
+    required this.onTap,
+  });
+
+  @override
+  State<AnimatedCard> createState() => _AnimatedCardState();
+}
+
+class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotateAnimation;
+  bool _isLongPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    _rotateAnimation = Tween<double>(begin: 0.0, end: 0.05).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleLongPressStart(LongPressStartDetails details) {
+    setState(() => _isLongPressed = true);
+    _controller.forward();
+  }
+
+  void _handleLongPressEnd(LongPressEndDetails details) {
+    setState(() => _isLongPressed = false);
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPressStart: _handleLongPressStart,
+      onLongPressEnd: _handleLongPressEnd,
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform(
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001)
+              ..rotateZ(_rotateAnimation.value)
+              ..scale(_scaleAnimation.value),
+            alignment: Alignment.center,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.shadow.withOpacity(_isLongPressed ? 0.4 : 0.2),
+                    blurRadius: _isLongPressed ? 12 : 8,
+                    offset: Offset(0, _isLongPressed ? 6 : 4),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context).colorScheme.surface,
+                          Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Hero(
+                          tag: 'category_${widget.category['name']}',
+                          child: TweenAnimationBuilder(
+                            duration: const Duration(milliseconds: 800),
+                            tween: Tween<double>(begin: 0.0, end: 1.0),
+                            curve: Curves.easeOutBack,
+                            builder: (context, double value, child) {
+                              return Transform(
+                                transform: Matrix4.identity()
+                                  ..setEntry(3, 2, 0.001)
+                                  ..rotateX((1 - value) * 0.5)
+                                  ..rotateY((1 - value) * 0.5)
+                                  ..scale(value),
+                                alignment: Alignment.center,
+                                child: Container(
+                                  height: 120,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  child: Image.asset(
+                                    widget.category['logo_path']!,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TweenAnimationBuilder(
+                          duration: const Duration(milliseconds: 800),
+                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                          curve: Curves.easeOutBack,
+                          builder: (context, double value, child) {
+                            return Transform(
+                              transform: Matrix4.identity()
+                                ..setEntry(3, 2, 0.001)
+                                ..translate(0.0, 30.0 * (1 - value))
+                                ..scale(value),
+                              alignment: Alignment.center,
+                              child: Text(
+                                widget.category['name']!,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
