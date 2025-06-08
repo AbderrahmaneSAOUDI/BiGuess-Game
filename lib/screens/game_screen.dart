@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import '../assets_manifest.dart';
+import '../utils/asset_loader.dart';
 
 class GameScreen extends StatefulWidget {
   final String categoryName;
@@ -71,7 +71,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     ));
   }
 
-  void _loadImagesFromCategory() {
+  Future<void> _loadImagesFromCategory() async {
     setState(() {
       _isLoading = true;
       _noImagesFound = false;
@@ -81,13 +81,21 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       _hasStarted = false;
     });
 
-    // Use the category name to get the asset list
-    final assets = categoryAssets[widget.categoryName];
-    if (assets != null && assets.isNotEmpty) {
-      _imageAssets = assets;
-      _noImagesFound = false;
+    // Convert category name to path format
+    final categoryPath = 'assets/images/${widget.categoryName.toLowerCase().replaceAll(' ', '_')}';
+    
+    // Load assets using AssetLoader
+    final assets = await AssetLoader.loadCategoryAssets(categoryPath);
+    
+    if (assets.isNotEmpty) {
+      setState(() {
+        _imageAssets = assets;
+        _noImagesFound = false;
+      });
     } else {
-      _noImagesFound = true;
+      setState(() {
+        _noImagesFound = true;
+      });
     }
 
     setState(() {
@@ -138,12 +146,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     if (_imageAssets.isNotEmpty) {
       final random = Random();
       _currentImageAsset = _imageAssets[random.nextInt(_imageAssets.length)];
-      // Extract the parent directory as the answer
-      final pathParts = _currentImageAsset!.split('/');
-      // e.g. assets/images/naruto/Orochimaru/image_1.jpg
-      // parentDirName = pathParts[pathParts.length - 2];
-      String parentDirName = pathParts.length > 3 ? pathParts[pathParts.length - 2] : '';
-      _correctAnswer = parentDirName;
+      _correctAnswer = AssetLoader.extractCharacterName(_currentImageAsset!);
 
       setState(() {
         _showPicture = true;
@@ -321,7 +324,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Image.asset('assets/logos/gdg_logo.png'),
+            child: Image.asset('assets/logos/gdg_logo.webp'),
           ),
         ],
         centerTitle: true,
@@ -364,7 +367,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                                     borderRadius: BorderRadius.circular(30),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: (_hasStarted ? Colors.blue : Colors.green).withOpacity(0.3),
+                                        color: (_hasStarted ? Colors.blue : Colors.green).withAlpha(77),
                                         spreadRadius: _isPressed ? 0 : 1,
                                         blurRadius: _isPressed ? 4 : 8,
                                         offset: Offset(0, _isPressed ? 2 : 4),
@@ -386,9 +389,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
                                                   colors: [
-                                                    Colors.white.withOpacity(0),
-                                                    Colors.white.withOpacity(0.3),
-                                                    Colors.white.withOpacity(0),
+                                                    Colors.white.withAlpha(0),
+                                                    Colors.white.withAlpha(77),
+                                                    Colors.white.withAlpha(0),
                                                   ],
                                                   stops: const [0.0, 0.5, 1.0],
                                                 ),

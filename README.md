@@ -12,18 +12,9 @@ The game features multiple anime categories, including:
 - Naruto
 - Attack on Titan
 - Black Clover
-- Bleach
-- Code Geass
-- Death Note
 - Demon Slayer
-- Detective Conan
-- Dr. Stone
-- Dragon Ball Z
-- Fullmetal Alchemist: Brotherhood
 - Hunter X Hunter
-- Jujutsu Kaisen
-- My Hero Academia
-And more!
+And more categories coming soon!
 
 ## How to Play
 
@@ -49,12 +40,14 @@ And more!
 - The game is meant to be played in person for maximum fun and interaction
 
 ## Features
-- Beautiful, animated interface
-- Multiple anime categories
-- Random character selection
-- Exciting countdown animation
-- Clean, modern design
-- Easy-to-use interface
+- Beautiful, animated interface with staggered animations
+- Multiple anime categories with extensive character collections
+- Random character selection with suspenseful countdown
+- Clean, modern Material Design interface
+- Cross-platform compatibility (iOS, Android, Windows, macOS, Linux)
+- Local storage support for game data
+- External link support for additional resources
+- Regular updates with new categories and characters
 
 ## Why It's Fun
 
@@ -68,8 +61,11 @@ The game's charm lies in its simplicity and social interaction. By requiring two
 The countdown feature adds an element of suspense and excitement, while the random selection ensures each game is unique and challenging. The game is perfect for anime fans who want to test their knowledge and have fun with friends in a social setting.
 
 ## Technical Details
-- Built with Flutter for cross-platform compatibility
-- Features smooth animations and transitions
+- Built with Flutter SDK 3.0.0 or higher
+- Features smooth staggered animations and transitions
 - Optimized for portrait mode
 - Includes a comprehensive collection of anime character images
+- Uses Provider for state management
+- Implements path_provider for local storage
+- Supports URL launching for external resources
 - Regular updates with new categories and characters

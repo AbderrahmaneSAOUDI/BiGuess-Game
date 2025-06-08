@@ -2,7 +2,7 @@ name: gdg_guess_game
 description: A guess image game with multiple categories.
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0-beta.10+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -11,22 +11,30 @@ dependencies:
   flutter:
     sdk: flutter
   path_provider: ^2.1.1
+  path: ^1.8.3
   cupertino_icons: ^1.0.2
   flutter_staggered_animations: ^1.1.1
   provider: ^6.1.5
   win32: ^5.0.0
   url_launcher: ^6.3.1
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.4
+  cloud_firestore: ^5.6.8
+  firebase_storage: ^12.4.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/logos/
+    - assets/profile/
+    - assets/fonts/
     - assets/images/
     - assets/images/0/
     - assets/images/attack_on_titan/
@@ -258,8 +266,6 @@ flutter:
     - assets/images/hunter_x_hunter/بوهارا/
     - assets/images/hunter_x_hunter/بونزو/
     - assets/images/hunter_x_hunter/بوكي/
-    - assets/images/hunter_x_hunter/نورو/
-    - assets/images/hunter_x_hunter/نوروكي/
     - assets/images/naruto/
     - assets/images/naruto/Akamaru/
     - assets/images/naruto/Choji Akimichi/
@@ -285,8 +291,6 @@ flutter:
     - assets/images/naruto/Shikamaru Nara/
     - assets/images/naruto/Shizune/
     - assets/images/naruto/Tsunade/
-    - assets/images/profile/
-    - assets/fonts/
 
   fonts:
     - family: GoogleSans
@@ -297,3 +301,20 @@ flutter:
           weight: 500
         - asset: assets/fonts/GoogleSans-Bold.ttf
           weight: 700
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logos/biguess-icon.webp"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/logos/biguess-icon.webp"
+  windows:
+    generate: true
+    image_path: "assets/logos/biguess-icon.webp"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/logos/biguess-icon.webp"

@@ -1,23 +1,9 @@
-
-    - assets/images/naruto/
-    - assets/images/naruto/Orochimaru/
-    - assets/images/naruto/Obito Uchiha/
-    - assets/images/naruto/Naruto Uzumaki/
-    - assets/images/naruto/Minato Namikaze/
-    - assets/images/naruto/Might Guy/
-    - assets/images/naruto/Madara Uchiha/
-    - assets/images/naruto/Konohamaru Sarutobi/
-    - assets/images/naruto/Kiba Inuzuka/
-    - assets/images/naruto/Kakashi Hatake/
-    - assets/images/naruto/Jiraiya/
-    - assets/images/naruto/Itachi Uchiha/
-    - assets/images/naruto/Hiruzen Sarutobi/
-    - assets/images/naruto/Gaara/
-    - assets/images/naruto/Tsunade/
-    - assets/images/naruto/Shikamaru Nara/
-    - assets/images/naruto/Sasuke Uchiha/
-    - assets/images/naruto/Sakura Haruno/
-    - assets/images/naruto/Rock Lee/
+- assets/logos/
+    - assets/profile/
+    - assets/fonts/
+    - assets/images/
+    - assets/images/0/
+    - assets/images/profile/
     - assets/images/attack_on_titan/
     - assets/images/attack_on_titan/Annie LEONHART/
     - assets/images/attack_on_titan/Armin ARLERT/
@@ -28,27 +14,180 @@
     - assets/images/attack_on_titan/Eren YAEGER/
     - assets/images/attack_on_titan/Erwin SMITH/
     - assets/images/attack_on_titan/Gunther SCHULTZ/
-    - assets/images/attack_on_titan/Hange ZOE/
     - assets/images/attack_on_titan/Hannes/
+    - assets/images/attack_on_titan/Hange ZOE/
     - assets/images/attack_on_titan/Jean KIRSCHTEIN/
     - assets/images/attack_on_titan/Levi ACKERMAN/
     - assets/images/attack_on_titan/Marco BODT/
     - assets/images/attack_on_titan/Mikasa ACKERMAN/
-    - assets/images/vinland_saga/
-    - assets/images/tokyo_revengers/
-    - assets/images/solo_leveling/
-    - assets/images/one_piece/
-    - assets/images/my_hero_academia/
-    - assets/images/jujutsu_kaisen/
+    - assets/images/black_clover/
+    - assets/images/black_clover/Acier Silva/
+    - assets/images/black_clover/Asta/
+    - assets/images/black_clover/Augustus Kira Clover XIII/
+    - assets/images/black_clover/Charlotte Roselei/
+    - assets/images/black_clover/Charmy Pappitson/
+    - assets/images/black_clover/Damnatio Kira/
+    - assets/images/black_clover/Dante Zogratis/
+    - assets/images/black_clover/Dorothy Unsworth/
+    - assets/images/black_clover/Fana/
+    - assets/images/black_clover/Finral Roulacase/
+    - assets/images/black_clover/Fuegoleon Vermillion/
+    - assets/images/black_clover/Gadjah/
+    - assets/images/black_clover/Gauche Adlai/
+    - assets/images/black_clover/Gifso/
+    - assets/images/black_clover/Gordon Agrippa/
+    - assets/images/black_clover/Grey/
+    - assets/images/black_clover/Gueldre Poizot/
+    - assets/images/black_clover/Henry Legolant/
+    - assets/images/black_clover/Jack the Ripper/
+    - assets/images/black_clover/Julius Novachrono/
+    - assets/images/black_clover/Kahono/
+    - assets/images/black_clover/Kaiser Granvorka/
+    - assets/images/black_clover/Kiato/
+    - assets/images/black_clover/Klaus Lunettes/
+    - assets/images/black_clover/Langris Vaude/
+    - assets/images/black_clover/Lemiel Silvamillion Clover/
+    - assets/images/black_clover/Leopold Vermillion/
+    - assets/images/black_clover/Liebe/
+    - assets/images/black_clover/Lily Aquaria/
+    - assets/images/black_clover/Lolopechka/
+    - assets/images/black_clover/Luck Voltia/
+    - assets/images/black_clover/Magna Swing/
+    - assets/images/black_clover/Marie Adlai/
+    - assets/images/black_clover/Mars/
+    - assets/images/black_clover/Marx Francois/
+    - assets/images/black_clover/Megicula/
+    - assets/images/black_clover/Mereoleona Vermillion/
+    - assets/images/black_clover/Mimosa Vermillion/
+    - assets/images/black_clover/Nacht Faust/
+    - assets/images/black_clover/Noelle Silva/
+    - assets/images/black_clover/Nozel Silva/
+    - assets/images/black_clover/Orsi Orfai/
+    - assets/images/black_clover/Owen/
+    - assets/images/black_clover/Patolli/
+    - assets/images/black_clover/Rades Spirito/
+    - assets/images/black_clover/Revchi Salik/
+    - assets/images/black_clover/Rhya/
+    - assets/images/black_clover/Richita/
+    - assets/images/black_clover/Rill Boismortier/
+    - assets/images/black_clover/Salamander/
+    - assets/images/black_clover/Sally/
+    - assets/images/black_clover/Secre Swallowtail/
+    - assets/images/black_clover/Sekke Bronzazza/
+    - assets/images/black_clover/Sol Marron/
+    - assets/images/black_clover/Solid Silva/
+    - assets/images/black_clover/Sylph/
+    - assets/images/black_clover/Undine/
+    - assets/images/black_clover/Vanessa Enoteca/
+    - assets/images/black_clover/Vanica Zogratis/
+    - assets/images/black_clover/Vetto/
+    - assets/images/black_clover/William Vangeance/
+    - assets/images/black_clover/Witch Queen/
+    - assets/images/black_clover/Yami Sukehiro/
+    - assets/images/black_clover/Yuno Grinberryall/
+    - assets/images/black_clover/Zagred/
+    - assets/images/black_clover/Zenon Zogratis/
+    - assets/images/black_clover/Zora Ideale/
+    - assets/images/demon_slayer/
+    - assets/images/demon_slayer/Akaza/
+    - assets/images/demon_slayer/Amane Ubuyashiki/
+    - assets/images/demon_slayer/Daki/
+    - assets/images/demon_slayer/Doma/
+    - assets/images/demon_slayer/Enmu/
+    - assets/images/demon_slayer/Genya Shinazugawa/
+    - assets/images/demon_slayer/Giyu Tomioka/
+    - assets/images/demon_slayer/Goto/
+    - assets/images/demon_slayer/Gyokko/
+    - assets/images/demon_slayer/Gyomei Himejima/
+    - assets/images/demon_slayer/Gyutaro/
+    - assets/images/demon_slayer/Hand Demon/
+    - assets/images/demon_slayer/Hantengu/
+    - assets/images/demon_slayer/Hotaru Haganezuka/
+    - assets/images/demon_slayer/Inosuke Hashibira/
+    - assets/images/demon_slayer/Kagaya Ubuyashiki/
+    - assets/images/demon_slayer/Kanao Tsuyuri/
+    - assets/images/demon_slayer/Kie Kamado/
+    - assets/images/demon_slayer/Kiyo Terauchi and Sumi Nakahara and Naho Takada/
+    - assets/images/demon_slayer/Kokushibo/
+    - assets/images/demon_slayer/Kotetsu/
+    - assets/images/demon_slayer/Kyogai/
+    - assets/images/demon_slayer/Kyojuro Rengoku/
+    - assets/images/demon_slayer/Mitsuri Kanroji/
+    - assets/images/demon_slayer/Muichiro Tokito/
+    - assets/images/demon_slayer/Muzan Kibutsuji/
+    - assets/images/demon_slayer/Nakime/
+    - assets/images/demon_slayer/Nezuko Kamado/
+    - assets/images/demon_slayer/Obanai Iguro/
+    - assets/images/demon_slayer/Rui/
+    - assets/images/demon_slayer/Sabito/
+    - assets/images/demon_slayer/Sakonji Urokodaki/
+    - assets/images/demon_slayer/Sanemi Shinazugawa/
+    - assets/images/demon_slayer/Shinobu Kocho/
+    - assets/images/demon_slayer/Susamaru/
+    - assets/images/demon_slayer/Tamayo/
+    - assets/images/demon_slayer/Tanjiro Kamado/
+    - assets/images/demon_slayer/Tanjuro Kamado/
+    - assets/images/demon_slayer/Tecchin Tecchikawahara/
+    - assets/images/demon_slayer/Tengen Uzui/
+    - assets/images/demon_slayer/Yoriichi/
+    - assets/images/demon_slayer/Yushiro/
+    - assets/images/demon_slayer/Zenitsu Agatsuma/
     - assets/images/hunter_x_hunter/
-    - assets/images/hunter_x_hunter/Pariston Hill/
-    - assets/images/hunter_x_hunter/Morel Mackernasey/
-    - assets/images/hunter_x_hunter/Isaac Netero/
-    - assets/images/hunter_x_hunter/Illumi Zoldyck/
-    - assets/images/hunter_x_hunter/Hisoka Morow/
-    - assets/images/hunter_x_hunter/Gon Freecss/
-    - assets/images/hunter_x_hunter/Ging Freecss/
     - assets/images/hunter_x_hunter/Biscuit Krueger/
+    - assets/images/hunter_x_hunter/Ging Freecss/
+    - assets/images/hunter_x_hunter/Gon Freecss/
+    - assets/images/hunter_x_hunter/Hisoka Morow/
+    - assets/images/hunter_x_hunter/Illumi Zoldyck/
+    - assets/images/hunter_x_hunter/Isaac Netero/
+    - assets/images/hunter_x_hunter/Morel Mackernasey/
+    - assets/images/hunter_x_hunter/Pariston Hill/
+    - assets/images/hunter_x_hunter/أماني/
+    - assets/images/hunter_x_hunter/ألوكا/
+    - assets/images/hunter_x_hunter/الاخوان اورثو/
+    - assets/images/hunter_x_hunter/ابينغاني/
+    - assets/images/hunter_x_hunter/يوبي/
+    - assets/images/hunter_x_hunter/وينغ/
+    - assets/images/hunter_x_hunter/ويلفن/
+    - assets/images/hunter_x_hunter/هيسوكا/
+    - assets/images/hunter_x_hunter/هانزو/
+    - assets/images/hunter_x_hunter/هارونا/
+    - assets/images/hunter_x_hunter/نيون نوستراد/
+    - assets/images/hunter_x_hunter/نيتيرو/
+    - assets/images/hunter_x_hunter/نوف/
+    - assets/images/hunter_x_hunter/نوبوناغا/
+    - assets/images/hunter_x_hunter/نانيكا/
+    - assets/images/hunter_x_hunter/ناكل/
+    - assets/images/hunter_x_hunter/مينشي/
+    - assets/images/hunter_x_hunter/ميليورون/
+    - assets/images/hunter_x_hunter/ميلوكي/
+    - assets/images/hunter_x_hunter/ميلودي/
+    - assets/images/hunter_x_hunter/ميزايستومو (البقرة)/
+    - assets/images/hunter_x_hunter/ميرويم/
+    - assets/images/hunter_x_hunter/ميتو/
+    - assets/images/hunter_x_hunter/ملكة النمل/
+    - assets/images/hunter_x_hunter/ماتشي/
+    - assets/images/hunter_x_hunter/ليول/
+    - assets/images/hunter_x_hunter/نوروكي/
+    - assets/images/hunter_x_hunter/نورو/
+    - assets/images/hunter_x_hunter/ليوريو/
+    - assets/images/hunter_x_hunter/ليبو/
+    - assets/images/hunter_x_hunter/لايت نوستراد/
+    - assets/images/hunter_x_hunter/لاتارزا/
+    - assets/images/hunter_x_hunter/كيلوا/
+    - assets/images/hunter_x_hunter/كيكيو زولديك/
+    - assets/images/hunter_x_hunter/كوموغي/
+    - assets/images/hunter_x_hunter/كولت/
+    - assets/images/hunter_x_hunter/كورولو/
+    - assets/images/hunter_x_hunter/كوروتوبي/
+    - assets/images/hunter_x_hunter/كورابيكا/
+    - assets/images/hunter_x_hunter/كلوك (الدجاجة)/
+    - assets/images/hunter_x_hunter/كايتو/
+    - assets/images/hunter_x_hunter/كانزاي (النمر)/
+    - assets/images/hunter_x_hunter/كاناري/
+    - assets/images/hunter_x_hunter/كالوتو/
+    - assets/images/hunter_x_hunter/كاسترو/
+    - assets/images/hunter_x_hunter/فينيكس/
+    - assets/images/hunter_x_hunter/فيتان/
     - assets/images/hunter_x_hunter/فرانكلين/
     - assets/images/hunter_x_hunter/غينثرو/
     - assets/images/hunter_x_hunter/غينتا (الخروف)/
@@ -66,7 +205,7 @@
     - assets/images/hunter_x_hunter/ساييو (القرد)/
     - assets/images/hunter_x_hunter/ساداسو/
     - assets/images/hunter_x_hunter/ساتوتز/
-    - assets/images/hunter_x_hunter/ساتشو (الحصان)/ 
+    - assets/images/hunter_x_hunter/ساتشو (الحصان)/
     - assets/images/hunter_x_hunter/ساب/
     - assets/images/hunter_x_hunter/زينو زولديك/
     - assets/images/hunter_x_hunter/زيبرو/
@@ -96,66 +235,30 @@
     - assets/images/hunter_x_hunter/بوهارا/
     - assets/images/hunter_x_hunter/بونزو/
     - assets/images/hunter_x_hunter/بوكي/
-    - assets/images/hunter_x_hunter/بوكل/
-    - assets/images/hunter_x_hunter/بوف/
-    - assets/images/hunter_x_hunter/بوتوباي (التنين)/
-    - assets/images/hunter_x_hunter/بوبوبو/
-    - assets/images/hunter_x_hunter/بايك/
-    - assets/images/hunter_x_hunter/بايرو/
-    - assets/images/hunter_x_hunter/بالم/
-    - assets/images/hunter_x_hunter/باكونودا/
-    - assets/images/hunter_x_hunter/باشو/
-    - assets/images/hunter_x_hunter/بارا/
-    - assets/images/hunter_x_hunter/باريستون (الفأر)/
-    - assets/images/hunter_x_hunter/ايلومي/
-    - assets/images/hunter_x_hunter/ايكالغوا/
-    - assets/images/hunter_x_hunter/ايزانوبي/
-    - assets/images/hunter_x_hunter/اوبوغين/
-    - assets/images/hunter_x_hunter/أماني/
-    - assets/images/hunter_x_hunter/ألوكا/
-    - assets/images/hunter_x_hunter/الاخوان اورثو/
-    - assets/images/hunter_x_hunter/ابينغاني/
-    - assets/images/hunter_x_hunter/يوبي/
-    - assets/images/hunter_x_hunter/وينغ/
-    - assets/images/hunter_x_hunter/ويلفن/
-    - assets/images/hunter_x_hunter/هيسوكا/
-    - assets/images/hunter_x_hunter/هانزو/
-    - assets/images/hunter_x_hunter/هارونا/
-    - assets/images/hunter_x_hunter/نيون نوستراد/
-    - assets/images/hunter_x_hunter/نيتيرو/
-    - assets/images/hunter_x_hunter/نوف/
-    - assets/images/hunter_x_hunter/نوبوناغا/
-    - assets/images/hunter_x_hunter/نانيكا/
-    - assets/images/hunter_x_hunter/مينشي/
-    - assets/images/hunter_x_hunter/ميليورون/
-    - assets/images/hunter_x_hunter/ميلوكي/
-    - assets/images/hunter_x_hunter/ميلودي/
-    - assets/images/hunter_x_hunter/ميزايستومو (البقرة)/
-    - assets/images/hunter_x_hunter/ميرويم/
-    - assets/images/hunter_x_hunter/ميتو/
-    - assets/images/hunter_x_hunter/ملكة النمل/
-    - assets/images/hunter_x_hunter/ماتشي/
-    - assets/images/hunter_x_hunter/ليول/
-    - assets/images/hunter_x_hunter/ليوريو/
-    - assets/images/hunter_x_hunter/ليبو/
-    - assets/images/hunter_x_hunter/لايت نوستراد/
-    - assets/images/hunter_x_hunter/لاتارزا/
-    - assets/images/hunter_x_hunter/كيلوا/
-    - assets/images/hunter_x_hunter/كيكيو زولديك/
-    - assets/images/hunter_x_hunter/كوموغي/
-    - assets/images/hunter_x_hunter/كولت/
-    - assets/images/hunter_x_hunter/كورولو/
-    - assets/images/hunter_x_hunter/كوروتوبي/
-    - assets/images/hunter_x_hunter/كورابيكا/
-    - assets/images/hunter_x_hunter/كلوك (الدجاجة)/
-    - assets/images/fmab/
-    - assets/images/dragon_ball_z/
-    - assets/images/dr_stone/
-    - assets/images/detective_conan/
-    - assets/images/demon_slayer/
-    - assets/images/death_note/
-    - assets/images/code_geass/
-    - assets/images/bleach/
-    - assets/images/0/
-    - assets/images/black_clover/
-    - assets/images/attack_on_titan/
+    - assets/images/hunter_x_hunter/نورو/
+    - assets/images/hunter_x_hunter/نوروكي/
+    - assets/images/naruto/
+    - assets/images/naruto/Akamaru/
+    - assets/images/naruto/Choji Akimichi/
+    - assets/images/naruto/Gaara/
+    - assets/images/naruto/Hinata Hyuga/
+    - assets/images/naruto/Hiruzen Sarutobi/
+    - assets/images/naruto/Ino Yamanaka/
+    - assets/images/naruto/Itachi Uchiha/
+    - assets/images/naruto/Jiraiya/
+    - assets/images/naruto/Kakashi Hatake/
+    - assets/images/naruto/Kiba Inuzuka/
+    - assets/images/naruto/Konohamaru Sarutobi/
+    - assets/images/naruto/Madara Uchiha/
+    - assets/images/naruto/Might Guy/
+    - assets/images/naruto/Minato Namikaze/
+    - assets/images/naruto/Naruto Uzumaki/
+    - assets/images/naruto/Neji Hyuga/
+    - assets/images/naruto/Obito Uchiha/
+    - assets/images/naruto/Orochimaru/
+    - assets/images/naruto/Rock Lee/
+    - assets/images/naruto/Sakura Haruno/
+    - assets/images/naruto/Sasuke Uchiha/
+    - assets/images/naruto/Shikamaru Nara/
+    - assets/images/naruto/Shizune/
+    - assets/images/naruto/Tsunade/
