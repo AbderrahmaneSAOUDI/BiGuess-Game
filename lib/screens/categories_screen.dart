@@ -4,24 +4,24 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import 'game_screen.dart';
-import 'dart:math';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
   final List<Map<String, String>> categories = const [
-    {'name': 'Naruto', 'path': 'assets/images/naruto', 'logo_path': 'assets/logos/Naruto Uzumaki.webp'},
     {'name': 'Attack on Titan', 'path': 'assets/images/attack_on_titan', 'logo_path': 'assets/logos/Attack on Titan.webp'},
     {'name': 'Black Clover', 'path': 'assets/images/black_clover', 'logo_path': 'assets/logos/Black-Clover.webp'},
+    {'name': 'Demon Slayer', 'path': 'assets/images/demon_slayer', 'logo_path': 'assets/logos/Demon Slayer.png'},
+    {'name': 'Hunter X Hunter', 'path': 'assets/images/hunter_x_hunter', 'logo_path': 'assets/logos/Hunter X Hunter.webp'},
+    {'name': 'Naruto', 'path': 'assets/images/naruto', 'logo_path': 'assets/logos/Naruto Uzumaki.webp'},
+    
     {'name': 'Bleach', 'path': 'assets/images/bleach', 'logo_path': 'assets/logos/Bleach.webp'},
     {'name': 'Code Geass', 'path': 'assets/images/code_geass', 'logo_path': 'assets/logos/Code Geass.webp'},
     {'name': 'Death Note', 'path': 'assets/images/death_note', 'logo_path': 'assets/logos/Death Note.webp'},
-    {'name': 'Demon Slayer', 'path': 'assets/images/demon_slayer', 'logo_path': 'assets/logos/Demon Slayer.png'},
     {'name': 'Detective Conan', 'path': 'assets/images/detective_conan', 'logo_path': 'assets/logos/Detective Conan.webp'},
     {'name': 'Dr. Stone', 'path': 'assets/images/dr_stone', 'logo_path': 'assets/logos/Dr. Stone.webp'},
     {'name': 'Dragon Ball Z', 'path': 'assets/images/dragon_ball_z', 'logo_path': 'assets/logos/Dragon Ball Z.webp'},
     {'name': 'FMAB', 'path': 'assets/images/fmab', 'logo_path': 'assets/logos/FMAB.webp'},
-    {'name': 'Hunter X Hunter', 'path': 'assets/images/hunter_x_hunter', 'logo_path': 'assets/logos/Hunter X Hunter.webp'},
     {'name': 'Jujutsu Kaisen', 'path': 'assets/images/jujutsu_kaisen', 'logo_path': 'assets/logos/Jujutsu Kaisen.webp'},
     {'name': 'My Hero Academia', 'path': 'assets/images/my_hero_academia', 'logo_path': 'assets/logos/My Hero Academia.webp'},
     {'name': 'One Piece', 'path': 'assets/images/one_piece', 'logo_path': 'assets/logos/One Piece.webp'},
@@ -33,156 +33,12 @@ class CategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    final List<IconData> iconList = [
-      Icons.star,
-      Icons.favorite,
-      Icons.flash_on,
-      Icons.cake,
-      Icons.emoji_events,
-      Icons.sports_esports,
-      Icons.movie,
-      Icons.music_note,
-      Icons.public,
-      Icons.pets,
-      Icons.science,
-      Icons.rocket_launch,
-      Icons.palette,
-      Icons.book,
-      Icons.directions_car,
-      Icons.fastfood,
-      Icons.nature,
-      Icons.spa,
-      Icons.sports_soccer,
-      Icons.access_alarm,
-      Icons.account_balance,
-      Icons.account_circle,
-      Icons.add,
-      Icons.airplanemode_active,
-      Icons.attach_money,
-      Icons.audiotrack,
-      Icons.backup,
-      Icons.battery_charging_full,
-      Icons.bluetooth,
-      Icons.brush,
-      Icons.bug_report,
-      Icons.build,
-      Icons.camera_alt,
-      Icons.chat,
-      Icons.cloud_download,
-      Icons.code,
-      Icons.collections,
-      Icons.computer,
-      Icons.credit_card,
-      Icons.dashboard,
-      Icons.delete,
-      Icons.description,
-      Icons.dialpad,
-      Icons.directions_bike,
-      Icons.directions_bus,
-      Icons.directions_railway,
-      Icons.directions_run,
-      Icons.directions_subway,
-      Icons.directions_walk,
-      Icons.dns,
-      Icons.drive_eta,
-      Icons.edit,
-      Icons.email,
-      Icons.event,
-      Icons.exit_to_app,
-      Icons.explore,
-      Icons.extension,
-      Icons.face,
-      Icons.filter_drama,
-      Icons.fingerprint,
-      Icons.fitness_center,
-      Icons.folder,
-      Icons.format_quote,
-      Icons.gamepad,
-      Icons.gps_fixed,
-      Icons.group,
-      Icons.headset_mic,
-      Icons.help,
-      Icons.highlight,
-      Icons.home,
-      Icons.hotel,
-      Icons.image,
-      Icons.inbox,
-      Icons.info,
-      Icons.keyboard,
-      Icons.language,
-      Icons.layers,
-      Icons.lightbulb_outline,
-      Icons.link,
-      Icons.local_cafe,
-      Icons.local_gas_station,
-      Icons.local_hospital,
-      Icons.local_pharmacy,
-      Icons.local_pizza,
-      Icons.local_taxi,
-      Icons.lock,
-      Icons.map,
-      Icons.memory,
-      Icons.menu,
-      Icons.message,
-      Icons.mic,
-      Icons.mood,
-      Icons.navigation,
-      Icons.notifications,
-      Icons.palette,
-      Icons.people,
-      Icons.phone,
-      Icons.photo_camera,
-      Icons.place,
-      Icons.play_arrow,
-      Icons.print,
-      Icons.public,
-      Icons.redeem,
-      Icons.refresh,
-      Icons.restaurant,
-      Icons.school,
-      Icons.send,
-      Icons.settings,
-      Icons.share,
-      Icons.shopping_bag,
-      Icons.shuffle,
-      Icons.sms,
-      Icons.speaker_phone,
-      Icons.speed,
-      Icons.star_half,
-      Icons.store,
-      Icons.streetview,
-      Icons.subway,
-      Icons.terrain,
-      Icons.textsms,
-      Icons.thumb_up,
-      Icons.timer,
-      Icons.toll,
-      Icons.traffic,
-      Icons.train,
-      Icons.translate,
-      Icons.trending_up,
-      Icons.tune,
-      Icons.umbrella,
-      Icons.usb,
-      Icons.verified_user,
-      Icons.videocam,
-      Icons.visibility,
-      Icons.voicemail,
-      Icons.volume_up,
-      Icons.wallet_giftcard,
-      Icons.warning,
-      Icons.watch,
-      Icons.wifi,
-      Icons.work,
-      Icons.zoom_in,
-    ];
-    final random = Random();
     return Scaffold(
       appBar: AppBar(
         title: const Text('GDG Ghardaia'),
         leading: Padding(
           padding: const EdgeInsets.only(left: 12.0),
-          child: Image.asset('assets/logos/gdg_logo.png'),
+          child: Image.asset('assets/logos/gdg_logo.webp'),
         ),
         actions: [
           IconButton(
@@ -332,7 +188,6 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.shadow.withOpacity(_isLongPressed ? 0.4 : 0.2),
                     blurRadius: _isLongPressed ? 12 : 8,
                     offset: Offset(0, _isLongPressed ? 6 : 4),
                   ),
@@ -350,65 +205,71 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
                         end: Alignment.bottomRight,
                         colors: [
                           Theme.of(context).colorScheme.surface,
-                          Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                          Theme.of(context).colorScheme.surface.withAlpha(77),
                         ],
                       ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Hero(
-                          tag: 'category_${widget.category['name']}',
-                          child: TweenAnimationBuilder(
-                            duration: const Duration(milliseconds: 800),
-                            tween: Tween<double>(begin: 0.0, end: 1.0),
-                            curve: Curves.easeOutBack,
-                            builder: (context, double value, child) {
-                              return Transform(
-                                transform: Matrix4.identity()
-                                  ..setEntry(3, 2, 0.001)
-                                  ..rotateX((1 - value) * 0.5)
-                                  ..rotateY((1 - value) * 0.5)
-                                  ..scale(value),
-                                alignment: Alignment.center,
-                                child: Container(
-                                  height: 120,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  child: Image.asset(
-                                    widget.category['logo_path']!,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TweenAnimationBuilder(
-                          duration: const Duration(milliseconds: 800),
-                          tween: Tween<double>(begin: 0.0, end: 1.0),
-                          curve: Curves.easeOutBack,
-                          builder: (context, double value, child) {
-                            return Transform(
-                              transform: Matrix4.identity()
-                                ..setEntry(3, 2, 0.001)
-                                ..translate(0.0, 30.0 * (1 - value))
-                                ..scale(value),
-                              alignment: Alignment.center,
-                              child: Text(
-                                widget.category['name']!,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Hero(
+                              tag: 'category_${widget.category['name']}',
+                              child: TweenAnimationBuilder(
+                                duration: const Duration(milliseconds: 800),
+                                tween: Tween<double>(begin: 0.0, end: 1.0),
+                                curve: Curves.easeOutBack,
+                                builder: (context, double value, child) {
+                                  return Transform(
+                                    transform: Matrix4.identity()
+                                      ..setEntry(3, 2, 0.001)
+                                      ..rotateX((1 - value) * 0.5)
+                                      ..rotateY((1 - value) * 0.5)
+                                      ..scale(value),
+                                    alignment: Alignment.center,
+                                    child: Image.asset(
+                                      widget.category['logo_path']!,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            flex: 1,
+                            child: TweenAnimationBuilder(
+                              duration: const Duration(milliseconds: 800),
+                              tween: Tween<double>(begin: 0.0, end: 1.0),
+                              curve: Curves.easeOutBack,
+                              builder: (context, double value, child) {
+                                return Transform(
+                                  transform: Matrix4.identity()
+                                    ..setEntry(3, 2, 0.001)
+                                    ..translate(0.0, 30.0 * (1 - value))
+                                    ..scale(value),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    widget.category['name']!,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -484,11 +345,11 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        color: Theme.of(context).colorScheme.primary.withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
@@ -544,11 +405,11 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                                        color: Theme.of(context).colorScheme.secondary.withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
@@ -636,11 +497,11 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.tertiaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.tertiaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.tertiary.withOpacity(0.1),
+                                        color: Theme.of(context).colorScheme.tertiary.withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
@@ -728,11 +589,11 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        color: Theme.of(context).colorScheme.primary.withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
@@ -818,11 +679,11 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                                        color: Theme.of(context).colorScheme.secondary.withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
@@ -919,7 +780,7 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       'Developed by',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                        color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -928,12 +789,12 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                                       child: ClipOval(
                                         child: Image.asset(
-                                          'assets/profile/profile.jpg', // **Double-check this path is correct**
+                                          'assets/profile/profile.webp', // **Double-check this path is correct**
                                           width: 100, // Should be radius * 2 (50 * 2)
                                           height: 100, // Should be radius * 2 (50 * 2)
                                           fit: BoxFit.cover, // Ensures the image covers the circular area
                                           errorBuilder: (context, error, stackTrace) {
-                                            // This will show the person icon if profile.jpg can't be loaded
+                                            // This will show the person icon if profile.webp can't be loaded
                                             return Icon(
                                               Icons.person,
                                               size: 50,
@@ -967,7 +828,7 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
@@ -1015,7 +876,7 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
@@ -1062,7 +923,7 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(

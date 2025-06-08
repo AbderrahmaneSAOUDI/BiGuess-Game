@@ -6,6 +6,7 @@ const Map<String, List<String>> categoryAssets = {
   'Bleach': [],
   'Code Geass': [],
   'Death Note': [],
+  'Demon Slayer': [],
   'Detective Conan': [],
   'Dr. Stone': [],
   'Dragon Ball Z': [],
