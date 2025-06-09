@@ -17,6 +17,11 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
+enum CharacterAlgorithm {
+  random,
+  nonRepeating,
+}
+
 class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
   bool _showPicture = false;
   bool _isCountingDown = false;
@@ -34,6 +39,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   String? _correctAnswer;
   bool _isLoading = true;
   bool _noImagesFound = false;
+
+  // New: Algorithm state and working list for non-repeating
+  CharacterAlgorithm _algorithm = CharacterAlgorithm.random;
+  List<String> _workingImageAssets = [];
+  Set<String> _usedCharacters = {};
 
   @override
   void initState() {
@@ -79,6 +89,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       _currentImageAsset = null;
       _correctAnswer = null;
       _hasStarted = false;
+      _workingImageAssets = [];
+      _usedCharacters = {};
     });
 
     // Convert category name to path format
@@ -90,7 +102,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     if (assets.isNotEmpty) {
       setState(() {
         _imageAssets = assets;
+        _workingImageAssets = List<String>.from(assets);
         _noImagesFound = false;
+        _usedCharacters = {};
       });
     } else {
       setState(() {
@@ -143,20 +157,59 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   }
 
   void _showRandomImage() {
-    if (_imageAssets.isNotEmpty) {
-      final random = Random();
-      _currentImageAsset = _imageAssets[random.nextInt(_imageAssets.length)];
-      _correctAnswer = AssetLoader.extractCharacterName(_currentImageAsset!);
-
-      setState(() {
-        _showPicture = true;
-      });
+    if (_algorithm == CharacterAlgorithm.random) {
+      // Old logic: pick any image
+      if (_imageAssets.isNotEmpty) {
+        final random = Random();
+        _currentImageAsset = _imageAssets[random.nextInt(_imageAssets.length)];
+        _correctAnswer = AssetLoader.extractCharacterName(_currentImageAsset!);
+        setState(() {
+          _showPicture = true;
+        });
+      } else {
+        setState(() {
+          _noImagesFound = true;
+          _showPicture = false;
+        });
+      }
     } else {
-      setState(() {
-        _noImagesFound = true;
-        _showPicture = false;
-      });
+      // New logic: non-repeating per character
+      if (_workingImageAssets.isEmpty) {
+        // refill
+        _workingImageAssets = List<String>.from(_imageAssets);
+        _usedCharacters.clear();
+      }
+      if (_workingImageAssets.isNotEmpty) {
+        final random = Random();
+        final idx = random.nextInt(_workingImageAssets.length);
+        final asset = _workingImageAssets[idx];
+        final character = AssetLoader.extractCharacterName(asset);
+        // Remove all images for this character
+        _workingImageAssets.removeWhere((img) => AssetLoader.extractCharacterName(img) == character);
+        _usedCharacters.add(character ?? '');
+        _currentImageAsset = asset;
+        _correctAnswer = character;
+        setState(() {
+          _showPicture = true;
+        });
+      } else {
+        setState(() {
+          _noImagesFound = true;
+          _showPicture = false;
+        });
+      }
     }
+  }
+
+  void _onAlgorithmChanged(CharacterAlgorithm value) {
+    setState(() {
+      _algorithm = value;
+      // Reset working list if switching to non-repeating
+      if (_algorithm == CharacterAlgorithm.nonRepeating) {
+        _workingImageAssets = List<String>.from(_imageAssets);
+        _usedCharacters.clear();
+      }
+    });
   }
 
   Widget _buildContent() {
@@ -322,17 +375,6 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       appBar: AppBar(
         title: Text(widget.categoryName),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return const GameSettingsDialog();
-                },
-              );
-            },
-          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Image.asset('assets/logos/gdg_logo.webp'),
@@ -495,7 +537,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 }
 
 class GameSettingsDialog extends StatefulWidget {
-  const GameSettingsDialog({super.key});
+  final CharacterAlgorithm algorithm;
+  final ValueChanged<CharacterAlgorithm> onAlgorithmChanged;
+  const GameSettingsDialog({super.key, required this.algorithm, required this.onAlgorithmChanged});
 
   @override
   State<GameSettingsDialog> createState() => _GameSettingsDialogState();
@@ -503,11 +547,13 @@ class GameSettingsDialog extends StatefulWidget {
 
 class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late CharacterAlgorithm _selectedAlgorithm;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _selectedAlgorithm = widget.algorithm;
   }
 
   @override
@@ -669,6 +715,30 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                 ),
                               ),
                             ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Character Selection Algorithm', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ListTile(
+                          title: const Text('Random (characters can repeat)'),
+                          leading: Radio<CharacterAlgorithm>(
+                            value: CharacterAlgorithm.random,
+                            groupValue: _selectedAlgorithm,
+                            onChanged: (val) {
+                              setState(() => _selectedAlgorithm = val!);
+                              widget.onAlgorithmChanged(val!);
+                            },
+                          ),
+                        ),
+                        ListTile(
+                          title: const Text('Non-repeating (all images for a character are removed until all characters have appeared)'),
+                          leading: Radio<CharacterAlgorithm>(
+                            value: CharacterAlgorithm.nonRepeating,
+                            groupValue: _selectedAlgorithm,
+                            onChanged: (val) {
+                              setState(() => _selectedAlgorithm = val!);
+                              widget.onAlgorithmChanged(val!);
+                            },
                           ),
                         ),
                       ],
