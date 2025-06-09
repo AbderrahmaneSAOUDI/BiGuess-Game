@@ -322,6 +322,17 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       appBar: AppBar(
         title: Text(widget.categoryName),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return const GameSettingsDialog();
+                },
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Image.asset('assets/logos/gdg_logo.webp'),
@@ -478,6 +489,283 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class GameSettingsDialog extends StatefulWidget {
+  const GameSettingsDialog({super.key});
+
+  @override
+  State<GameSettingsDialog> createState() => _GameSettingsDialogState();
+}
+
+class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(0.0),
+        width: 512.0,
+        height: 512.0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Game Settings'),
+                Tab(text: 'How to Play'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AnimationConfiguration.staggeredList(
+                          position: 0,
+                          duration: const Duration(milliseconds: 500),
+                          child: SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.timer,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Countdown Duration',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Set how long players have to look at the image before starting to guess.',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        AnimationConfiguration.staggeredList(
+                          position: 1,
+                          duration: const Duration(milliseconds: 600),
+                          child: SlideAnimation(
+                            horizontalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.help_outline,
+                                          color: Theme.of(context).colorScheme.secondary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Game Rules',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).colorScheme.secondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: 5,
+                                      itemBuilder: (context, index) {
+                                        final List<String> rules = [
+                                          'Ask yes/no questions only',
+                                          'One question per turn',
+                                          'No peeking at your own screen',
+                                          'Be honest when answering',
+                                          'Try not to repeat previous questions',
+                                        ];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(bottom: 8.0),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '• ',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Theme.of(context).colorScheme.secondary,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  rules[index],
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    height: 1.5,
+                                                    color: Theme.of(context).colorScheme.onSurface,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AnimationConfiguration.staggeredList(
+                          position: 0,
+                          duration: const Duration(milliseconds: 500),
+                          child: SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.play_circle_outline,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'How to Play',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: 5,
+                                      itemBuilder: (context, index) {
+                                        final List<String> steps = [
+                                          'Both players tap "Start/Refresh" on their phones to get a different mystery character.',
+                                          'Show your screen to your opponent before the countdown ends.',
+                                          'Start taking turns asking yes/no questions to guess your own character.',
+                                          'The first player to guess their character correctly wins the round.',
+                                          'Keep playing and tracking scores!',
+                                        ];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(bottom: 8.0),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${index + 1}. ',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Theme.of(context).colorScheme.primary,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Text(
+                                                  steps[index],
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    height: 1.5,
+                                                    color: Theme.of(context).colorScheme.onSurface,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -186,10 +186,12 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
+                color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    blurRadius: _isLongPressed ? 12 : 8,
-                    offset: Offset(0, _isLongPressed ? 6 : 4),
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: _isLongPressed ? 6 : 4,
+                    offset: Offset(0, _isLongPressed ? 3 : 2),
                   ),
                 ],
               ),

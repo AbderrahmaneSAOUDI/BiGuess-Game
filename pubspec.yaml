@@ -166,106 +166,141 @@ flutter:
     - assets/images/demon_slayer/Yushiro/
     - assets/images/demon_slayer/Zenitsu Agatsuma/
     - assets/images/hunter_x_hunter/
+    - assets/images/hunter_x_hunter/Abengane/
+    - assets/images/hunter_x_hunter/Alluka Zoldyck/
+    - assets/images/hunter_x_hunter/Amane/
+    - assets/images/hunter_x_hunter/Anita/
+    - assets/images/hunter_x_hunter/Baise/
+    - assets/images/hunter_x_hunter/Bara/
+    - assets/images/hunter_x_hunter/Basho/
+    - assets/images/hunter_x_hunter/Beans/
+    - assets/images/hunter_x_hunter/Binolt/
     - assets/images/hunter_x_hunter/Biscuit Krueger/
+    - assets/images/hunter_x_hunter/Boki/
+    - assets/images/hunter_x_hunter/Bonolenov Ndongo/
+    - assets/images/hunter_x_hunter/Bopobo/
+    - assets/images/hunter_x_hunter/Botobai Gigante/
+    - assets/images/hunter_x_hunter/Bourbon/
+    - assets/images/hunter_x_hunter/Buhara/
+    - assets/images/hunter_x_hunter/Canary/
+    - assets/images/hunter_x_hunter/Captain/
+    - assets/images/hunter_x_hunter/Centipede/
+    - assets/images/hunter_x_hunter/Cheadle Yorkshire/
+    - assets/images/hunter_x_hunter/Cheetu/
+    - assets/images/hunter_x_hunter/Chimera Ant Queen/
+    - assets/images/hunter_x_hunter/Chrollo Lucilfer/
+    - assets/images/hunter_x_hunter/Cluck/
+    - assets/images/hunter_x_hunter/Cocco/
+    - assets/images/hunter_x_hunter/Colt/
+    - assets/images/hunter_x_hunter/Dalzollene/
+    - assets/images/hunter_x_hunter/Dwun/
+    - assets/images/hunter_x_hunter/Feitan Portor/
+    - assets/images/hunter_x_hunter/Flutter/
+    - assets/images/hunter_x_hunter/Franklin Bordeau/
+    - assets/images/hunter_x_hunter/Gel/
+    - assets/images/hunter_x_hunter/Genthru/
+    - assets/images/hunter_x_hunter/Geretta/
+    - assets/images/hunter_x_hunter/Gido/
     - assets/images/hunter_x_hunter/Ging Freecss/
+    - assets/images/hunter_x_hunter/Ginta/
     - assets/images/hunter_x_hunter/Gon Freecss/
+    - assets/images/hunter_x_hunter/Goreinu/
+    - assets/images/hunter_x_hunter/Gotoh/
+    - assets/images/hunter_x_hunter/Grachan/
+    - assets/images/hunter_x_hunter/Gun-toting Ant/
+    - assets/images/hunter_x_hunter/Gyro/
+    - assets/images/hunter_x_hunter/Hanzo/
+    - assets/images/hunter_x_hunter/Haruna/
+    - assets/images/hunter_x_hunter/Heavens Arena/
+    - assets/images/hunter_x_hunter/Hina/
     - assets/images/hunter_x_hunter/Hisoka Morow/
+    - assets/images/hunter_x_hunter/Ikalgo/
     - assets/images/hunter_x_hunter/Illumi Zoldyck/
     - assets/images/hunter_x_hunter/Isaac Netero/
+    - assets/images/hunter_x_hunter/Izunavi/
+    - assets/images/hunter_x_hunter/Johness/
+    - assets/images/hunter_x_hunter/Kaito the ant/
+    - assets/images/hunter_x_hunter/Kalluto Zoldyck/
+    - assets/images/hunter_x_hunter/Kanzai/
+    - assets/images/hunter_x_hunter/Kastro/
+    - assets/images/hunter_x_hunter/Kikyo Zoldyck/
+    - assets/images/hunter_x_hunter/Killua Zoldyck/
+    - assets/images/hunter_x_hunter/Kite/
+    - assets/images/hunter_x_hunter/Knov/
+    - assets/images/hunter_x_hunter/Knuckle Bine/
+    - assets/images/hunter_x_hunter/Komugi/
+    - assets/images/hunter_x_hunter/Kortopi/
+    - assets/images/hunter_x_hunter/Kurapika/
+    - assets/images/hunter_x_hunter/Kurt/
+    - assets/images/hunter_x_hunter/Leech/
+    - assets/images/hunter_x_hunter/Leol/
+    - assets/images/hunter_x_hunter/Leorio Paradinight/
+    - assets/images/hunter_x_hunter/Leroute/
+    - assets/images/hunter_x_hunter/Light Nostrade/
+    - assets/images/hunter_x_hunter/Lippo/
+    - assets/images/hunter_x_hunter/List/
+    - assets/images/hunter_x_hunter/Machi Komacine/
+    - assets/images/hunter_x_hunter/Maha Zoldyck/
+    - assets/images/hunter_x_hunter/Majtani/
+    - assets/images/hunter_x_hunter/Meleoron/
+    - assets/images/hunter_x_hunter/Melody/
+    - assets/images/hunter_x_hunter/Menchi/
+    - assets/images/hunter_x_hunter/Menthuthuyoupi/
+    - assets/images/hunter_x_hunter/Meruem/
+    - assets/images/hunter_x_hunter/Milluki Zoldyck/
+    - assets/images/hunter_x_hunter/Mito Freecss/
+    - assets/images/hunter_x_hunter/Mizaistom Nana/
     - assets/images/hunter_x_hunter/Morel Mackernasey/
+    - assets/images/hunter_x_hunter/Mosquito/
+    - assets/images/hunter_x_hunter/Neferpitou/
+    - assets/images/hunter_x_hunter/Neon Nostrade/
+    - assets/images/hunter_x_hunter/Nobunaga Hazama/
+    - assets/images/hunter_x_hunter/Ortho/
+    - assets/images/hunter_x_hunter/Owl/
+    - assets/images/hunter_x_hunter/Pairo/
+    - assets/images/hunter_x_hunter/Pakunoda/
+    - assets/images/hunter_x_hunter/Palm Siberia/
     - assets/images/hunter_x_hunter/Pariston Hill/
-    - assets/images/hunter_x_hunter/أماني/
-    - assets/images/hunter_x_hunter/ألوكا/
-    - assets/images/hunter_x_hunter/الاخوان اورثو/
-    - assets/images/hunter_x_hunter/ابينغاني/
-    - assets/images/hunter_x_hunter/يوبي/
-    - assets/images/hunter_x_hunter/وينغ/
-    - assets/images/hunter_x_hunter/ويلفن/
-    - assets/images/hunter_x_hunter/هيسوكا/
-    - assets/images/hunter_x_hunter/هانزو/
-    - assets/images/hunter_x_hunter/هارونا/
-    - assets/images/hunter_x_hunter/نيون نوستراد/
-    - assets/images/hunter_x_hunter/نيتيرو/
-    - assets/images/hunter_x_hunter/نوف/
-    - assets/images/hunter_x_hunter/نوبوناغا/
-    - assets/images/hunter_x_hunter/نانيكا/
-    - assets/images/hunter_x_hunter/ناكل/
-    - assets/images/hunter_x_hunter/مينشي/
-    - assets/images/hunter_x_hunter/ميليورون/
-    - assets/images/hunter_x_hunter/ميلوكي/
-    - assets/images/hunter_x_hunter/ميلودي/
-    - assets/images/hunter_x_hunter/ميزايستومو (البقرة)/
-    - assets/images/hunter_x_hunter/ميرويم/
-    - assets/images/hunter_x_hunter/ميتو/
-    - assets/images/hunter_x_hunter/ملكة النمل/
-    - assets/images/hunter_x_hunter/ماتشي/
-    - assets/images/hunter_x_hunter/ليول/
-    - assets/images/hunter_x_hunter/ليوريو/
-    - assets/images/hunter_x_hunter/ليبو/
-    - assets/images/hunter_x_hunter/لايت نوستراد/
-    - assets/images/hunter_x_hunter/لاتارزا/
-    - assets/images/hunter_x_hunter/كيلوا/
-    - assets/images/hunter_x_hunter/كيكيو زولديك/
-    - assets/images/hunter_x_hunter/كوموغي/
-    - assets/images/hunter_x_hunter/كولت/
-    - assets/images/hunter_x_hunter/كورولو/
-    - assets/images/hunter_x_hunter/كوروتوبي/
-    - assets/images/hunter_x_hunter/كورابيكا/
-    - assets/images/hunter_x_hunter/كلوك (الدجاجة)/
-    - assets/images/hunter_x_hunter/كايتو/
-    - assets/images/hunter_x_hunter/كانزاي (النمر)/
-    - assets/images/hunter_x_hunter/كاناري/
-    - assets/images/hunter_x_hunter/كالوتو/
-    - assets/images/hunter_x_hunter/كاسترو/
-    - assets/images/hunter_x_hunter/فينيكس/
-    - assets/images/hunter_x_hunter/فيتان/
-    - assets/images/hunter_x_hunter/فرانكلين/
-    - assets/images/hunter_x_hunter/غينثرو/
-    - assets/images/hunter_x_hunter/غينتا (الخروف)/
-    - assets/images/hunter_x_hunter/غيرو (الافعى)/
-    - assets/images/hunter_x_hunter/غيدو/
-    - assets/images/hunter_x_hunter/غورينو/
-    - assets/images/hunter_x_hunter/غوتوه/
-    - assets/images/hunter_x_hunter/شيزوكو/
-    - assets/images/hunter_x_hunter/شيدور/
-    - assets/images/hunter_x_hunter/شوت/
-    - assets/images/hunter_x_hunter/شالناك/
-    - assets/images/hunter_x_hunter/شاسمونو/
-    - assets/images/hunter_x_hunter/سيلفا/
-    - assets/images/hunter_x_hunter/سكوالا/
-    - assets/images/hunter_x_hunter/ساييو (القرد)/
-    - assets/images/hunter_x_hunter/ساداسو/
-    - assets/images/hunter_x_hunter/ساتوتز/
-    - assets/images/hunter_x_hunter/ساتشو (الحصان)/
-    - assets/images/hunter_x_hunter/ساب/
-    - assets/images/hunter_x_hunter/زينو زولديك/
-    - assets/images/hunter_x_hunter/زيبرو/
-    - assets/images/hunter_x_hunter/زيبايل/
-    - assets/images/hunter_x_hunter/زوشي/
-    - assets/images/hunter_x_hunter/زازان/
-    - assets/images/hunter_x_hunter/رينا/
-    - assets/images/hunter_x_hunter/ريفليت/
-    - assets/images/hunter_x_hunter/ريزر/
-    - assets/images/hunter_x_hunter/راموت/
-    - assets/images/hunter_x_hunter/دالزولين/
-    - assets/images/hunter_x_hunter/جين (الخنزير)/
-    - assets/images/hunter_x_hunter/جون/
-    - assets/images/hunter_x_hunter/جايرو/
-    - assets/images/hunter_x_hunter/تومبا/
-    - assets/images/hunter_x_hunter/تشيدل (الكلب)/
-    - assets/images/hunter_x_hunter/تشيتو/
-    - assets/images/hunter_x_hunter/تسيزوجيرا/
-    - assets/images/hunter_x_hunter/تسوبوني/
-    - assets/images/hunter_x_hunter/بيون (الارنب)/
-    - assets/images/hunter_x_hunter/بينولت/
-    - assets/images/hunter_x_hunter/بينورينوفو/
-    - assets/images/hunter_x_hunter/بينز/
-    - assets/images/hunter_x_hunter/بيسكي/
-    - assets/images/hunter_x_hunter/بيزي/
-    - assets/images/hunter_x_hunter/بيتو/
-    - assets/images/hunter_x_hunter/بوهارا/
-    - assets/images/hunter_x_hunter/بونزو/
-    - assets/images/hunter_x_hunter/بوكي/
+    - assets/images/hunter_x_hunter/Phinks Magcub/
+    - assets/images/hunter_x_hunter/Pike/
+    - assets/images/hunter_x_hunter/Pokkle/
+    - assets/images/hunter_x_hunter/Ponzu/
+    - assets/images/hunter_x_hunter/Porcupine/
+    - assets/images/hunter_x_hunter/Pyon/
+    - assets/images/hunter_x_hunter/Quizzing Lady/
+    - assets/images/hunter_x_hunter/Rabid Dog/
+    - assets/images/hunter_x_hunter/Rammot/
+    - assets/images/hunter_x_hunter/Razor/
+    - assets/images/hunter_x_hunter/Reina/
+    - assets/images/hunter_x_hunter/Riehlvelt/
+    - assets/images/hunter_x_hunter/Saccho Kobayakawa/
+    - assets/images/hunter_x_hunter/Sadaso/
+    - assets/images/hunter_x_hunter/Saiyu/
+    - assets/images/hunter_x_hunter/Satotz/
+    - assets/images/hunter_x_hunter/Sedokan/
+    - assets/images/hunter_x_hunter/Shachmono Tocino/
+    - assets/images/hunter_x_hunter/Shaiapouf/
+    - assets/images/hunter_x_hunter/Shalnark/
+    - assets/images/hunter_x_hunter/Shidore/
+    - assets/images/hunter_x_hunter/Shizuku Murasaki/
+    - assets/images/hunter_x_hunter/Shoot McMahon/
+    - assets/images/hunter_x_hunter/Silva Zoldyck/
+    - assets/images/hunter_x_hunter/Squala/
+    - assets/images/hunter_x_hunter/Tonpa/
+    - assets/images/hunter_x_hunter/Tsezguerra/
+    - assets/images/hunter_x_hunter/Tsubone/
+    - assets/images/hunter_x_hunter/Uvogin/
+    - assets/images/hunter_x_hunter/Welfin/
+    - assets/images/hunter_x_hunter/Wing/
+    - assets/images/hunter_x_hunter/Worm/
+    - assets/images/hunter_x_hunter/Yunju/
+    - assets/images/hunter_x_hunter/Zazan/
+    - assets/images/hunter_x_hunter/Zeno Zoldyck/
+    - assets/images/hunter_x_hunter/Zepile/
+    - assets/images/hunter_x_hunter/Zigg Zoldyck/
+    - assets/images/hunter_x_hunter/Zushi/
+    - assets/images/hunter_x_hunter/eta and elena/
+    - assets/images/hunter_x_hunter/sub/
     - assets/images/naruto/
     - assets/images/naruto/Akamaru/
     - assets/images/naruto/Choji Akimichi/
