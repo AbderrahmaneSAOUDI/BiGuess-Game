@@ -42,6 +42,20 @@ class CategoriesScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  opaque: false,
+                  pageBuilder: (_, __, ___) => GameSettingsDialog(
+                    algorithm: CharacterAlgorithm.random, // fallback for now
+                    onAlgorithmChanged: (_) {}, // fallback for now
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
               showDialog(
