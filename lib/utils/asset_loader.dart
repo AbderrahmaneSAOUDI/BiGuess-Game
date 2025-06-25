@@ -12,8 +12,10 @@ class AssetLoader {
 
       // Filter assets that match the category path and are images
       final List<String> assets = manifestMap.keys.where((String key) {
-        return key.startsWith(categoryPath) && 
-               (key.endsWith('.webp') || key.endsWith('.png') || key.endsWith('.jpg'));
+        return key.startsWith(categoryPath) &&
+            (key.endsWith('.webp') ||
+                key.endsWith('.png') ||
+                key.endsWith('.jpg'));
       }).toList();
 
       return assets;
@@ -25,15 +27,16 @@ class AssetLoader {
 
   static String? extractCharacterName(String assetPath) {
     try {
-      // Split the path and get the second-to-last part (character name)
+      // Get the filename and remove the extension
       final parts = assetPath.split('/');
-      if (parts.length >= 3) {
-        return parts[parts.length - 2];
+      final filename = parts.isNotEmpty ? parts.last : '';
+      if (filename.contains('.')) {
+        return filename.substring(0, filename.lastIndexOf('.'));
       }
-      return null;
+      return filename;
     } catch (e) {
       print('Error extracting character name: $e');
       return null;
     }
   }
-} 
+}

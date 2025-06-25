@@ -9,25 +9,96 @@ class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
   final List<Map<String, String>> categories = const [
-    {'name': 'Attack on Titan', 'path': 'assets/images/attack_on_titan', 'logo_path': 'assets/logos/Attack on Titan.webp'},
-    {'name': 'Black Clover', 'path': 'assets/images/black_clover', 'logo_path': 'assets/logos/Black-Clover.webp'},
-    {'name': 'Demon Slayer', 'path': 'assets/images/demon_slayer', 'logo_path': 'assets/logos/Demon Slayer.png'},
-    {'name': 'Hunter X Hunter', 'path': 'assets/images/hunter_x_hunter', 'logo_path': 'assets/logos/Hunter X Hunter.webp'},
-    {'name': 'Naruto', 'path': 'assets/images/naruto', 'logo_path': 'assets/logos/Naruto Uzumaki.webp'},
-    
-    {'name': 'Bleach', 'path': 'assets/images/bleach', 'logo_path': 'assets/logos/Bleach.webp'},
-    {'name': 'Code Geass', 'path': 'assets/images/code_geass', 'logo_path': 'assets/logos/Code Geass.webp'},
-    {'name': 'Death Note', 'path': 'assets/images/death_note', 'logo_path': 'assets/logos/Death Note.webp'},
-    {'name': 'Detective Conan', 'path': 'assets/images/detective_conan', 'logo_path': 'assets/logos/Detective Conan.webp'},
-    {'name': 'Dr. Stone', 'path': 'assets/images/dr_stone', 'logo_path': 'assets/logos/Dr. Stone.webp'},
-    {'name': 'Dragon Ball Z', 'path': 'assets/images/dragon_ball_z', 'logo_path': 'assets/logos/Dragon Ball Z.webp'},
-    {'name': 'FMAB', 'path': 'assets/images/fmab', 'logo_path': 'assets/logos/FMAB.webp'},
-    {'name': 'Jujutsu Kaisen', 'path': 'assets/images/jujutsu_kaisen', 'logo_path': 'assets/logos/Jujutsu Kaisen.webp'},
-    {'name': 'My Hero Academia', 'path': 'assets/images/my_hero_academia', 'logo_path': 'assets/logos/My Hero Academia.webp'},
-    {'name': 'One Piece', 'path': 'assets/images/one_piece', 'logo_path': 'assets/logos/One Piece.webp'},
-    {'name': 'Solo Leveling', 'path': 'assets/images/solo_leveling', 'logo_path': 'assets/logos/Solo Leveling.webp'},
-    {'name': 'Tokyo Revengers', 'path': 'assets/images/tokyo_revengers', 'logo_path': 'assets/logos/Tokyo Revengers.webp'},
-    {'name': 'Vinland Saga', 'path': 'assets/images/vinland_saga', 'logo_path': 'assets/logos/Winland Saga.webp'},
+    {
+      'name': 'Attack on Titan',
+      'path': 'assets/images/attack_on_titan',
+      'logo_path': 'assets/logos/Attack on Titan.webp'
+    },
+    {
+      'name': 'Black Clover',
+      'path': 'assets/images/black_clover',
+      'logo_path': 'assets/logos/Black-Clover.webp'
+    },
+    {
+      'name': 'Demon Slayer',
+      'path': 'assets/images/demon_slayer',
+      'logo_path': 'assets/logos/Demon Slayer.png'
+    },
+    {
+      'name': 'Hunter X Hunter',
+      'path': 'assets/images/hunter_x_hunter',
+      'logo_path': 'assets/logos/Hunter X Hunter.webp'
+    },
+    {
+      'name': 'Naruto',
+      'path': 'assets/images/naruto',
+      'logo_path': 'assets/logos/Naruto Uzumaki.webp'
+    },
+    {
+      'name': 'One Piece',
+      'path': 'assets/images/one_piece',
+      'logo_path': 'assets/logos/One Piece.webp'
+    },
+    {
+      'name': 'Bleach',
+      'path': 'assets/images/bleach',
+      'logo_path': 'assets/logos/Bleach.webp'
+    },
+    {
+      'name': 'Code Geass',
+      'path': 'assets/images/code_geass',
+      'logo_path': 'assets/logos/Code Geass.webp'
+    },
+    {
+      'name': 'Death Note',
+      'path': 'assets/images/death_note',
+      'logo_path': 'assets/logos/Death Note.webp'
+    },
+    {
+      'name': 'Detective Conan',
+      'path': 'assets/images/detective_conan',
+      'logo_path': 'assets/logos/Detective Conan.webp'
+    },
+    {
+      'name': 'Dr. Stone',
+      'path': 'assets/images/dr_stone',
+      'logo_path': 'assets/logos/Dr. Stone.webp'
+    },
+    {
+      'name': 'Dragon Ball Z',
+      'path': 'assets/images/dragon_ball_z',
+      'logo_path': 'assets/logos/Dragon Ball Z.webp'
+    },
+    {
+      'name': 'FMAB',
+      'path': 'assets/images/fmab',
+      'logo_path': 'assets/logos/FMAB.webp'
+    },
+    {
+      'name': 'Jujutsu Kaisen',
+      'path': 'assets/images/jujutsu_kaisen',
+      'logo_path': 'assets/logos/Jujutsu Kaisen.webp'
+    },
+    {
+      'name': 'My Hero Academia',
+      'path': 'assets/images/my_hero_academia',
+      'logo_path': 'assets/logos/My Hero Academia.webp'
+    },
+    {
+      'name': 'Solo Leveling',
+      'path': 'assets/images/solo_leveling',
+      'logo_path': 'assets/logos/Solo Leveling.webp'
+    },
+    {
+      'name': 'Tokyo Revengers',
+      'path': 'assets/images/tokyo_revengers',
+      'logo_path': 'assets/logos/Tokyo Revengers.webp'
+    },
+    {
+      'name': 'Vinland Saga',
+      'path': 'assets/images/vinland_saga',
+      'logo_path': 'assets/logos/Winland Saga.webp'
+    },
   ];
 
   @override
@@ -70,13 +141,19 @@ class CategoriesScreen extends StatelessWidget {
             padding: const EdgeInsets.only(right: 8.0),
             child: AnimatedRotation(
               duration: const Duration(milliseconds: 500),
-              turns: themeNotifier.getTheme().brightness == Brightness.dark ? 0.5 : 0,
+              turns: themeNotifier.getTheme().brightness == Brightness.dark
+                  ? 0.5
+                  : 0,
               child: AnimatedScale(
                 duration: const Duration(milliseconds: 300),
-                scale: themeNotifier.getTheme().brightness == Brightness.dark ? 1.2 : 1.0,
+                scale: themeNotifier.getTheme().brightness == Brightness.dark
+                    ? 1.2
+                    : 1.0,
                 child: IconButton(
                   icon: Icon(
-                    themeNotifier.getTheme().brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
+                    themeNotifier.getTheme().brightness == Brightness.dark
+                        ? Icons.light_mode
+                        : Icons.dark_mode,
                   ),
                   onPressed: () {
                     themeNotifier.toggleTheme();
@@ -143,7 +220,8 @@ class AnimatedCard extends StatefulWidget {
   State<AnimatedCard> createState() => _AnimatedCardState();
 }
 
-class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderStateMixin {
+class _AnimatedCardState extends State<AnimatedCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _rotateAnimation;
@@ -274,7 +352,9 @@ class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderSt
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     ),
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
@@ -306,7 +386,8 @@ class RulesContactDialog extends StatefulWidget {
   State<RulesContactDialog> createState() => _RulesContactDialogState();
 }
 
-class _RulesContactDialogState extends State<RulesContactDialog> with SingleTickerProviderStateMixin {
+class _RulesContactDialogState extends State<RulesContactDialog>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -361,20 +442,28 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.primary.withAlpha(26),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             '🎮',
@@ -387,7 +476,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                               style: TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.primary,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                               ),
                                             ),
                                           ),
@@ -399,7 +490,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                         style: TextStyle(
                                           fontSize: 15,
                                           height: 1.5,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
                                         ),
                                       ),
                                     ],
@@ -421,20 +514,28 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.secondary.withAlpha(26),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                            .withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             '🕹️',
@@ -447,7 +548,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                               style: TextStyle(
                                                 fontSize: 22,
                                                 fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.secondary,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary,
                                               ),
                                             ),
                                           ),
@@ -456,7 +559,8 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       const SizedBox(height: 12),
                                       ListView.builder(
                                         shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
                                         itemCount: 5,
                                         itemBuilder: (context, index) {
                                           final List<String> steps = [
@@ -467,16 +571,20 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             'Keep playing and tracking scores!',
                                           ];
                                           return Padding(
-                                            padding: const EdgeInsets.only(bottom: 8.0),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8.0),
                                             child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   '${index + 1}. ',
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).colorScheme.secondary,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .secondary,
                                                   ),
                                                 ),
                                                 Expanded(
@@ -485,7 +593,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       height: 1.5,
-                                                      color: Theme.of(context).colorScheme.onSurface,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -513,20 +623,28 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.tertiaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .tertiaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.tertiary.withAlpha(26),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .tertiary
+                                            .withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             '⚔️',
@@ -539,7 +657,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                               style: TextStyle(
                                                 fontSize: 22,
                                                 fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.tertiary,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .tertiary,
                                               ),
                                             ),
                                           ),
@@ -548,7 +668,8 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       const SizedBox(height: 12),
                                       ListView.builder(
                                         shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
                                         itemCount: 5,
                                         itemBuilder: (context, index) {
                                           final List<String> rules = [
@@ -559,16 +680,20 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             'Try not to repeat previous questions',
                                           ];
                                           return Padding(
-                                            padding: const EdgeInsets.only(bottom: 8.0),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8.0),
                                             child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   '• ',
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).colorScheme.tertiary,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .tertiary,
                                                   ),
                                                 ),
                                                 Expanded(
@@ -577,7 +702,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       height: 1.5,
-                                                      color: Theme.of(context).colorScheme.onSurface,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -605,20 +732,28 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.primary.withAlpha(26),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             '🤩',
@@ -631,7 +766,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                               style: TextStyle(
                                                 fontSize: 22,
                                                 fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.primary,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                               ),
                                             ),
                                           ),
@@ -640,7 +777,8 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       const SizedBox(height: 12),
                                       ListView.builder(
                                         shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
                                         itemCount: 3,
                                         itemBuilder: (context, index) {
                                           final List<String> reasons = [
@@ -649,16 +787,20 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             'Brings people together through fun competition',
                                           ];
                                           return Padding(
-                                            padding: const EdgeInsets.only(bottom: 8.0),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8.0),
                                             child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   '• ',
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).colorScheme.primary,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
                                                   ),
                                                 ),
                                                 Expanded(
@@ -667,7 +809,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       height: 1.5,
-                                                      color: Theme.of(context).colorScheme.onSurface,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -695,20 +839,28 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Theme.of(context).colorScheme.secondary.withAlpha(26),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                            .withAlpha(26),
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             '🎉',
@@ -721,7 +873,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                               style: TextStyle(
                                                 fontSize: 22,
                                                 fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.secondary,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary,
                                               ),
                                             ),
                                           ),
@@ -730,7 +884,8 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       const SizedBox(height: 12),
                                       ListView.builder(
                                         shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
                                         itemCount: 4,
                                         itemBuilder: (context, index) {
                                           final List<String> ideas = [
@@ -740,16 +895,20 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             'Invite a group to watch and cheer, turning it into a mini-tournament!',
                                           ];
                                           return Padding(
-                                            padding: const EdgeInsets.only(bottom: 8.0),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8.0),
                                             child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   '• ',
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).colorScheme.secondary,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .secondary,
                                                   ),
                                                 ),
                                                 Expanded(
@@ -758,7 +917,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       height: 1.5,
-                                                      color: Theme.of(context).colorScheme.onSurface,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -796,20 +957,29 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       'Developed by',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withAlpha(179),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     CircleAvatar(
                                       radius: 50,
-                                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                      backgroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer,
                                       child: ClipOval(
                                         child: Image.asset(
                                           'assets/profile/profile.webp', // **Double-check this path is correct**
-                                          width: 100, // Should be radius * 2 (50 * 2)
-                                          height: 100, // Should be radius * 2 (50 * 2)
-                                          fit: BoxFit.cover, // Ensures the image covers the circular area
-                                          errorBuilder: (context, error, stackTrace) {
+                                          width:
+                                              100, // Should be radius * 2 (50 * 2)
+                                          height:
+                                              100, // Should be radius * 2 (50 * 2)
+                                          fit: BoxFit
+                                              .cover, // Ensures the image covers the circular area
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
                                             // This will show the person icon if profile.webp can't be loaded
                                             return Icon(
                                               Icons.person,
@@ -826,7 +996,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
                                       ),
                                     ),
                                   ],
@@ -844,7 +1016,10 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
@@ -853,7 +1028,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                         children: [
                                           Icon(
                                             Icons.work,
-                                            color: Theme.of(context).colorScheme.secondary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
@@ -861,7 +1038,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).colorScheme.secondary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
                                             ),
                                           ),
                                         ],
@@ -872,7 +1051,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                         style: TextStyle(
                                           fontSize: 16,
                                           height: 1.5,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
                                         ),
                                         textAlign: TextAlign.center,
                                       ),
@@ -892,7 +1073,10 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
@@ -901,7 +1085,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                         children: [
                                           Icon(
                                             Icons.star,
-                                            color: Theme.of(context).colorScheme.primary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
@@ -909,7 +1095,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                           ),
                                         ],
@@ -920,7 +1108,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                         style: TextStyle(
                                           fontSize: 16,
                                           height: 1.5,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
                                         ),
                                       ),
                                     ],
@@ -939,7 +1129,10 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer
+                                        .withAlpha(77),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Column(
@@ -948,7 +1141,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                         children: [
                                           Icon(
                                             Icons.contact_mail,
-                                            color: Theme.of(context).colorScheme.secondary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
@@ -956,7 +1151,9 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).colorScheme.secondary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
                                             ),
                                           ),
                                         ],
@@ -967,14 +1164,18 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                           Icon(
                                             Icons.email,
                                             size: 20,
-                                            color: Theme.of(context).colorScheme.onSurface,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
                                             'saoudi26@proton.me',
                                             style: TextStyle(
                                               fontSize: 16,
-                                              color: Theme.of(context).colorScheme.onSurface,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
                                             ),
                                           ),
                                         ],
@@ -985,14 +1186,18 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                           Icon(
                                             Icons.phone,
                                             size: 20,
-                                            color: Theme.of(context).colorScheme.onSurface,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
                                             '+213 561 37 77 61',
                                             style: TextStyle(
                                               fontSize: 16,
-                                              color: Theme.of(context).colorScheme.onSurface,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
                                             ),
                                           ),
                                         ],
@@ -1000,22 +1205,29 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                       const SizedBox(height: 8),
                                       InkWell(
                                         onTap: () async {
-                                          final Uri url = Uri.parse('https://www.linktr.ee/AbdouSAOUDI');
+                                          final Uri url = Uri.parse(
+                                              'https://www.linktr.ee/AbdouSAOUDI');
                                           try {
-                                            if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                                            if (!await launchUrl(url,
+                                                mode: LaunchMode
+                                                    .externalApplication)) {
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   const SnackBar(
-                                                    content: Text('Could not open the website'),
+                                                    content: Text(
+                                                        'Could not open the website'),
                                                   ),
                                                 );
                                               }
                                             }
                                           } catch (e) {
                                             if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
                                                 SnackBar(
-                                                  content: Text('Error: ${e.toString()}'),
+                                                  content: Text(
+                                                      'Error: ${e.toString()}'),
                                                 ),
                                               );
                                             }
@@ -1026,15 +1238,20 @@ class _RulesContactDialogState extends State<RulesContactDialog> with SingleTick
                                             Icon(
                                               Icons.link,
                                               size: 20,
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
                                             const SizedBox(width: 8),
                                             Text(
                                               'www.linktr.ee/AbdouSAOUDI',
                                               style: TextStyle(
                                                 fontSize: 16,
-                                                color: Theme.of(context).colorScheme.primary,
-                                                decoration: TextDecoration.underline,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                                decoration:
+                                                    TextDecoration.underline,
                                               ),
                                             ),
                                           ],
