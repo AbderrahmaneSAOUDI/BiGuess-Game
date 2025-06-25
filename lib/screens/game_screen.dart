@@ -22,7 +22,8 @@ enum CharacterAlgorithm {
   nonRepeating,
 }
 
-class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
+class _GameScreenState extends State<GameScreen>
+    with SingleTickerProviderStateMixin {
   bool _showPicture = false;
   bool _isCountingDown = false;
   int _countdown = 0;
@@ -49,7 +50,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _loadImagesFromCategory();
-    
+
     // Initialize button animations
     _buttonAnimationController = AnimationController(
       duration: const Duration(milliseconds: 2000),
@@ -94,11 +95,10 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     });
 
     // Convert category name to path format
-    final categoryPath = 'assets/images/${widget.categoryName.toLowerCase().replaceAll(' ', '_')}';
-    
+    final categoryPath =
+        'assets/images/${widget.categoryName.toLowerCase().replaceAll(' ', '_')}';
     // Load assets using AssetLoader
     final assets = await AssetLoader.loadCategoryAssets(categoryPath);
-    
     if (assets.isNotEmpty) {
       setState(() {
         _imageAssets = assets;
@@ -111,7 +111,6 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         _noImagesFound = true;
       });
     }
-
     setState(() {
       _isLoading = false;
     });
@@ -158,7 +157,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
   void _showRandomImage() {
     if (_algorithm == CharacterAlgorithm.random) {
-      // Old logic: pick any image
+      // Pick any image
       if (_imageAssets.isNotEmpty) {
         final random = Random();
         _currentImageAsset = _imageAssets[random.nextInt(_imageAssets.length)];
@@ -173,7 +172,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         });
       }
     } else {
-      // New logic: non-repeating per character
+      // Non-repeating per character (now per image, since each image is a character)
       if (_workingImageAssets.isEmpty) {
         // refill
         _workingImageAssets = List<String>.from(_imageAssets);
@@ -184,8 +183,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         final idx = random.nextInt(_workingImageAssets.length);
         final asset = _workingImageAssets[idx];
         final character = AssetLoader.extractCharacterName(asset);
-        // Remove all images for this character
-        _workingImageAssets.removeWhere((img) => AssetLoader.extractCharacterName(img) == character);
+        // Remove this image from the working list
+        _workingImageAssets.removeAt(idx);
         _usedCharacters.add(character ?? '');
         _currentImageAsset = asset;
         _correctAnswer = character;
@@ -266,7 +265,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 // Subtract estimated height for the answer text (including top padding and some buffer) and the image container's vertical border.
                 // Answer text has fontSize 20 and top padding 16.0. Estimate ~45.0 needed for safety for the text part.
                 // Image container has a border of 2 on top and bottom (4 total).
-                final double maxImageHeight = max(0.0, constraints.maxHeight - 45.0 - 4.0); // Max height for the image itself
+                final double maxImageHeight = max(
+                    0.0,
+                    constraints.maxHeight -
+                        45.0 -
+                        4.0); // Max height for the image itself
 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -283,18 +286,22 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(22),
                           child: ConstrainedBox(
-                            constraints: BoxConstraints(maxHeight: maxImageHeight),
+                            constraints:
+                                BoxConstraints(maxHeight: maxImageHeight),
                             child: Image.asset(
                               _currentImageAsset!,
-                              fit: BoxFit.contain, // Use BoxFit.contain to respect constraints and aspect ratio
+                              fit: BoxFit
+                                  .contain, // Use BoxFit.contain to respect constraints and aspect ratio
                               errorBuilder: (context, error, stackTrace) {
                                 return const Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.error_outline, color: Colors.red, size: 50),
+                                      Icon(Icons.error_outline,
+                                          color: Colors.red, size: 50),
                                       SizedBox(height: 8),
-                                      Text('Error loading image', textAlign: TextAlign.center),
+                                      Text('Error loading image',
+                                          textAlign: TextAlign.center),
                                     ],
                                   ),
                                 );
@@ -309,7 +316,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                         padding: const EdgeInsets.only(top: 16.0),
                         child: Text(
                           '$_correctAnswer',
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
                   ],
@@ -331,7 +339,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey, width: 2),
                 borderRadius: BorderRadius.circular(12),
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]
+                    : Colors.grey[100],
               ),
               child: const Center(
                 child: Column(
@@ -407,20 +417,31 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                             animation: _buttonAnimationController,
                             builder: (context, child) {
                               return Transform.scale(
-                                scale: _isPressed ? 0.95 : _buttonScaleAnimation.value,
+                                scale: _isPressed
+                                    ? 0.95
+                                    : _buttonScaleAnimation.value,
                                 child: Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: _hasStarted 
-                                        ? [Colors.blue.shade400, Colors.blue.shade700]
-                                        : [Colors.green.shade400, Colors.green.shade700],
+                                      colors: _hasStarted
+                                          ? [
+                                              Colors.blue.shade400,
+                                              Colors.blue.shade700
+                                            ]
+                                          : [
+                                              Colors.green.shade400,
+                                              Colors.green.shade700
+                                            ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
                                     borderRadius: BorderRadius.circular(30),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: (_hasStarted ? Colors.blue : Colors.green).withAlpha(77),
+                                        color: (_hasStarted
+                                                ? Colors.blue
+                                                : Colors.green)
+                                            .withAlpha(77),
                                         spreadRadius: _isPressed ? 0 : 1,
                                         blurRadius: _isPressed ? 4 : 8,
                                         offset: Offset(0, _isPressed ? 2 : 4),
@@ -432,10 +453,14 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                                       // Shimmer effect
                                       Positioned.fill(
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(30),
+                                          borderRadius:
+                                              BorderRadius.circular(30),
                                           child: Transform.translate(
                                             offset: Offset(
-                                              _shimmerAnimation.value * MediaQuery.of(context).size.width,
+                                              _shimmerAnimation.value *
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width,
                                               0,
                                             ),
                                             child: Container(
@@ -455,14 +480,22 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                                       ),
                                       // Button content
                                       GestureDetector(
-                                        onTapDown: (_) => setState(() => _isPressed = true),
-                                        onTapUp: (_) => setState(() => _isPressed = false),
-                                        onTapCancel: () => setState(() => _isPressed = false),
+                                        onTapDown: (_) =>
+                                            setState(() => _isPressed = true),
+                                        onTapUp: (_) =>
+                                            setState(() => _isPressed = false),
+                                        onTapCancel: () =>
+                                            setState(() => _isPressed = false),
                                         child: ElevatedButton.icon(
-                                          onPressed: _isLoading || _isCountingDown ? null : _startCountdown,
+                                          onPressed:
+                                              _isLoading || _isCountingDown
+                                                  ? null
+                                                  : _startCountdown,
                                           icon: AnimatedSwitcher(
-                                            duration: const Duration(milliseconds: 300),
-                                            transitionBuilder: (child, animation) {
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            transitionBuilder:
+                                                (child, animation) {
                                               return ScaleTransition(
                                                 scale: animation,
                                                 child: FadeTransition(
@@ -472,23 +505,27 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                                               );
                                             },
                                             child: _hasStarted
-                                              ? Transform.rotate(
-                                                  angle: _buttonRotationAnimation.value,
-                                                  child: const Icon(
-                                                    Icons.refresh,
-                                                    key: ValueKey('refresh'),
+                                                ? Transform.rotate(
+                                                    angle:
+                                                        _buttonRotationAnimation
+                                                            .value,
+                                                    child: const Icon(
+                                                      Icons.refresh,
+                                                      key: ValueKey('refresh'),
+                                                      color: Colors.white,
+                                                    ),
+                                                  )
+                                                : const Icon(
+                                                    Icons.play_arrow,
+                                                    key: ValueKey('play'),
                                                     color: Colors.white,
                                                   ),
-                                                )
-                                              : const Icon(
-                                                  Icons.play_arrow,
-                                                  key: ValueKey('play'),
-                                                  color: Colors.white,
-                                                ),
                                           ),
                                           label: AnimatedSwitcher(
-                                            duration: const Duration(milliseconds: 300),
-                                            transitionBuilder: (child, animation) {
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            transitionBuilder:
+                                                (child, animation) {
                                               return ScaleTransition(
                                                 scale: animation,
                                                 child: FadeTransition(
@@ -508,11 +545,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                                             ),
                                           ),
                                           style: ElevatedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 32, vertical: 16),
                                             backgroundColor: Colors.transparent,
                                             shadowColor: Colors.transparent,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(30),
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
                                             ),
                                           ),
                                         ),
@@ -539,13 +578,15 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 class GameSettingsDialog extends StatefulWidget {
   final CharacterAlgorithm algorithm;
   final ValueChanged<CharacterAlgorithm> onAlgorithmChanged;
-  const GameSettingsDialog({super.key, required this.algorithm, required this.onAlgorithmChanged});
+  const GameSettingsDialog(
+      {super.key, required this.algorithm, required this.onAlgorithmChanged});
 
   @override
   State<GameSettingsDialog> createState() => _GameSettingsDialogState();
 }
 
-class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTickerProviderStateMixin {
+class _GameSettingsDialogState extends State<GameSettingsDialog>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late CharacterAlgorithm _selectedAlgorithm;
 
@@ -600,7 +641,10 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                               child: Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer
+                                      .withAlpha(77),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -610,7 +654,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                       children: [
                                         Icon(
                                           Icons.timer,
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
@@ -618,7 +664,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                           style: TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).colorScheme.primary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                           ),
                                         ),
                                       ],
@@ -628,7 +676,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                       'Set how long players have to look at the image before starting to guess.',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Theme.of(context).colorScheme.onSurface,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
                                       ),
                                     ),
                                   ],
@@ -647,7 +697,10 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                               child: Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.secondaryContainer.withAlpha(77),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondaryContainer
+                                      .withAlpha(77),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -657,7 +710,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                       children: [
                                         Icon(
                                           Icons.help_outline,
-                                          color: Theme.of(context).colorScheme.secondary,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
@@ -665,7 +720,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                           style: TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).colorScheme.secondary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
                                           ),
                                         ),
                                       ],
@@ -673,7 +730,8 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                     const SizedBox(height: 16),
                                     ListView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       itemCount: 5,
                                       itemBuilder: (context, index) {
                                         final List<String> rules = [
@@ -684,16 +742,20 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                           'Try not to repeat previous questions',
                                         ];
                                         return Padding(
-                                          padding: const EdgeInsets.only(bottom: 8.0),
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
                                           child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 '• ',
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context).colorScheme.secondary,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary,
                                                 ),
                                               ),
                                               Expanded(
@@ -702,7 +764,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     height: 1.5,
-                                                    color: Theme.of(context).colorScheme.onSurface,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
                                                   ),
                                                 ),
                                               ),
@@ -718,7 +782,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Text('Character Selection Algorithm', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text('Character Selection Algorithm',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
                         ListTile(
                           title: const Text('Random (characters can repeat)'),
                           leading: Radio<CharacterAlgorithm>(
@@ -731,7 +797,8 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                           ),
                         ),
                         ListTile(
-                          title: const Text('Non-repeating (all images for a character are removed until all characters have appeared)'),
+                          title: const Text(
+                              'Non-repeating (all images for a character are removed until all characters have appeared)'),
                           leading: Radio<CharacterAlgorithm>(
                             value: CharacterAlgorithm.nonRepeating,
                             groupValue: _selectedAlgorithm,
@@ -758,7 +825,10 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                               child: Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer
+                                      .withAlpha(77),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -768,7 +838,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                       children: [
                                         Icon(
                                           Icons.play_circle_outline,
-                                          color: Theme.of(context).colorScheme.primary,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
@@ -776,7 +848,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                           style: TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).colorScheme.primary,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                           ),
                                         ),
                                       ],
@@ -784,7 +858,8 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                     const SizedBox(height: 16),
                                     ListView.builder(
                                       shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       itemCount: 5,
                                       itemBuilder: (context, index) {
                                         final List<String> steps = [
@@ -795,16 +870,20 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                           'Keep playing and tracking scores!',
                                         ];
                                         return Padding(
-                                          padding: const EdgeInsets.only(bottom: 8.0),
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
                                           child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 '${index + 1}. ',
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context).colorScheme.primary,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
                                                 ),
                                               ),
                                               Expanded(
@@ -813,7 +892,9 @@ class _GameSettingsDialogState extends State<GameSettingsDialog> with SingleTick
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     height: 1.5,
-                                                    color: Theme.of(context).colorScheme.onSurface,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
                                                   ),
                                                 ),
                                               ),
