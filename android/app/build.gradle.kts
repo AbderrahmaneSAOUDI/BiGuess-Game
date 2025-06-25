@@ -1,8 +1,5 @@
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -51,14 +48,24 @@ android {
 }
 
 dependencies {
-    // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
-
-    // Add Firebase Analytics
-    implementation("com.google.firebase:firebase-analytics")
-
-    // Add the dependencies for any other desired Firebase products
-    // https://firebase.google.com/docs/android/setup#available-libraries
+    // Force Kotlin version alignment
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib") {
+            version {
+                strictly("1.9.0")
+            }
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7") {
+            version {
+                strictly("1.9.0")
+            }
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
+            version {
+                strictly("1.9.0")
+            }
+        }
+    }
 }
 
 flutter {

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'screens/categories_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   runApp(ChangeNotifierProvider(
     create: (_) => ThemeNotifier(),
     child: const MainLayout(),
@@ -29,15 +27,24 @@ class ThemeNotifier extends ChangeNotifier {
     ),
     fontFamily: 'GoogleSans',
     textTheme: const TextTheme(
-      displayLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      displayMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      displaySmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      headlineLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      headlineMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      headlineSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      titleLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      titleMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      titleSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displayLarge:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displayMedium:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displaySmall:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineLarge:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineMedium:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineSmall:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleLarge:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleMedium:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleSmall:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
       bodyLarge: TextStyle(fontFamily: 'GoogleSans'),
       bodyMedium: TextStyle(fontFamily: 'GoogleSans'),
       bodySmall: TextStyle(fontFamily: 'GoogleSans'),
@@ -57,15 +64,24 @@ class ThemeNotifier extends ChangeNotifier {
     ),
     fontFamily: 'GoogleSans',
     textTheme: const TextTheme(
-      displayLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      displayMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      displaySmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      headlineLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      headlineMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      headlineSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      titleLarge: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      titleMedium: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
-      titleSmall: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displayLarge:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displayMedium:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      displaySmall:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineLarge:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineMedium:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      headlineSmall:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleLarge:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleMedium:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
+      titleSmall:
+          TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.bold),
       bodyLarge: TextStyle(fontFamily: 'GoogleSans'),
       bodyMedium: TextStyle(fontFamily: 'GoogleSans'),
       bodySmall: TextStyle(fontFamily: 'GoogleSans'),
