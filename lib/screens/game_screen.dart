@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../utils/asset_loader.dart';
+import '../assets_manifest.dart';
 
 class GameScreen extends StatefulWidget {
   final String categoryName;
@@ -42,7 +43,7 @@ class _GameScreenState extends State<GameScreen>
   bool _noImagesFound = false;
 
   // New: Algorithm state and working list for non-repeating
-  CharacterAlgorithm _algorithm = CharacterAlgorithm.random;
+  final CharacterAlgorithm _algorithm = CharacterAlgorithm.random;
   List<String> _workingImageAssets = [];
   Set<String> _usedCharacters = {};
 
@@ -94,11 +95,8 @@ class _GameScreenState extends State<GameScreen>
       _usedCharacters = {};
     });
 
-    // Convert category name to path format
-    final categoryPath =
-        'assets/images/${widget.categoryName.toLowerCase().replaceAll(' ', '_')}';
-    // Load assets using AssetLoader
-    final assets = await AssetLoader.loadCategoryAssets(categoryPath);
+    // Use the categoryAssets map from assets_manifest.dart
+    final assets = categoryAssets[widget.categoryName] ?? [];
     if (assets.isNotEmpty) {
       setState(() {
         _imageAssets = assets;
@@ -200,7 +198,7 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  void _onAlgorithmChanged(CharacterAlgorithm value) {
+  /* void _onAlgorithmChanged(CharacterAlgorithm value) {
     setState(() {
       _algorithm = value;
       // Reset working list if switching to non-repeating
@@ -209,7 +207,7 @@ class _GameScreenState extends State<GameScreen>
         _usedCharacters.clear();
       }
     });
-  }
+  } */
 
   Widget _buildContent() {
     if (_noImagesFound) {

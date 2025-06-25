@@ -17,10 +17,6 @@ dependencies:
   provider: ^6.1.5
   win32: ^5.0.0
   url_launcher: ^6.3.1
-  firebase_core: ^3.13.1
-  firebase_auth: ^5.5.4
-  cloud_firestore: ^5.6.8
-  firebase_storage: ^12.4.6
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +38,7 @@ flutter:
     - assets/images/demon_slayer/
     - assets/images/hunter_x_hunter/
     - assets/images/naruto/
+    - assets/images/one_piece/
 
   fonts:
     - family: GoogleSans
