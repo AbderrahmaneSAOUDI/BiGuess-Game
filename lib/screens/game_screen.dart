@@ -43,9 +43,9 @@ class _GameScreenState extends State<GameScreen>
   bool _noImagesFound = false;
 
   // New: Algorithm state and working list for non-repeating
-  final CharacterAlgorithm _algorithm = CharacterAlgorithm.random;
+  final CharacterAlgorithm _algorithm = CharacterAlgorithm.nonRepeating;
   List<String> _workingImageAssets = [];
-  Set<String> _usedCharacters = {};
+
 
   @override
   void initState() {
@@ -92,7 +92,7 @@ class _GameScreenState extends State<GameScreen>
       _correctAnswer = null;
       _hasStarted = false;
       _workingImageAssets = [];
-      _usedCharacters = {};
+
     });
 
     // Use the categoryAssets map from assets_manifest.dart
@@ -102,7 +102,6 @@ class _GameScreenState extends State<GameScreen>
         _imageAssets = assets;
         _workingImageAssets = List<String>.from(assets);
         _noImagesFound = false;
-        _usedCharacters = {};
       });
     } else {
       setState(() {
@@ -170,26 +169,38 @@ class _GameScreenState extends State<GameScreen>
         });
       }
     } else {
-      // Non-repeating per character (now per image, since each image is a character)
+      // Non-repeating per image
       if (_workingImageAssets.isEmpty) {
-        // refill
-        _workingImageAssets = List<String>.from(_imageAssets);
-        _usedCharacters.clear();
+        // If all images have been shown, refill the working list
+        // Only refill if _imageAssets is not empty, otherwise we'll keep trying to draw from an empty source
+        if (_imageAssets.isNotEmpty) {
+          _workingImageAssets = List<String>.from(_imageAssets);
+        } else {
+          // No images in the category at all
+          setState(() {
+            _noImagesFound = true;
+            _showPicture = false;
+          });
+          return; // Exit early if no images
+        }
       }
-      if (_workingImageAssets.isNotEmpty) {
+
+      if (_workingImageAssets.isNotEmpty) { // This check is crucial after potential refill
         final random = Random();
         final idx = random.nextInt(_workingImageAssets.length);
         final asset = _workingImageAssets[idx];
         final character = AssetLoader.extractCharacterName(asset);
-        // Remove this image from the working list
+
+        // Remove the displayed image from the working list to prevent repetition
         _workingImageAssets.removeAt(idx);
-        _usedCharacters.add(character ?? '');
+
         _currentImageAsset = asset;
         _correctAnswer = character;
         setState(() {
           _showPicture = true;
         });
       } else {
+        // This case should ideally not be reached if _imageAssets is not empty initially
         setState(() {
           _noImagesFound = true;
           _showPicture = false;
