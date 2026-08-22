@@ -65,7 +65,7 @@ The countdown feature adds an element of suspense and excitement, while the rand
 - Features smooth staggered animations and transitions
 - Optimized for portrait mode
 - Includes a comprehensive collection of anime character images
-- Uses Provider for state management
+- Uses Flutter Riverpod for state management
 - Implements path_provider for local storage
 - Supports URL launching for external resources
 - Regular updates with new categories and characters

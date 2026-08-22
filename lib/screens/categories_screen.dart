@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import 'game_screen.dart';
 
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends ConsumerWidget {
   const CategoriesScreen({super.key});
 
   static const List<Map<String, String>> categories = [
@@ -102,9 +102,9 @@ class CategoriesScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final themeNotifier = Provider.of<ThemeNotifier>(context);
-    final isDark = themeNotifier.isDarkMode;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeNotifierProvider);
+    final isDark = themeMode == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -120,10 +120,7 @@ class CategoriesScreen extends StatelessWidget {
             onPressed: () {
               showDialog<void>(
                 context: context,
-                builder: (context) => GameSettingsDialog(
-                  algorithm: CharacterAlgorithm.nonRepeating,
-                  onAlgorithmChanged: (_) {},
-                ),
+                builder: (context) => const GameSettingsDialog(),
               );
             },
           ),
@@ -150,7 +147,7 @@ class CategoriesScreen extends StatelessWidget {
                   icon: Icon(
                     isDark ? Icons.light_mode : Icons.dark_mode,
                   ),
-                  onPressed: () => themeNotifier.toggleTheme(),
+                  onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
                 ),
               ),
             ),

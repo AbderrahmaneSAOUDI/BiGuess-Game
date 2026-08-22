@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gdg_guess_game/main.dart';
 import 'package:gdg_guess_game/screens/categories_screen.dart';
@@ -27,11 +28,41 @@ void main() {
     });
   });
 
+  group('Riverpod Providers Unit Tests', () {
+    test('ThemeNotifier toggles themeMode', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(themeNotifierProvider), ThemeMode.dark);
+      container.read(themeNotifierProvider.notifier).toggleTheme();
+      expect(container.read(themeNotifierProvider), ThemeMode.light);
+      container.read(themeNotifierProvider.notifier).toggleTheme();
+      expect(container.read(themeNotifierProvider), ThemeMode.dark);
+    });
+
+    test('CharacterAlgorithmNotifier updates algorithm', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(
+        container.read(characterAlgorithmProvider),
+        CharacterAlgorithm.nonRepeating,
+      );
+      container
+          .read(characterAlgorithmProvider.notifier)
+          .setAlgorithm(CharacterAlgorithm.random);
+      expect(
+        container.read(characterAlgorithmProvider),
+        CharacterAlgorithm.random,
+      );
+    });
+  });
+
   group('BiGuess Game Widget Tests', () {
     testWidgets('App renders CategoriesScreen with GDG title and initial categories', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
       await tester.pumpAndSettle();
 
       expect(find.text('GDG Ghardaia'), findsOneWidget);
@@ -42,7 +73,7 @@ void main() {
     testWidgets('Theme toggling switches light/dark mode', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
       await tester.pumpAndSettle();
 
       final themeButton = find.byType(IconButton).last;
@@ -57,7 +88,7 @@ void main() {
     testWidgets('Info dialog opens and shows game rules & developer tabs', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
       await tester.pumpAndSettle();
 
       final infoButton = find.byIcon(Icons.info_outline);
@@ -75,7 +106,7 @@ void main() {
     testWidgets('Tapping a category navigates to GameScreen', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
       await tester.pumpAndSettle();
 
       final categoryCard = find.text('Attack on Titan');
