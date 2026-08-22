@@ -275,6 +275,14 @@ class _SettingsView extends ConsumerWidget {
     final themeMode = ref.watch(themeNotifierProvider);
     final showHint = ref.watch(showCharacterNameHintProvider);
 
+    void setAlgo(CharacterAlgorithm val) {
+      if (onAlgorithmChanged != null) {
+        onAlgorithmChanged!(val);
+      } else {
+        ref.read(characterAlgorithmProvider.notifier).setAlgorithm(val);
+      }
+    }
+
     return AnimationLimiter(
       child: ListView(
         padding: const EdgeInsets.all(16),
@@ -285,221 +293,224 @@ class _SettingsView extends ConsumerWidget {
             child: FadeInAnimation(child: widget),
           ),
           children: [
-            // Character Selection Algorithm Card
-            _buildSectionHeader(
-              context,
-              icon: Icons.shuffle_rounded,
-              title: 'Character Algorithm',
-              subtitle: 'Control how characters are picked in each round',
-            ),
-            const SizedBox(height: 10),
-            _buildAlgorithmOption(
-              context: context,
-              title: 'Fair Rotation (Non-Repeating)',
-              subtitle: 'Draws without repeating until all characters in the roster have appeared once.',
-              badge: 'Recommended',
-              icon: Icons.replay_circle_filled_rounded,
-              isSelected: selectedAlgorithm == CharacterAlgorithm.nonRepeating,
-              onTap: () {
-                if (onAlgorithmChanged != null) {
-                  onAlgorithmChanged!(CharacterAlgorithm.nonRepeating);
-                } else {
-                  ref
-                      .read(characterAlgorithmProvider.notifier)
-                      .setAlgorithm(CharacterAlgorithm.nonRepeating);
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-            _buildAlgorithmOption(
-              context: context,
-              title: 'Pure Random (With Repetition)',
-              subtitle: 'Selects randomly from the entire pool each round. Characters may repeat.',
-              badge: null,
-              icon: Icons.casino_rounded,
-              isSelected: selectedAlgorithm == CharacterAlgorithm.random,
-              onTap: () {
-                if (onAlgorithmChanged != null) {
-                  onAlgorithmChanged!(CharacterAlgorithm.random);
-                } else {
-                  ref
-                      .read(characterAlgorithmProvider.notifier)
-                      .setAlgorithm(CharacterAlgorithm.random);
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-
-            // Countdown Duration Section
-            _buildSectionHeader(
-              context,
-              icon: Icons.timer_outlined,
-              title: 'Countdown Timer Duration',
-              subtitle: 'Time available to look at the screen before game starts',
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerLow,
+            // 1. Character Algorithm Card (with Radio Buttons in one card)
+            Material(
+              color: theme.colorScheme.surfaceContainerLow,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
+                side: BorderSide(
                   color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Preparation Countdown',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.shuffle_rounded,
+                          size: 20,
+                          color: theme.colorScheme.primary,
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${countdown}s',
+                        const SizedBox(width: 10),
+                        Text(
+                          'Character Algorithm',
                           style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [2, 3, 5, 10].map((sec) {
-                      final isCurrent = countdown == sec;
-                      return ChoiceChip(
-                        label: Text('$sec seconds'),
-                        selected: isCurrent,
-                        showCheckmark: true,
-                        avatar: isCurrent
-                            ? null
-                            : const Icon(Icons.timer, size: 16),
-                        onSelected: (selected) {
-                          if (selected) {
-                            ref
-                                .read(countdownDurationProvider.notifier)
-                                .setDuration(sec);
-                          }
-                        },
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Appearance & Theme Section
-            _buildSectionHeader(
-              context,
-              icon: Icons.palette_outlined,
-              title: 'Appearance',
-              subtitle: 'Customize theme mode and visual preferences',
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        themeMode == ThemeMode.dark
-                            ? Icons.dark_mode_rounded
-                            : Icons.light_mode_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Color Theme',
-                          style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.onSurface,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  SegmentedButton<ThemeMode>(
-                    segments: const [
-                      ButtonSegment(
-                        value: ThemeMode.light,
-                        label: Text('Light'),
-                        icon: Icon(Icons.light_mode_outlined),
-                      ),
-                      ButtonSegment(
-                        value: ThemeMode.dark,
-                        label: Text('Dark'),
-                        icon: Icon(Icons.dark_mode_outlined),
-                      ),
-                    ],
-                    selected: {
-                      themeMode == ThemeMode.dark
-                          ? ThemeMode.dark
-                          : ThemeMode.light,
+                  const Divider(height: 12),
+                  RadioGroup<CharacterAlgorithm>(
+                    groupValue: selectedAlgorithm,
+                    onChanged: (val) {
+                      if (val != null) setAlgo(val);
                     },
-                    onSelectionChanged: (newSelection) {
-                      final currentMode = ref.read(themeNotifierProvider);
-                      final desired = newSelection.first;
-                      if (currentMode != desired) {
-                        ref.read(themeNotifierProvider.notifier).toggleTheme();
-                      }
-                    },
+                    child: const Column(
+                      children: [
+                        RadioListTile<CharacterAlgorithm>(
+                          title: Text(
+                            'Non-Repeating (Fair Rotation)',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                          value: CharacterAlgorithm.nonRepeating,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        RadioListTile<CharacterAlgorithm>(
+                          title: Text(
+                            'Random (Can Repeat)',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                          value: CharacterAlgorithm.random,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
 
-            // Hints / Character Name Toggle
-            Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerLow,
+            // 2. Countdown Duration Card
+            Material(
+              color: theme.colorScheme.surfaceContainerLow,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
+                side: BorderSide(
                   color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
-              child: SwitchListTile(
-                title: const Text(
-                  'Show Character Name On Reveal',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.timer_outlined,
+                              size: 20,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Countdown Duration',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${countdown}s',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [2, 3, 5, 10].map((sec) {
+                        final isCurrent = countdown == sec;
+                        return ChoiceChip(
+                          label: Text('$sec seconds'),
+                          selected: isCurrent,
+                          showCheckmark: true,
+                          onSelected: (selected) {
+                            if (selected) {
+                              ref
+                                  .read(countdownDurationProvider.notifier)
+                                  .setDuration(sec);
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-                subtitle: const Text(
-                  'Displays the answer below the image once revealed',
-                  style: TextStyle(fontSize: 12),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // 3. Appearance Card
+            Material(
+              color: theme.colorScheme.surfaceContainerLow,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                 ),
-                value: showHint,
-                onChanged: (val) {
-                  ref.read(showCharacterNameHintProvider.notifier).set(val);
-                },
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.palette_outlined,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Appearance',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    SegmentedButton<ThemeMode>(
+                      segments: const [
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          label: Text('Light Mode'),
+                          icon: Icon(Icons.light_mode_outlined),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          label: Text('Dark Mode'),
+                          icon: Icon(Icons.dark_mode_outlined),
+                        ),
+                      ],
+                      selected: {
+                        themeMode == ThemeMode.dark
+                          ? ThemeMode.dark
+                          : ThemeMode.light,
+                      },
+                      onSelectionChanged: (newSelection) {
+                        final currentMode = ref.read(themeNotifierProvider);
+                        final desired = newSelection.first;
+                        if (currentMode != desired) {
+                          ref.read(themeNotifierProvider.notifier).toggleTheme();
+                        }
+                      },
+                    ),
+                    const Divider(height: 24),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Show Character Name On Reveal',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                      value: showHint,
+                      onChanged: (val) {
+                        ref.read(showCharacterNameHintProvider.notifier).set(val);
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -527,148 +538,6 @@ class _SettingsView extends ConsumerWidget {
                   ),
                 );
               },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    final theme = Theme.of(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 18, color: theme.colorScheme.primary),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAlgorithmOption({
-    required BuildContext context,
-    required String title,
-    required String subtitle,
-    required String? badge,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
-              : theme.colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-            width: isSelected ? 1.8 : 1.0,
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              isSelected
-                  ? Icons.radio_button_checked_rounded
-                  : Icons.radio_button_off_rounded,
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
-              size: 22,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                      if (badge != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            badge,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onPrimary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: theme.colorScheme.onSurfaceVariant,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -735,7 +604,7 @@ class _HowToPlayView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '2-Player Guessing Duel',
+                          '2-Player Guessing Game',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -757,7 +626,7 @@ class _HowToPlayView extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
 
             // Step-by-Step Guide
             Text(
@@ -774,56 +643,46 @@ class _HowToPlayView extends StatelessWidget {
               context: context,
               stepNumber: 1,
               title: 'Pick a Category & Tap Start',
-              description:
-                  'Both players select the same anime category (e.g., Attack on Titan, Naruto) and tap the Start button on their own phone.',
               icon: Icons.touch_app_rounded,
               color: theme.colorScheme.primary,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             _buildStepCard(
               context: context,
               stepNumber: 2,
               title: 'Show Screen & Hide From Yourself',
-              description:
-                  'Face your screen towards your opponent before the preparation countdown ends. You must NOT see your own character!',
               icon: Icons.screen_rotation_rounded,
               color: theme.colorScheme.secondary,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             _buildStepCard(
               context: context,
               stepNumber: 3,
               title: 'Take Turns Asking Yes/No Questions',
-              description:
-                  'Take turns asking strategic questions about physical features, powers, allegiances, or weapons to narrow down candidates.',
               icon: Icons.question_answer_rounded,
               color: theme.colorScheme.tertiary,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             _buildStepCard(
               context: context,
               stepNumber: 4,
               title: 'Eliminate & Deduce',
-              description:
-                  'Process answers honestly. Use deductive reasoning and memory to cross off impossible characters from your mental roster.',
               icon: Icons.psychology_rounded,
               color: Colors.amber.shade700,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             _buildStepCard(
               context: context,
               stepNumber: 5,
               title: 'Guess Correctly & Win the Round!',
-              description:
-                  'When confident, take your guess on your turn! The first player to name their character correctly wins the round.',
               icon: Icons.emoji_events_rounded,
               color: Colors.green.shade600,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
 
             // Example Duel Simulation Mockup
             Text(
@@ -850,71 +709,17 @@ class _HowToPlayView extends StatelessWidget {
                   _buildChatBubble(
                     context,
                     speaker: 'Player 1',
-                    question: 'Does my character possess Titan shifting powers? ⚔️',
-                    response: 'YES! ✅',
+                    question: 'Does my character possess Titan shifting powers?',
+                    response: '✅ YES',
                     isUser: true,
                   ),
                   const SizedBox(height: 10),
                   _buildChatBubble(
                     context,
                     speaker: 'Player 2',
-                    question: 'Is my character part of the Scout Regiment? 🛡️',
-                    response: 'NO! ❌',
+                    question: 'Is my character part of the Scout Regiment?  ',
+                    response: '❌ NO',
                     isUser: false,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Pro Tips Card
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.tertiaryContainer.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: theme.colorScheme.tertiary.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.verified_outlined,
-                        color: theme.colorScheme.tertiary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Pro Winning Strategies',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.tertiary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  _buildTipItem(
-                    context,
-                    '💡 Start Broad:',
-                    'Ask about gender, hair color, role (hero vs. villain), or main weapon first before guessing specific names.',
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTipItem(
-                    context,
-                    '⏱️ Blitz Mode (Optional):',
-                    'Set a 15-second per-turn limit for high-intensity party tournaments and hilarious quick decisions.',
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTipItem(
-                    context,
-                    '🤝 Fair Play:',
-                    'Answer your opponent strictly with "Yes", "No", or "Not Applicable". Never give accidental hints!',
                   ),
                 ],
               ),
@@ -929,14 +734,13 @@ class _HowToPlayView extends StatelessWidget {
     required BuildContext context,
     required int stepNumber,
     required String title,
-    required String description,
     required IconData icon,
     required Color color,
   }) {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
@@ -945,21 +749,20 @@ class _HowToPlayView extends StatelessWidget {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(9),
               border: Border.all(color: color.withValues(alpha: 0.3)),
             ),
             child: Center(
               child: Text(
                 '$stepNumber',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
@@ -967,36 +770,16 @@ class _HowToPlayView extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(icon, size: 16, color: color),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurfaceVariant,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ),
         ],
@@ -1077,29 +860,6 @@ class _HowToPlayView extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTipItem(BuildContext context, String title, String desc) {
-    final theme = Theme.of(context);
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(
-          fontSize: 12,
-          color: theme.colorScheme.onSurface,
-          height: 1.35,
-        ),
-        children: [
-          TextSpan(
-            text: '$title ',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.tertiary,
-            ),
-          ),
-          TextSpan(text: desc),
         ],
       ),
     );
@@ -1435,9 +1195,8 @@ class _AboutDevelopersView extends StatelessWidget {
               context: context,
               name: 'Abderrahmane SAOUDI',
               role: 'Lead Developer & UI/UX Designer',
-              org: 'GDG Ghardaia Club President • DevFest Organizer',
               bio:
-                  'Graphic Designer & Flutter Mobile Developer with a passion for sleek user experiences, Material Design, and mobile architecture. Dedicated to building engaging developer community experiences.',
+                  'Frontend & Mobile Developer, Graphic Designer, and Technical Trainer with experience in teaching, building, and leading tech communities.',
               accentColor: theme.colorScheme.primary,
               avatarWidget: Image.asset(
                 'assets/profile/profile.webp',
@@ -1473,7 +1232,6 @@ class _AboutDevelopersView extends StatelessWidget {
               context: context,
               name: 'Anas Oussama DJRIBIE',
               role: 'Data Collector & QA Tester',
-              org: 'BiGuess Game Core Contributor',
               bio:
                   'Curated anime character datasets, managed image processing and naming conventions across all 18 categories, and performed gameplay balancing and testing.',
               accentColor: theme.colorScheme.secondary,
@@ -1495,72 +1253,6 @@ class _AboutDevelopersView extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // GDG Ghardaia Community Spotlight Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.all(6),
-                    child: Image.asset(
-                      'assets/logos/gdg_logo.webp',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.group_work_rounded,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Google Developer Groups',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          'GDG Ghardaia, Algeria',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Empowering local developers through technology, open-source projects, and collaborative events.',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -1571,7 +1263,6 @@ class _AboutDevelopersView extends StatelessWidget {
     required BuildContext context,
     required String name,
     required String role,
-    required String org,
     required String bio,
     required Color accentColor,
     required Widget avatarWidget,
@@ -1626,13 +1317,6 @@ class _AboutDevelopersView extends StatelessWidget {
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: accentColor,
-                      ),
-                    ),
-                    Text(
-                      org,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
