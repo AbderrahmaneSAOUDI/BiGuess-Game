@@ -3,8 +3,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import '../utils/asset_loader.dart';
 import '../assets_manifest.dart';
+import '../utils/asset_loader.dart';
+import 'categories_screen.dart';
+
+enum CharacterAlgorithm {
+  random,
+  nonRepeating,
+}
 
 class GameScreen extends StatefulWidget {
   final String categoryName;
@@ -18,11 +24,6 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-enum CharacterAlgorithm {
-  random,
-  nonRepeating,
-}
-
 class _GameScreenState extends State<GameScreen>
     with SingleTickerProviderStateMixin {
   bool _showPicture = false;
@@ -30,10 +31,10 @@ class _GameScreenState extends State<GameScreen>
   int _countdown = 0;
   Timer? _countdownTimer;
   bool _hasStarted = false;
-  late AnimationController _buttonAnimationController;
-  late Animation<double> _buttonScaleAnimation;
-  late Animation<double> _buttonRotationAnimation;
-  late Animation<double> _shimmerAnimation;
+  late final AnimationController _buttonAnimationController;
+  late final Animation<double> _buttonScaleAnimation;
+  late final Animation<double> _buttonRotationAnimation;
+  late final Animation<double> _shimmerAnimation;
   bool _isPressed = false;
 
   List<String> _imageAssets = [];
@@ -42,17 +43,14 @@ class _GameScreenState extends State<GameScreen>
   bool _isLoading = true;
   bool _noImagesFound = false;
 
-  // New: Algorithm state and working list for non-repeating
-  final CharacterAlgorithm _algorithm = CharacterAlgorithm.nonRepeating;
+  CharacterAlgorithm _algorithm = CharacterAlgorithm.nonRepeating;
   List<String> _workingImageAssets = [];
-
 
   @override
   void initState() {
     super.initState();
     _loadImagesFromCategory();
 
-    // Initialize button animations
     _buttonAnimationController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
@@ -68,7 +66,7 @@ class _GameScreenState extends State<GameScreen>
 
     _buttonRotationAnimation = Tween<double>(
       begin: 0,
-      end: 2 * 3.14159,
+      end: 2 * pi,
     ).animate(CurvedAnimation(
       parent: _buttonAnimationController,
       curve: Curves.easeInOut,
@@ -92,10 +90,8 @@ class _GameScreenState extends State<GameScreen>
       _correctAnswer = null;
       _hasStarted = false;
       _workingImageAssets = [];
-
     });
 
-    // Use the categoryAssets map from assets_manifest.dart
     final assets = categoryAssets[widget.categoryName] ?? [];
     if (assets.isNotEmpty) {
       setState(() {
@@ -103,14 +99,38 @@ class _GameScreenState extends State<GameScreen>
         _workingImageAssets = List<String>.from(assets);
         _noImagesFound = false;
       });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          for (final asset in assets.take(5)) {
+            precacheImage(
+              AssetImage(asset),
+              context,
+              onError: (e, s) {},
+            );
+          }
+        }
+      });
     } else {
       setState(() {
         _noImagesFound = true;
       });
     }
+
     setState(() {
       _isLoading = false;
     });
+  }
+
+  void _onAlgorithmChanged(CharacterAlgorithm value) {
+    if (_algorithm != value) {
+      setState(() {
+        _algorithm = value;
+        if (_algorithm == CharacterAlgorithm.nonRepeating) {
+          _workingImageAssets = List<String>.from(_imageAssets);
+        }
+      });
+    }
   }
 
   @override
@@ -140,6 +160,10 @@ class _GameScreenState extends State<GameScreen>
     });
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       setState(() {
         if (_countdown > 1) {
           _countdown--;
@@ -154,7 +178,6 @@ class _GameScreenState extends State<GameScreen>
 
   void _showRandomImage() {
     if (_algorithm == CharacterAlgorithm.random) {
-      // Pick any image
       if (_imageAssets.isNotEmpty) {
         final random = Random();
         _currentImageAsset = _imageAssets[random.nextInt(_imageAssets.length)];
@@ -169,38 +192,31 @@ class _GameScreenState extends State<GameScreen>
         });
       }
     } else {
-      // Non-repeating per image
       if (_workingImageAssets.isEmpty) {
-        // If all images have been shown, refill the working list
-        // Only refill if _imageAssets is not empty, otherwise we'll keep trying to draw from an empty source
         if (_imageAssets.isNotEmpty) {
           _workingImageAssets = List<String>.from(_imageAssets);
         } else {
-          // No images in the category at all
           setState(() {
             _noImagesFound = true;
             _showPicture = false;
           });
-          return; // Exit early if no images
+          return;
         }
       }
 
-      if (_workingImageAssets.isNotEmpty) { // This check is crucial after potential refill
+      if (_workingImageAssets.isNotEmpty) {
         final random = Random();
         final idx = random.nextInt(_workingImageAssets.length);
         final asset = _workingImageAssets[idx];
         final character = AssetLoader.extractCharacterName(asset);
 
-        // Remove the displayed image from the working list to prevent repetition
         _workingImageAssets.removeAt(idx);
-
         _currentImageAsset = asset;
         _correctAnswer = character;
         setState(() {
           _showPicture = true;
         });
       } else {
-        // This case should ideally not be reached if _imageAssets is not empty initially
         setState(() {
           _noImagesFound = true;
           _showPicture = false;
@@ -208,17 +224,6 @@ class _GameScreenState extends State<GameScreen>
       }
     }
   }
-
-  /* void _onAlgorithmChanged(CharacterAlgorithm value) {
-    setState(() {
-      _algorithm = value;
-      // Reset working list if switching to non-repeating
-      if (_algorithm == CharacterAlgorithm.nonRepeating) {
-        _workingImageAssets = List<String>.from(_imageAssets);
-        _usedCharacters.clear();
-      }
-    });
-  } */
 
   Widget _buildContent() {
     if (_noImagesFound) {
@@ -270,15 +275,10 @@ class _GameScreenState extends State<GameScreen>
           child: FadeInAnimation(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Calculate available vertical space for the image container.
-                // Subtract estimated height for the answer text (including top padding and some buffer) and the image container's vertical border.
-                // Answer text has fontSize 20 and top padding 16.0. Estimate ~45.0 needed for safety for the text part.
-                // Image container has a border of 2 on top and bottom (4 total).
                 final double maxImageHeight = max(
-                    0.0,
-                    constraints.maxHeight -
-                        45.0 -
-                        4.0); // Max height for the image itself
+                  0.0,
+                  constraints.maxHeight - 45.0 - 4.0,
+                );
 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -287,7 +287,6 @@ class _GameScreenState extends State<GameScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Container(
                         width: double.infinity,
-                        // Remove explicit height here. Let the image and ConstrainedBox determine height.
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey, width: 2),
                           borderRadius: BorderRadius.circular(24),
@@ -299,8 +298,7 @@ class _GameScreenState extends State<GameScreen>
                                 BoxConstraints(maxHeight: maxImageHeight),
                             child: Image.asset(
                               _currentImageAsset!,
-                              fit: BoxFit
-                                  .contain, // Use BoxFit.contain to respect constraints and aspect ratio
+                              fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 return const Center(
                                   child: Column(
@@ -324,9 +322,11 @@ class _GameScreenState extends State<GameScreen>
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
                         child: Text(
-                          '$_correctAnswer',
+                          _correctAnswer!,
                           style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                   ],
@@ -379,31 +379,51 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  Widget _buildAnimatedBackground() {
-    final theme = Theme.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoryName),
         actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              showDialog<void>(
+                context: context,
+                builder: (context) => GameSettingsDialog(
+                  algorithm: _algorithm,
+                  onAlgorithmChanged: _onAlgorithmChanged,
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Rules & Info',
+            icon: const Icon(Icons.info_outline),
+            onPressed: () {
+              showDialog<void>(
+                context: context,
+                builder: (context) => const RulesContactDialog(),
+              );
+            },
+          ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset('assets/logos/gdg_logo.webp'),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Image.asset('assets/logos/gdg_logo.webp', width: 36),
           ),
         ],
         centerTitle: true,
       ),
       body: Stack(
         children: [
-          _buildAnimatedBackground(),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+            ),
+          ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -450,7 +470,7 @@ class _GameScreenState extends State<GameScreen>
                                         color: (_hasStarted
                                                 ? Colors.blue
                                                 : Colors.green)
-                                            .withAlpha(77),
+                                            .withValues(alpha: 0.3),
                                         spreadRadius: _isPressed ? 0 : 1,
                                         blurRadius: _isPressed ? 4 : 8,
                                         offset: Offset(0, _isPressed ? 2 : 4),
@@ -459,7 +479,6 @@ class _GameScreenState extends State<GameScreen>
                                   ),
                                   child: Stack(
                                     children: [
-                                      // Shimmer effect
                                       Positioned.fill(
                                         child: ClipRRect(
                                           borderRadius:
@@ -476,9 +495,12 @@ class _GameScreenState extends State<GameScreen>
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
                                                   colors: [
-                                                    Colors.white.withAlpha(0),
-                                                    Colors.white.withAlpha(77),
-                                                    Colors.white.withAlpha(0),
+                                                    Colors.white
+                                                        .withValues(alpha: 0.0),
+                                                    Colors.white
+                                                        .withValues(alpha: 0.3),
+                                                    Colors.white
+                                                        .withValues(alpha: 0.0),
                                                   ],
                                                   stops: const [0.0, 0.5, 1.0],
                                                 ),
@@ -487,7 +509,6 @@ class _GameScreenState extends State<GameScreen>
                                           ),
                                         ),
                                       ),
-                                      // Button content
                                       GestureDetector(
                                         onTapDown: (_) =>
                                             setState(() => _isPressed = true),
@@ -587,8 +608,12 @@ class _GameScreenState extends State<GameScreen>
 class GameSettingsDialog extends StatefulWidget {
   final CharacterAlgorithm algorithm;
   final ValueChanged<CharacterAlgorithm> onAlgorithmChanged;
-  const GameSettingsDialog(
-      {super.key, required this.algorithm, required this.onAlgorithmChanged});
+
+  const GameSettingsDialog({
+    super.key,
+    required this.algorithm,
+    required this.onAlgorithmChanged,
+  });
 
   @override
   State<GameSettingsDialog> createState() => _GameSettingsDialogState();
@@ -596,7 +621,7 @@ class GameSettingsDialog extends StatefulWidget {
 
 class _GameSettingsDialogState extends State<GameSettingsDialog>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  late final TabController _tabController;
   late CharacterAlgorithm _selectedAlgorithm;
 
   @override
@@ -614,14 +639,15 @@ class _GameSettingsDialogState extends State<GameSettingsDialog>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
       ),
-      child: Container(
-        padding: const EdgeInsets.all(0.0),
+      child: SizedBox(
         width: 512.0,
-        height: 512.0,
+        height: 520.0,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -641,180 +667,81 @@ class _GameSettingsDialogState extends State<GameSettingsDialog>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AnimationConfiguration.staggeredList(
-                          position: 0,
-                          duration: const Duration(milliseconds: 500),
-                          child: SlideAnimation(
-                            verticalOffset: 50.0,
-                            child: FadeInAnimation(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer
-                                      .withAlpha(77),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.timer,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Countdown Duration',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                      ],
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer
+                                .withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.timer,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Countdown Duration',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
                                     ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Set how long players have to look at the image before starting to guess.',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Set how long players have to look at the image before starting to guess (currently fixed to 2s for fast-paced excitement).',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  height: 1.4,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 16),
-                        AnimationConfiguration.staggeredList(
-                          position: 1,
-                          duration: const Duration(milliseconds: 600),
-                          child: SlideAnimation(
-                            horizontalOffset: 50.0,
-                            child: FadeInAnimation(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .secondaryContainer
-                                      .withAlpha(77),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.help_outline,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .secondary,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Game Rules',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ListView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: 5,
-                                      itemBuilder: (context, index) {
-                                        final List<String> rules = [
-                                          'Ask yes/no questions only',
-                                          'One question per turn',
-                                          'No peeking at your own screen',
-                                          'Be honest when answering',
-                                          'Try not to repeat previous questions',
-                                        ];
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 8.0),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '• ',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  rules[index],
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    height: 1.5,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
+                        Text(
+                          'Character Selection Algorithm',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        RadioGroup<CharacterAlgorithm>(
+                          groupValue: _selectedAlgorithm,
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _selectedAlgorithm = val);
+                              widget.onAlgorithmChanged(val);
+                            }
+                          },
+                          child: const Column(
+                            children: [
+                              ListTile(
+                                title: Text('Random (characters can repeat)'),
+                                subtitle: Text('Picks randomly from all available images'),
+                                leading: Radio<CharacterAlgorithm>(
+                                  value: CharacterAlgorithm.random,
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text('Character Selection Algorithm',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                        ListTile(
-                          title: const Text('Random (characters can repeat)'),
-                          leading: Radio<CharacterAlgorithm>(
-                            value: CharacterAlgorithm.random,
-                            groupValue: _selectedAlgorithm,
-                            onChanged: (val) {
-                              setState(() => _selectedAlgorithm = val!);
-                              widget.onAlgorithmChanged(val!);
-                            },
-                          ),
-                        ),
-                        ListTile(
-                          title: const Text(
-                              'Non-repeating (all images for a character are removed until all characters have appeared)'),
-                          leading: Radio<CharacterAlgorithm>(
-                            value: CharacterAlgorithm.nonRepeating,
-                            groupValue: _selectedAlgorithm,
-                            onChanged: (val) {
-                              setState(() => _selectedAlgorithm = val!);
-                              widget.onAlgorithmChanged(val!);
-                            },
+                              ListTile(
+                                title: Text('Non-repeating (fair rotation)'),
+                                subtitle: Text(
+                                    'Draws without replacement until all characters have appeared'),
+                                leading: Radio<CharacterAlgorithm>(
+                                  value: CharacterAlgorithm.nonRepeating,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -825,97 +752,68 @@ class _GameSettingsDialogState extends State<GameSettingsDialog>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        AnimationConfiguration.staggeredList(
-                          position: 0,
-                          duration: const Duration(milliseconds: 500),
-                          child: SlideAnimation(
-                            verticalOffset: 50.0,
-                            child: FadeInAnimation(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer
-                                      .withAlpha(77),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.play_circle_outline,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'How to Play',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                      ],
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer
+                                .withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.play_circle_outline,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'How to Play',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
                                     ),
-                                    const SizedBox(height: 16),
-                                    ListView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: 5,
-                                      itemBuilder: (context, index) {
-                                        final List<String> steps = [
-                                          'Both players tap "Start/Refresh" on their phones to get a different mystery character.',
-                                          'Show your screen to your opponent before the countdown ends.',
-                                          'Start taking turns asking yes/no questions to guess your own character.',
-                                          'The first player to guess their character correctly wins the round.',
-                                          'Keep playing and tracking scores!',
-                                        ];
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 8.0),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${index + 1}. ',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Text(
-                                                  steps[index],
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    height: 1.5,
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurface,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ),
+                              const SizedBox(height: 12),
+                              for (int i = 0; i < 5; i++)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${i + 1}. ',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          [
+                                            'Both players tap "Start/Refresh" on their phones to get a mystery character.',
+                                            'Show your screen to your opponent before the countdown ends.',
+                                            'Start taking turns asking yes/no questions to guess your character.',
+                                            'The first player to guess their character correctly wins the round.',
+                                            'Keep playing and tracking scores!',
+                                          ][i],
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            height: 1.4,
+                                            color: theme.colorScheme.onSurface,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                       ],

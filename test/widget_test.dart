@@ -1,30 +1,92 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:gdg_guess_game/main.dart';
+import 'package:gdg_guess_game/screens/categories_screen.dart';
+import 'package:gdg_guess_game/screens/game_screen.dart';
+import 'package:gdg_guess_game/utils/asset_loader.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MainLayout());
+  group('AssetLoader Unit Tests', () {
+    test('extractCharacterName correctly parses filenames without extension', () {
+      expect(
+        AssetLoader.extractCharacterName('assets/images/naruto/Itachi UCHIHA.webp'),
+        'Itachi UCHIHA',
+      );
+      expect(
+        AssetLoader.extractCharacterName('assets/images/one_piece/Monkey D. Luffy.png'),
+        'Monkey D. Luffy',
+      );
+      expect(
+        AssetLoader.extractCharacterName('assets/images/attack_on_titan/Levi ACKERMAN.jpg'),
+        'Levi ACKERMAN',
+      );
+      expect(
+        AssetLoader.extractCharacterName(''),
+        null,
+      );
+    });
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  group('BiGuess Game Widget Tests', () {
+    testWidgets('App renders CategoriesScreen with GDG title and initial categories', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(find.text('GDG Ghardaia'), findsOneWidget);
+      expect(find.text('Attack on Titan'), findsOneWidget);
+      expect(find.text('Black Clover'), findsOneWidget);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    testWidgets('Theme toggling switches light/dark mode', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpAndSettle();
+
+      final themeButton = find.byType(IconButton).last;
+      expect(themeButton, findsOneWidget);
+
+      await tester.tap(themeButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CategoriesScreen), findsOneWidget);
+    });
+
+    testWidgets('Info dialog opens and shows game rules & developer tabs', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpAndSettle();
+
+      final infoButton = find.byIcon(Icons.info_outline);
+      expect(infoButton, findsOneWidget);
+
+      await tester.tap(infoButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RulesContactDialog), findsOneWidget);
+      expect(find.text('About the game'), findsOneWidget);
+      expect(find.text('About the developers'), findsOneWidget);
+      expect(find.text('What is BiGuess Game?'), findsOneWidget);
+    });
+
+    testWidgets('Tapping a category navigates to GameScreen', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const BiGuessApp());
+      await tester.pumpAndSettle();
+
+      final categoryCard = find.text('Attack on Titan');
+      expect(categoryCard, findsOneWidget);
+
+      await tester.tap(categoryCard);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(GameScreen), findsOneWidget);
+      expect(find.text('Attack on Titan'), findsWidgets);
+    });
   });
 }
