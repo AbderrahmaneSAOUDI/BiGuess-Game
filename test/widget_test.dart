@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gdg_guess_game/main.dart';
+import 'package:gdg_guess_game/providers/game_providers.dart';
 import 'package:gdg_guess_game/screens/categories_screen.dart';
 import 'package:gdg_guess_game/screens/game_screen.dart';
 import 'package:gdg_guess_game/utils/asset_loader.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_character_card.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_countdown.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_mystery_box.dart';
-import 'package:gdg_guess_game/widgets/animations/animated_particle_burst.dart';
 import 'package:gdg_guess_game/widgets/animations/interactive_scale_card.dart';
 
 void main() {
@@ -81,6 +81,14 @@ void main() {
       container.read(showCharacterNameHintProvider.notifier).set(true);
       expect(container.read(showCharacterNameHintProvider), true);
     });
+
+    test('appVersionProvider returns a valid version string', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final version = await container.read(appVersionProvider.future);
+      expect(version, isNotEmpty);
+    });
   });
 
   group('BiGuess Game Animations Widget Tests', () {
@@ -114,23 +122,6 @@ void main() {
 
       expect(find.text('Click Start to Reveal'), findsOneWidget);
       expect(find.byIcon(Icons.help_outline_rounded), findsOneWidget);
-    });
-
-    testWidgets('AnimatedParticleBurst renders child properly', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AnimatedParticleBurst(
-              child: Text('Particle Test'),
-            ),
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
-
-      expect(find.text('Particle Test'), findsOneWidget);
     });
 
     testWidgets('InteractiveScaleCard responds to tap', (
