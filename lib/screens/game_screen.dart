@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../assets_manifest.dart';
+import '../providers/game_providers.dart';
 import '../utils/asset_loader.dart';
 import 'categories_screen.dart';
 
-enum CharacterAlgorithm {
-  random,
-  nonRepeating,
-}
+export '../providers/game_providers.dart'
+    show CharacterAlgorithm, characterAlgorithmProvider;
 
-class GameScreen extends StatefulWidget {
+class GameScreen extends ConsumerStatefulWidget {
   final String categoryName;
 
   const GameScreen({
@@ -21,10 +21,10 @@ class GameScreen extends StatefulWidget {
   });
 
   @override
-  State<GameScreen> createState() => _GameScreenState();
+  ConsumerState<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen>
+class _GameScreenState extends ConsumerState<GameScreen>
     with SingleTickerProviderStateMixin {
   bool _showPicture = false;
   bool _isCountingDown = false;
@@ -43,7 +43,6 @@ class _GameScreenState extends State<GameScreen>
   bool _isLoading = true;
   bool _noImagesFound = false;
 
-  CharacterAlgorithm _algorithm = CharacterAlgorithm.nonRepeating;
   List<String> _workingImageAssets = [];
 
   @override
@@ -122,17 +121,6 @@ class _GameScreenState extends State<GameScreen>
     });
   }
 
-  void _onAlgorithmChanged(CharacterAlgorithm value) {
-    if (_algorithm != value) {
-      setState(() {
-        _algorithm = value;
-        if (_algorithm == CharacterAlgorithm.nonRepeating) {
-          _workingImageAssets = List<String>.from(_imageAssets);
-        }
-      });
-    }
-  }
-
   @override
   void dispose() {
     _countdownTimer?.cancel();
@@ -177,7 +165,9 @@ class _GameScreenState extends State<GameScreen>
   }
 
   void _showRandomImage() {
-    if (_algorithm == CharacterAlgorithm.random) {
+    final algorithm = ref.read(characterAlgorithmProvider);
+
+    if (algorithm == CharacterAlgorithm.random) {
       if (_imageAssets.isNotEmpty) {
         final random = Random();
         _currentImageAsset = _imageAssets[random.nextInt(_imageAssets.length)];
@@ -393,10 +383,7 @@ class _GameScreenState extends State<GameScreen>
             onPressed: () {
               showDialog<void>(
                 context: context,
-                builder: (context) => GameSettingsDialog(
-                  algorithm: _algorithm,
-                  onAlgorithmChanged: _onAlgorithmChanged,
-                ),
+                builder: (context) => const GameSettingsDialog(),
               );
             },
           ),
@@ -605,30 +592,28 @@ class _GameScreenState extends State<GameScreen>
   }
 }
 
-class GameSettingsDialog extends StatefulWidget {
-  final CharacterAlgorithm algorithm;
-  final ValueChanged<CharacterAlgorithm> onAlgorithmChanged;
+class GameSettingsDialog extends ConsumerStatefulWidget {
+  final CharacterAlgorithm? algorithm;
+  final ValueChanged<CharacterAlgorithm>? onAlgorithmChanged;
 
   const GameSettingsDialog({
     super.key,
-    required this.algorithm,
-    required this.onAlgorithmChanged,
+    this.algorithm,
+    this.onAlgorithmChanged,
   });
 
   @override
-  State<GameSettingsDialog> createState() => _GameSettingsDialogState();
+  ConsumerState<GameSettingsDialog> createState() => _GameSettingsDialogState();
 }
 
-class _GameSettingsDialogState extends State<GameSettingsDialog>
+class _GameSettingsDialogState extends ConsumerState<GameSettingsDialog>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  late CharacterAlgorithm _selectedAlgorithm;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _selectedAlgorithm = widget.algorithm;
   }
 
   @override
@@ -640,6 +625,8 @@ class _GameSettingsDialogState extends State<GameSettingsDialog>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final selectedAlgorithm =
+        widget.algorithm ?? ref.watch(characterAlgorithmProvider);
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -717,11 +704,16 @@ class _GameSettingsDialogState extends State<GameSettingsDialog>
                         ),
                         const SizedBox(height: 8),
                         RadioGroup<CharacterAlgorithm>(
-                          groupValue: _selectedAlgorithm,
+                          groupValue: selectedAlgorithm,
                           onChanged: (val) {
                             if (val != null) {
-                              setState(() => _selectedAlgorithm = val);
-                              widget.onAlgorithmChanged(val);
+                              if (widget.onAlgorithmChanged != null) {
+                                widget.onAlgorithmChanged!(val);
+                              } else {
+                                ref
+                                    .read(characterAlgorithmProvider.notifier)
+                                    .setAlgorithm(val);
+                              }
                             }
                           },
                           child: const Column(
