@@ -7,10 +7,14 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../assets_manifest.dart';
 import '../providers/game_providers.dart';
 import '../utils/asset_loader.dart';
-import 'categories_screen.dart';
+import '../widgets/info_dialog.dart';
 
 export '../providers/game_providers.dart'
-    show CharacterAlgorithm, characterAlgorithmProvider;
+    show
+        CharacterAlgorithm,
+        characterAlgorithmProvider,
+        countdownDurationProvider,
+        showCharacterNameHintProvider;
 
 class GameScreen extends ConsumerStatefulWidget {
   final String categoryName;
@@ -138,12 +142,13 @@ class _GameScreenState extends ConsumerState<GameScreen>
       return;
     }
 
+    final countdownDuration = ref.read(countdownDurationProvider);
     setState(() {
       _isCountingDown = true;
       _showPicture = false;
       _currentImageAsset = null;
       _correctAnswer = null;
-      _countdown = 2;
+      _countdown = countdownDuration;
       _hasStarted = true;
     });
 
@@ -308,7 +313,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                         ),
                       ),
                     ),
-                    if (_correctAnswer != null)
+                    if (_correctAnswer != null && ref.watch(showCharacterNameHintProvider))
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
                         child: Text(
@@ -381,9 +386,9 @@ class _GameScreenState extends ConsumerState<GameScreen>
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),
             onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) => const GameSettingsDialog(),
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.settings,
               );
             },
           ),
@@ -391,9 +396,9 @@ class _GameScreenState extends ConsumerState<GameScreen>
             tooltip: 'Rules & Info',
             icon: const Icon(Icons.info_outline),
             onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) => const RulesContactDialog(),
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.howToPlay,
               );
             },
           ),
@@ -592,231 +597,3 @@ class _GameScreenState extends ConsumerState<GameScreen>
   }
 }
 
-class GameSettingsDialog extends ConsumerStatefulWidget {
-  final CharacterAlgorithm? algorithm;
-  final ValueChanged<CharacterAlgorithm>? onAlgorithmChanged;
-
-  const GameSettingsDialog({
-    super.key,
-    this.algorithm,
-    this.onAlgorithmChanged,
-  });
-
-  @override
-  ConsumerState<GameSettingsDialog> createState() => _GameSettingsDialogState();
-}
-
-class _GameSettingsDialogState extends ConsumerState<GameSettingsDialog>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final selectedAlgorithm =
-        widget.algorithm ?? ref.watch(characterAlgorithmProvider);
-
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      child: SizedBox(
-        width: 512.0,
-        height: 520.0,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TabBar(
-              controller: _tabController,
-              tabs: const [
-                Tab(text: 'Game Settings'),
-                Tab(text: 'How to Play'),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer
-                                .withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.timer,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Countdown Duration',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Set how long players have to look at the image before starting to guess (currently fixed to 2s for fast-paced excitement).',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  height: 1.4,
-                                  color: theme.colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Character Selection Algorithm',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        RadioGroup<CharacterAlgorithm>(
-                          groupValue: selectedAlgorithm,
-                          onChanged: (val) {
-                            if (val != null) {
-                              if (widget.onAlgorithmChanged != null) {
-                                widget.onAlgorithmChanged!(val);
-                              } else {
-                                ref
-                                    .read(characterAlgorithmProvider.notifier)
-                                    .setAlgorithm(val);
-                              }
-                            }
-                          },
-                          child: const Column(
-                            children: [
-                              ListTile(
-                                title: Text('Random (characters can repeat)'),
-                                subtitle: Text('Picks randomly from all available images'),
-                                leading: Radio<CharacterAlgorithm>(
-                                  value: CharacterAlgorithm.random,
-                                ),
-                              ),
-                              ListTile(
-                                title: Text('Non-repeating (fair rotation)'),
-                                subtitle: Text(
-                                    'Draws without replacement until all characters have appeared'),
-                                leading: Radio<CharacterAlgorithm>(
-                                  value: CharacterAlgorithm.nonRepeating,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer
-                                .withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.play_circle_outline,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'How to Play',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              for (int i = 0; i < 5; i++)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${i + 1}. ',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          [
-                                            'Both players tap "Start/Refresh" on their phones to get a mystery character.',
-                                            'Show your screen to your opponent before the countdown ends.',
-                                            'Start taking turns asking yes/no questions to guess your character.',
-                                            'The first player to guess their character correctly wins the round.',
-                                            'Keep playing and tracking scores!',
-                                          ][i],
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            height: 1.4,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
