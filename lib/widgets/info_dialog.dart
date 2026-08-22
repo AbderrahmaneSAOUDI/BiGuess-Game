@@ -886,12 +886,18 @@ class _HowToPlayView extends StatelessWidget {
 // 3. ABOUT THE GAME VIEW
 // -----------------------------------------------------------------------------
 
-class _AboutGameView extends StatelessWidget {
+class _AboutGameView extends ConsumerWidget {
   const _AboutGameView();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final versionAsync = ref.watch(appVersionProvider);
+    final versionText = versionAsync.when(
+      data: (version) => 'Version $version',
+      loading: () => 'Version ...',
+      error: (_, __) => 'Version 0.24.0',
+    );
 
     return AnimationLimiter(
       child: ListView(
@@ -977,7 +983,7 @@ class _AboutGameView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'Version 0.21.0',
+                          versionText,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 enum CharacterAlgorithm {
   random,
@@ -50,4 +51,13 @@ final showCharacterNameHintProvider =
     NotifierProvider<ShowCharacterNameHintNotifier, bool>(
       ShowCharacterNameHintNotifier.new,
     );
+
+final appVersionProvider = FutureProvider<String>((ref) async {
+  try {
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  } catch (_) {
+    return '0.24.0';
+  }
+});
 

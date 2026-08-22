@@ -31,7 +31,7 @@ class GameScreen extends ConsumerStatefulWidget {
 }
 
 class _GameScreenState extends ConsumerState<GameScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   bool _showPicture = false;
   bool _isCountingDown = false;
   int _countdown = 0;
@@ -39,10 +39,14 @@ class _GameScreenState extends ConsumerState<GameScreen>
   bool _hasStarted = false;
 
   late final AnimationController _buttonAnimationController;
+  late final AnimationController _tapClickController;
   late final Animation<double> _buttonScaleAnimation;
   late final Animation<double> _buttonRotationAnimation;
   late final Animation<double> _shimmerAnimation;
   late final Animation<double> _glowAnimation;
+  late final Animation<double> _tapScalePunchAnimation;
+  late final Animation<double> _tapSpinAnimation;
+  late final Animation<double> _tapFlashAnimation;
   bool _isPressed = false;
 
   List<String> _imageAssets = [];
@@ -62,6 +66,11 @@ class _GameScreenState extends ConsumerState<GameScreen>
       duration: const Duration(milliseconds: 2200),
       vsync: this,
     )..repeat(reverse: true);
+
+    _tapClickController = AnimationController(
+      duration: const Duration(milliseconds: 650),
+      vsync: this,
+    );
 
     _buttonScaleAnimation = Tween<double>(
       begin: 1.0,
@@ -94,6 +103,38 @@ class _GameScreenState extends ConsumerState<GameScreen>
       parent: _buttonAnimationController,
       curve: Curves.easeInOut,
     ));
+
+    _tapScalePunchAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.88)
+            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 25,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.88, end: 1.08)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 45,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.08, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 30,
+      ),
+    ]).animate(_tapClickController);
+
+    _tapSpinAnimation = Tween<double>(begin: 0.0, end: 4 * pi).animate(
+      CurvedAnimation(
+        parent: _tapClickController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _tapFlashAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _tapClickController,
+        curve: Curves.easeOutQuad,
+      ),
+    );
   }
 
   Future<void> _loadImagesFromCategory() async {
@@ -141,11 +182,14 @@ class _GameScreenState extends ConsumerState<GameScreen>
   void dispose() {
     _countdownTimer?.cancel();
     _buttonAnimationController.dispose();
+    _tapClickController.dispose();
     super.dispose();
   }
 
   void _startCountdown() {
     if (_isCountingDown) return;
+
+    _tapClickController.forward(from: 0.0);
 
     if (_noImagesFound || _imageAssets.isEmpty) {
       setState(() {
@@ -274,7 +318,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
         builder: (context, constraints) {
           final double maxImageHeight = max(
             0.0,
-            constraints.maxHeight - 75.0,
+            constraints.maxHeight - 55.0,
           );
 
           return AnimatedCharacterCard(
@@ -368,7 +412,10 @@ class _GameScreenState extends ConsumerState<GameScreen>
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
                   child: AnimatedBuilder(
-                    animation: _buttonAnimationController,
+                    animation: Listenable.merge([
+                      _buttonAnimationController,
+                      _tapClickController,
+                    ]),
                     builder: (context, child) {
                       final activeColor1 = _hasStarted
                           ? const Color(0xFF2979FF) // Electric Blue
@@ -378,8 +425,11 @@ class _GameScreenState extends ConsumerState<GameScreen>
                           : const Color(0xFF00C853); // Emerald Green
 
                       final scale = _isPressed
-                          ? 0.94
-                          : _buttonScaleAnimation.value;
+                          ? 0.93
+                          : (_buttonScaleAnimation.value *
+                              (_tapClickController.isAnimating
+                                  ? _tapScalePunchAnimation.value
+                                  : 1.0));
 
                       return Transform.scale(
                         scale: scale,
@@ -438,6 +488,20 @@ class _GameScreenState extends ConsumerState<GameScreen>
                                   ),
                                 ),
                               ),
+
+                              // Tap Energy Flash Wave
+                              if (_tapClickController.isAnimating)
+                                Positioned.fill(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: CustomPaint(
+                                      painter: _ButtonFlashPainter(
+                                        progress: _tapFlashAnimation.value,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
                               GestureDetector(
                                 onTapDown: (_) =>
                                     setState(() => _isPressed = true),
@@ -462,12 +526,13 @@ class _GameScreenState extends ConsumerState<GameScreen>
                                     },
                                     child: _hasStarted
                                         ? Transform.rotate(
-                                            angle: _buttonRotationAnimation.value,
+                                            angle: _buttonRotationAnimation.value +
+                                                _tapSpinAnimation.value,
                                             child: const Icon(
                                               Icons.refresh_rounded,
                                               key: ValueKey('refresh'),
                                               color: Colors.white,
-                                              size: 26,
+                                              size: 28,
                                             ),
                                           )
                                         : const Icon(
@@ -501,7 +566,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
                                   ),
                                   style: ElevatedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 40,
+                                      horizontal: 42,
                                       vertical: 18,
                                     ),
                                     backgroundColor: Colors.transparent,
@@ -524,5 +589,34 @@ class _GameScreenState extends ConsumerState<GameScreen>
         ],
       ),
     );
+  }
+}
+
+class _ButtonFlashPainter extends CustomPainter {
+  final double progress;
+
+  _ButtonFlashPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxRadius = size.width / 2;
+    final currentRadius = progress * maxRadius;
+    final opacity = (1.0 - progress).clamp(0.0, 1.0) * 0.5;
+
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.white.withValues(alpha: opacity),
+          Colors.white.withValues(alpha: 0.0),
+        ],
+      ).createShader(Rect.fromCircle(center: center, radius: currentRadius));
+
+    canvas.drawCircle(center, currentRadius, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ButtonFlashPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }
