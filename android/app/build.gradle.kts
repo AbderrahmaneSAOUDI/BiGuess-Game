@@ -28,7 +28,7 @@ android {
 
     defaultConfig {
         applicationId = "com.flutter.gdg_guess_game"
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -47,26 +47,6 @@ android {
     }
 }
 
-dependencies {
-    // Force Kotlin version alignment
-    constraints {
-        implementation("org.jetbrains.kotlin:kotlin-stdlib") {
-            version {
-                strictly("1.9.0")
-            }
-        }
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7") {
-            version {
-                strictly("1.9.0")
-            }
-        }
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
-            version {
-                strictly("1.9.0")
-            }
-        }
-    }
-}
 
 flutter {
     source = "../.."
