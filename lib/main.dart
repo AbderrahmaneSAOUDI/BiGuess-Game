@@ -2,132 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/categories_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(ChangeNotifierProvider(
-    create: (_) => ThemeNotifier(),
-    child: const MainLayout(),
-  ));
+  runApp(const BiGuessApp());
+}
+
+class BiGuessApp extends StatelessWidget {
+  const BiGuessApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<ThemeNotifier>(
+      create: (_) => ThemeNotifier(),
+      child: const MainLayout(),
+    );
+  }
 }
 
 class ThemeNotifier extends ChangeNotifier {
-  ThemeData _themeData;
+  bool _isDarkMode = true;
 
-  ThemeNotifier() : _themeData = _darkTheme;
-
-  ThemeData getTheme() => _themeData;
-
-  static final ThemeData _lightTheme =
-      ThemeData(
-    primarySwatch: Colors.blue,
-    brightness: Brightness.light,
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.blue,
-      brightness: Brightness.light,
-    ),
-    fontFamily: 'GoogleSans',
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      displayMedium: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      displaySmall: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      headlineLarge: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      headlineMedium: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      headlineSmall: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      titleLarge: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      titleMedium: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      titleSmall: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      bodyLarge:
-          TextStyle(fontFamily: 'GoogleSans'),
-      bodyMedium:
-          TextStyle(fontFamily: 'GoogleSans'),
-      bodySmall:
-          TextStyle(fontFamily: 'GoogleSans'),
-      labelLarge:
-          TextStyle(fontFamily: 'GoogleSans'),
-      labelMedium:
-          TextStyle(fontFamily: 'GoogleSans'),
-      labelSmall:
-          TextStyle(fontFamily: 'GoogleSans'),
-    ),
-  );
-
-  static final ThemeData _darkTheme = ThemeData(
-    primarySwatch: Colors.blue,
-    brightness: Brightness.dark,
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.blue,
-      brightness: Brightness.dark,
-    ),
-    fontFamily: 'GoogleSans',
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      displayMedium: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      displaySmall: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      headlineLarge: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      headlineMedium: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      headlineSmall: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      titleLarge: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      titleMedium: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      titleSmall: TextStyle(
-          fontFamily: 'GoogleSans',
-          fontWeight: FontWeight.bold),
-      bodyLarge:
-          TextStyle(fontFamily: 'GoogleSans'),
-      bodyMedium:
-          TextStyle(fontFamily: 'GoogleSans'),
-      bodySmall:
-          TextStyle(fontFamily: 'GoogleSans'),
-      labelLarge:
-          TextStyle(fontFamily: 'GoogleSans'),
-      labelMedium:
-          TextStyle(fontFamily: 'GoogleSans'),
-      labelSmall:
-          TextStyle(fontFamily: 'GoogleSans'),
-    ),
-  );
+  bool get isDarkMode => _isDarkMode;
+  ThemeMode get themeMode => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+  ThemeData get theme => _isDarkMode ? darkTheme : lightTheme;
+  ThemeData getTheme() => theme;
 
   void toggleTheme() {
-    _themeData = _themeData == _lightTheme
-        ? _darkTheme
-        : _lightTheme;
+    _isDarkMode = !_isDarkMode;
     notifyListeners();
   }
+
+  static ThemeData buildTheme(Brightness brightness) {
+    return ThemeData(
+      brightness: brightness,
+      useMaterial3: true,
+      fontFamily: 'GoogleSans',
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: brightness,
+      ),
+    );
+  }
+
+  static final ThemeData lightTheme = buildTheme(Brightness.light);
+  static final ThemeData darkTheme = buildTheme(Brightness.dark);
 }
 
 class MainLayout extends StatelessWidget {
@@ -135,23 +53,14 @@ class MainLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeNotifier =
-        Provider.of<ThemeNotifier>(context);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
     return MaterialApp(
+      title: 'BiGuess Game',
       debugShowCheckedModeBanner: false,
-      theme: themeNotifier.getTheme(),
+      theme: ThemeNotifier.lightTheme,
+      darkTheme: ThemeNotifier.darkTheme,
+      themeMode: themeNotifier.themeMode,
       home: const CategoriesScreen(),
-      /* home: MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              width: 480.0,
-              height: 640.0,
-              color: Colors.red,
-            ),
-          ),
-        ),
-      ), */
     );
   }
 }

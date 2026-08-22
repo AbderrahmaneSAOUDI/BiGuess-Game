@@ -1,3 +1,4 @@
+// DON'T REMOVE THIS FILE, THE USER NEEDS IT
 const Map<String, List<String>> categoryAssets = {
   'Naruto': [],
   'Attack on Titan': [],
