@@ -3,10 +3,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../assets_manifest.dart';
 import '../providers/game_providers.dart';
 import '../utils/asset_loader.dart';
+import '../widgets/animations/animated_character_card.dart';
+import '../widgets/animations/animated_countdown.dart';
+import '../widgets/animations/animated_mystery_box.dart';
 import '../widgets/info_dialog.dart';
 
 export '../providers/game_providers.dart'
@@ -35,10 +37,12 @@ class _GameScreenState extends ConsumerState<GameScreen>
   int _countdown = 0;
   Timer? _countdownTimer;
   bool _hasStarted = false;
+
   late final AnimationController _buttonAnimationController;
   late final Animation<double> _buttonScaleAnimation;
   late final Animation<double> _buttonRotationAnimation;
   late final Animation<double> _shimmerAnimation;
+  late final Animation<double> _glowAnimation;
   bool _isPressed = false;
 
   List<String> _imageAssets = [];
@@ -55,13 +59,13 @@ class _GameScreenState extends ConsumerState<GameScreen>
     _loadImagesFromCategory();
 
     _buttonAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2200),
       vsync: this,
     )..repeat(reverse: true);
 
     _buttonScaleAnimation = Tween<double>(
       begin: 1.0,
-      end: 1.05,
+      end: 1.04,
     ).animate(CurvedAnimation(
       parent: _buttonAnimationController,
       curve: Curves.easeInOut,
@@ -76,8 +80,16 @@ class _GameScreenState extends ConsumerState<GameScreen>
     ));
 
     _shimmerAnimation = Tween<double>(
-      begin: -1.0,
-      end: 2.0,
+      begin: -1.2,
+      end: 2.2,
+    ).animate(CurvedAnimation(
+      parent: _buttonAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _glowAnimation = Tween<double>(
+      begin: 0.3,
+      end: 0.8,
     ).animate(CurvedAnimation(
       parent: _buttonAnimationController,
       curve: Curves.easeInOut,
@@ -222,154 +234,61 @@ class _GameScreenState extends ConsumerState<GameScreen>
 
   Widget _buildContent() {
     if (_noImagesFound) {
-      return const Center(
-        child: Text(
-          'Coming soon...\nNo images in this category yet.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18, color: Colors.grey),
+      return TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 600),
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) {
+          return Opacity(
+            opacity: value,
+            child: Transform.scale(
+              scale: 0.8 + 0.2 * value,
+              child: child,
+            ),
+          );
+        },
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'Coming soon...\nNo images in this category yet.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     if (_isCountingDown) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TweenAnimationBuilder<Color?>(
-              key: ValueKey(_countdown),
-              tween: ColorTween(begin: Colors.red, end: Colors.blue),
-              duration: const Duration(milliseconds: 375),
-              builder: (context, color, child) {
-                return Text(
-                  _countdown.toString(),
-                  style: TextStyle(
-                    fontSize: 100,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Get ready...',
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
+      return AnimatedCountdown(
+        key: ValueKey(_countdown),
+        countdown: _countdown,
       );
     } else if (_showPicture && _currentImageAsset != null) {
-      return AnimationConfiguration.synchronized(
-        duration: const Duration(milliseconds: 375),
-        child: SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double maxImageHeight = max(
-                  0.0,
-                  constraints.maxHeight - 45.0 - 4.0,
-                );
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final double maxImageHeight = max(
+            0.0,
+            constraints.maxHeight - 75.0,
+          );
 
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey, width: 2),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(22),
-                          child: ConstrainedBox(
-                            constraints:
-                                BoxConstraints(maxHeight: maxImageHeight),
-                            child: Image.asset(
-                              _currentImageAsset!,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.error_outline,
-                                          color: Colors.red, size: 50),
-                                      SizedBox(height: 8),
-                                      Text('Error loading image',
-                                          textAlign: TextAlign.center),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (_correctAnswer != null && ref.watch(showCharacterNameHintProvider))
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
-                        child: Text(
-                          _correctAnswer!,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
+          return AnimatedCharacterCard(
+            key: ValueKey(_currentImageAsset),
+            imageAsset: _currentImageAsset!,
+            characterName: _correctAnswer,
+            showNameHint: ref.watch(showCharacterNameHintProvider),
+            maxHeight: maxImageHeight,
+          );
+        },
       );
     } else {
-      return AnimationConfiguration.synchronized(
-        duration: const Duration(milliseconds: 375),
-        child: SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 2),
-                borderRadius: BorderRadius.circular(12),
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : Colors.grey[100],
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.help_outline,
-                      size: 100,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Click Random to reveal',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+      return AnimatedMysteryBox(
+        onTap: _isLoading || _isCountingDown ? null : _startCountdown,
       );
     }
   }
@@ -377,14 +296,18 @@ class _GameScreenState extends ConsumerState<GameScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.categoryName),
+        title: Text(
+          widget.categoryName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             tooltip: 'Settings',
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: () {
               GameInfoDialog.show(
                 context,
@@ -394,7 +317,7 @@ class _GameScreenState extends ConsumerState<GameScreen>
           ),
           IconButton(
             tooltip: 'Rules & Info',
-            icon: const Icon(Icons.info_outline),
+            icon: const Icon(Icons.info_outline_rounded),
             onPressed: () {
               GameInfoDialog.show(
                 context,
@@ -411,11 +334,28 @@ class _GameScreenState extends ConsumerState<GameScreen>
       ),
       body: Stack(
         children: [
-          Container(
+          // Background with subtle animated ambient gradient
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
             decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
+              gradient: RadialGradient(
+                center: const Alignment(0, -0.3),
+                radius: 1.2,
+                colors: isDark
+                    ? [
+                        theme.colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.35),
+                        theme.scaffoldBackgroundColor,
+                      ]
+                    : [
+                        theme.colorScheme.primaryContainer
+                            .withValues(alpha: 0.25),
+                        theme.scaffoldBackgroundColor,
+                      ],
+              ),
             ),
           ),
+
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -426,167 +366,157 @@ class _GameScreenState extends ConsumerState<GameScreen>
               ),
               if (!_noImagesFound)
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: AnimationConfiguration.synchronized(
-                    duration: const Duration(milliseconds: 375),
-                    child: SlideAnimation(
-                      verticalOffset: 50.0,
-                      child: FadeInAnimation(
-                        child: ScaleAnimation(
-                          scale: 0.9,
-                          child: AnimatedBuilder(
-                            animation: _buttonAnimationController,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: _isPressed
-                                    ? 0.95
-                                    : _buttonScaleAnimation.value,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: _hasStarted
-                                          ? [
-                                              Colors.blue.shade400,
-                                              Colors.blue.shade700
-                                            ]
-                                          : [
-                                              Colors.green.shade400,
-                                              Colors.green.shade700
-                                            ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
+                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
+                  child: AnimatedBuilder(
+                    animation: _buttonAnimationController,
+                    builder: (context, child) {
+                      final activeColor1 = _hasStarted
+                          ? const Color(0xFF2979FF) // Electric Blue
+                          : const Color(0xFF00E676); // Spring Green
+                      final activeColor2 = _hasStarted
+                          ? const Color(0xFF1565C0) // Deep Blue
+                          : const Color(0xFF00C853); // Emerald Green
+
+                      final scale = _isPressed
+                          ? 0.94
+                          : _buttonScaleAnimation.value;
+
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [activeColor1, activeColor2],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: activeColor1.withValues(
+                                  alpha: _isPressed
+                                      ? 0.3
+                                      : _glowAnimation.value * 0.45,
+                                ),
+                                spreadRadius: _isPressed ? 0 : 2,
+                                blurRadius: _isPressed ? 6 : 18,
+                                offset: Offset(0, _isPressed ? 2 : 6),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              // Button Shimmer Light Sweep
+                              Positioned.fill(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: Transform.translate(
+                                    offset: Offset(
+                                      _shimmerAnimation.value *
+                                          (MediaQuery.of(context).size.width *
+                                              0.6),
+                                      0,
                                     ),
-                                    borderRadius: BorderRadius.circular(30),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (_hasStarted
-                                                ? Colors.blue
-                                                : Colors.green)
-                                            .withValues(alpha: 0.3),
-                                        spreadRadius: _isPressed ? 0 : 1,
-                                        blurRadius: _isPressed ? 4 : 8,
-                                        offset: Offset(0, _isPressed ? 2 : 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      Positioned.fill(
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          child: Transform.translate(
-                                            offset: Offset(
-                                              _shimmerAnimation.value *
-                                                  MediaQuery.of(context)
-                                                      .size
-                                                      .width,
-                                              0,
-                                            ),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    Colors.white
-                                                        .withValues(alpha: 0.0),
-                                                    Colors.white
-                                                        .withValues(alpha: 0.3),
-                                                    Colors.white
-                                                        .withValues(alpha: 0.0),
-                                                  ],
-                                                  stops: const [0.0, 0.5, 1.0],
-                                                ),
-                                              ),
-                                            ),
+                                    child: Transform.rotate(
+                                      angle: 0.3,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.white
+                                                  .withValues(alpha: 0.0),
+                                              Colors.white
+                                                  .withValues(alpha: 0.35),
+                                              Colors.white
+                                                  .withValues(alpha: 0.0),
+                                            ],
+                                            stops: const [0.0, 0.5, 1.0],
                                           ),
                                         ),
                                       ),
-                                      GestureDetector(
-                                        onTapDown: (_) =>
-                                            setState(() => _isPressed = true),
-                                        onTapUp: (_) =>
-                                            setState(() => _isPressed = false),
-                                        onTapCancel: () =>
-                                            setState(() => _isPressed = false),
-                                        child: ElevatedButton.icon(
-                                          onPressed:
-                                              _isLoading || _isCountingDown
-                                                  ? null
-                                                  : _startCountdown,
-                                          icon: AnimatedSwitcher(
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                            transitionBuilder:
-                                                (child, animation) {
-                                              return ScaleTransition(
-                                                scale: animation,
-                                                child: FadeTransition(
-                                                  opacity: animation,
-                                                  child: child,
-                                                ),
-                                              );
-                                            },
-                                            child: _hasStarted
-                                                ? Transform.rotate(
-                                                    angle:
-                                                        _buttonRotationAnimation
-                                                            .value,
-                                                    child: const Icon(
-                                                      Icons.refresh,
-                                                      key: ValueKey('refresh'),
-                                                      color: Colors.white,
-                                                    ),
-                                                  )
-                                                : const Icon(
-                                                    Icons.play_arrow,
-                                                    key: ValueKey('play'),
-                                                    color: Colors.white,
-                                                  ),
-                                          ),
-                                          label: AnimatedSwitcher(
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                            transitionBuilder:
-                                                (child, animation) {
-                                              return ScaleTransition(
-                                                scale: animation,
-                                                child: FadeTransition(
-                                                  opacity: animation,
-                                                  child: child,
-                                                ),
-                                              );
-                                            },
-                                            child: Text(
-                                              _hasStarted ? 'Refresh' : 'Start',
-                                              key: ValueKey(_hasStarted),
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 32, vertical: 16),
-                                            backgroundColor: Colors.transparent,
-                                            shadowColor: Colors.transparent,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(30),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                              GestureDetector(
+                                onTapDown: (_) =>
+                                    setState(() => _isPressed = true),
+                                onTapUp: (_) =>
+                                    setState(() => _isPressed = false),
+                                onTapCancel: () =>
+                                    setState(() => _isPressed = false),
+                                child: ElevatedButton.icon(
+                                  onPressed: _isLoading || _isCountingDown
+                                      ? null
+                                      : _startCountdown,
+                                  icon: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    transitionBuilder: (child, animation) {
+                                      return ScaleTransition(
+                                        scale: animation,
+                                        child: FadeTransition(
+                                          opacity: animation,
+                                          child: child,
+                                        ),
+                                      );
+                                    },
+                                    child: _hasStarted
+                                        ? Transform.rotate(
+                                            angle: _buttonRotationAnimation.value,
+                                            child: const Icon(
+                                              Icons.refresh_rounded,
+                                              key: ValueKey('refresh'),
+                                              color: Colors.white,
+                                              size: 26,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.play_arrow_rounded,
+                                            key: ValueKey('play'),
+                                            color: Colors.white,
+                                            size: 28,
+                                          ),
+                                  ),
+                                  label: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    transitionBuilder: (child, animation) {
+                                      return ScaleTransition(
+                                        scale: animation,
+                                        child: FadeTransition(
+                                          opacity: animation,
+                                          child: child,
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      _hasStarted ? 'Refresh' : 'Start',
+                                      key: ValueKey(_hasStarted),
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                      vertical: 18,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
             ],
@@ -596,4 +526,3 @@ class _GameScreenState extends ConsumerState<GameScreen>
     );
   }
 }
-

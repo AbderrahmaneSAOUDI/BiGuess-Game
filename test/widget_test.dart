@@ -5,6 +5,11 @@ import 'package:gdg_guess_game/main.dart';
 import 'package:gdg_guess_game/screens/categories_screen.dart';
 import 'package:gdg_guess_game/screens/game_screen.dart';
 import 'package:gdg_guess_game/utils/asset_loader.dart';
+import 'package:gdg_guess_game/widgets/animations/animated_character_card.dart';
+import 'package:gdg_guess_game/widgets/animations/animated_countdown.dart';
+import 'package:gdg_guess_game/widgets/animations/animated_mystery_box.dart';
+import 'package:gdg_guess_game/widgets/animations/animated_particle_burst.dart';
+import 'package:gdg_guess_game/widgets/animations/interactive_scale_card.dart';
 
 void main() {
   group('AssetLoader Unit Tests', () {
@@ -56,6 +61,7 @@ void main() {
         CharacterAlgorithm.random,
       );
     });
+
     test('CountdownDurationNotifier updates countdown', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
@@ -77,7 +83,98 @@ void main() {
     });
   });
 
-  group('BiGuess Game Widget Tests', () {
+  group('BiGuess Game Animations Widget Tests', () {
+    testWidgets('AnimatedCountdown renders count number and ready text', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnimatedCountdown(countdown: 3),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('3'), findsOneWidget);
+      expect(find.text('GET READY...'), findsOneWidget);
+    });
+
+    testWidgets('AnimatedMysteryBox renders with prompt and icon', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnimatedMysteryBox(),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Click Start to Reveal'), findsOneWidget);
+      expect(find.byIcon(Icons.help_outline_rounded), findsOneWidget);
+    });
+
+    testWidgets('AnimatedParticleBurst renders child properly', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnimatedParticleBurst(
+              child: Text('Particle Test'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Particle Test'), findsOneWidget);
+    });
+
+    testWidgets('InteractiveScaleCard responds to tap', (
+      WidgetTester tester,
+    ) async {
+      bool tapped = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: InteractiveScaleCard(
+              onTap: () => tapped = true,
+              child: const Text('Scale Card'),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Scale Card'), findsOneWidget);
+      await tester.tap(find.text('Scale Card'));
+      expect(tapped, isTrue);
+    });
+
+    testWidgets('AnimatedCharacterCard renders character name and badge', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AnimatedCharacterCard(
+              imageAsset: 'assets/images/naruto/Naruto UZUMAKI.webp',
+              characterName: 'Naruto UZUMAKI',
+              showNameHint: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Naruto UZUMAKI'), findsOneWidget);
+      expect(find.byIcon(Icons.auto_awesome_rounded), findsOneWidget);
+    });
+  });
+
+  group('BiGuess Game Integration Widget Tests', () {
     testWidgets('App renders CategoriesScreen with GDG title and initial categories', (
       WidgetTester tester,
     ) async {
@@ -110,7 +207,7 @@ void main() {
       await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
       await tester.pumpAndSettle();
 
-      final settingsButton = find.byIcon(Icons.settings);
+      final settingsButton = find.byIcon(Icons.settings_rounded);
       expect(settingsButton, findsOneWidget);
 
       await tester.tap(settingsButton);
@@ -128,7 +225,7 @@ void main() {
       await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
       await tester.pumpAndSettle();
 
-      final infoButton = find.byIcon(Icons.info_outline);
+      final infoButton = find.byIcon(Icons.info_outline_rounded);
       expect(infoButton, findsOneWidget);
 
       await tester.tap(infoButton);
@@ -158,4 +255,3 @@ void main() {
     });
   });
 }
-

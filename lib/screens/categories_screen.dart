@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../main.dart';
+import '../widgets/animations/interactive_scale_card.dart';
 import '../widgets/info_dialog.dart';
 import 'game_screen.dart';
 
@@ -12,8 +13,7 @@ export '../widgets/info_dialog.dart'
         GameSettingsDialog,
         RulesContactDialog;
 
-
-class CategoriesScreen extends ConsumerWidget {
+class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
 
   static const List<Map<String, String>> categories = [
@@ -110,20 +110,63 @@ class CategoriesScreen extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _logoSpinController;
+
+  @override
+  void initState() {
+    super.initState();
+    _logoSpinController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+  }
+
+  @override
+  void dispose() {
+    _logoSpinController.dispose();
+    super.dispose();
+  }
+
+  void _triggerLogoSpin() {
+    if (!_logoSpinController.isAnimating) {
+      _logoSpinController.forward(from: 0.0);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeNotifierProvider);
     final isDark = themeMode == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GDG Ghardaia'),
+        title: const Text(
+          'GDG Ghardaia',
+          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: -0.2),
+        ),
         leading: Padding(
           padding: const EdgeInsets.only(left: 12.0),
-          child: Image.asset('assets/logos/gdg_logo.webp'),
+          child: GestureDetector(
+            onTap: _triggerLogoSpin,
+            child: RotationTransition(
+              turns: Tween<double>(begin: 0.0, end: 1.0).animate(
+                CurvedAnimation(
+                  parent: _logoSpinController,
+                  curve: Curves.easeOutBack,
+                ),
+              ),
+              child: Image.asset('assets/logos/gdg_logo.webp'),
+            ),
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
             tooltip: 'Settings',
             onPressed: () {
               GameInfoDialog.show(
@@ -133,7 +176,7 @@ class CategoriesScreen extends ConsumerWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline),
+            icon: const Icon(Icons.info_outline_rounded),
             tooltip: 'Rules & About',
             onPressed: () {
               GameInfoDialog.show(
@@ -146,16 +189,19 @@ class CategoriesScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(right: 8.0),
             child: AnimatedRotation(
               duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutBack,
               turns: isDark ? 0.5 : 0,
               child: AnimatedScale(
                 duration: const Duration(milliseconds: 300),
-                scale: isDark ? 1.2 : 1.0,
+                scale: isDark ? 1.15 : 1.0,
                 child: IconButton(
-                  tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                  tooltip:
+                      isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
                   icon: Icon(
-                    isDark ? Icons.light_mode : Icons.dark_mode,
+                    isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
                   ),
-                  onPressed: () => ref.read(themeNotifierProvider.notifier).toggleTheme(),
+                  onPressed: () =>
+                      ref.read(themeNotifierProvider.notifier).toggleTheme(),
                 ),
               ),
             ),
@@ -171,26 +217,50 @@ class CategoriesScreen extends ConsumerWidget {
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
-          itemCount: categories.length,
+          itemCount: CategoriesScreen.categories.length,
           itemBuilder: (context, index) {
-            final category = categories[index];
+            final category = CategoriesScreen.categories[index];
             return AnimationConfiguration.staggeredGrid(
               position: index,
-              duration: const Duration(milliseconds: 1200),
+              duration: const Duration(milliseconds: 800),
               columnCount: 2,
               child: SlideAnimation(
-                horizontalOffset: 300.0,
+                verticalOffset: 50.0,
+                curve: Curves.easeOutCubic,
                 child: FadeInAnimation(
-                  duration: const Duration(milliseconds: 1200),
+                  duration: const Duration(milliseconds: 800),
                   child: AnimatedCard(
                     category: category,
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute<void>(
-                          builder: (context) => GameScreen(
+                        PageRouteBuilder<void>(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              GameScreen(
                             categoryName: category['name']!,
                           ),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                              opacity: CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                              child: ScaleTransition(
+                                scale: Tween<double>(
+                                  begin: 0.95,
+                                  end: 1.0,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                ),
+                                child: child,
+                              ),
+                            );
+                          },
+                          transitionDuration: const Duration(milliseconds: 350),
                         ),
                       );
                     },
@@ -205,7 +275,7 @@ class CategoriesScreen extends ConsumerWidget {
   }
 }
 
-class AnimatedCard extends StatefulWidget {
+class AnimatedCard extends StatelessWidget {
   final Map<String, String> category;
   final VoidCallback onTap;
 
@@ -216,189 +286,78 @@ class AnimatedCard extends StatefulWidget {
   });
 
   @override
-  State<AnimatedCard> createState() => _AnimatedCardState();
-}
-
-class _AnimatedCardState extends State<AnimatedCard>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scaleAnimation;
-  late final Animation<double> _rotateAnimation;
-  bool _isLongPressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-
-    _rotateAnimation = Tween<double>(begin: 0.0, end: 0.05).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleLongPressStart(LongPressStartDetails details) {
-    setState(() => _isLongPressed = true);
-    _controller.forward();
-  }
-
-  void _handleLongPressEnd(LongPressEndDetails details) {
-    setState(() => _isLongPressed = false);
-    _controller.reverse();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final categoryName = widget.category['name'] ?? '';
-    final logoPath = widget.category['logo_path'] ?? '';
+    final categoryName = category['name'] ?? '';
+    final logoPath = category['logo_path'] ?? '';
 
-    return GestureDetector(
-      onLongPressStart: _handleLongPressStart,
-      onLongPressEnd: _handleLongPressEnd,
-      onTap: widget.onTap,
-      child: AnimatedBuilder(
-        animation: _controller,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: _isLongPressed ? 6 : 4,
-                offset: Offset(0, _isLongPressed ? 3 : 2),
+    return InteractiveScaleCard(
+      onTap: onTap,
+      glowColor: theme.colorScheme.primary,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            ],
+          ),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+            width: 1.2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: 3,
+                child: Hero(
+                  tag: 'category_$categoryName',
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 700),
+                    tween: Tween<double>(begin: 0.0, end: 1.0),
+                    curve: Curves.easeOutBack,
+                    builder: (context, double value, child) {
+                      return Transform.scale(
+                        scale: (0.7 + 0.3 * value).clamp(0.0, 1.0),
+                        child: child,
+                      );
+                    },
+                    child: Image.asset(
+                      logoPath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.broken_image_rounded, size: 40),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                flex: 1,
+                child: Text(
+                  categoryName,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      theme.colorScheme.surface,
-                      theme.colorScheme.surface.withValues(alpha: 0.3),
-                    ],
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Hero(
-                          tag: 'category_$categoryName',
-                          child: TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 800),
-                            tween: Tween<double>(begin: 0.0, end: 1.0),
-                            curve: Curves.easeOutBack,
-                            builder: (context, double value, child) {
-                              return Transform(
-                                transform: Matrix4.identity()
-                                  ..setEntry(3, 2, 0.001)
-                                  ..rotateX((1 - value) * 0.5)
-                                  ..rotateY((1 - value) * 0.5)
-                                  ..scaleByDouble(
-                                    value,
-                                    value,
-                                    1.0,
-                                    1.0,
-                                  ),
-                                alignment: Alignment.center,
-                                child: Image.asset(
-                                  logoPath,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.broken_image, size: 40),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        flex: 1,
-                        child: TweenAnimationBuilder<double>(
-                          duration: const Duration(milliseconds: 800),
-                          tween: Tween<double>(begin: 0.0, end: 1.0),
-                          curve: Curves.easeOutBack,
-                          builder: (context, double value, child) {
-                            return Transform(
-                              transform: Matrix4.identity()
-                                ..setEntry(3, 2, 0.001)
-                                ..translateByDouble(
-                                  0.0,
-                                  30.0 * (1 - value),
-                                  0.0,
-                                  1.0,
-                                )
-                                ..scaleByDouble(
-                                  value,
-                                  value,
-                                  1.0,
-                                  1.0,
-                                ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                categoryName,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onSurface,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
         ),
-        builder: (context, child) {
-          return Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..rotateZ(_rotateAnimation.value)
-              ..scaleByDouble(
-                _scaleAnimation.value,
-                _scaleAnimation.value,
-                1.0,
-                1.0,
-              ),
-            alignment: Alignment.center,
-            child: child,
-          );
-        },
       ),
     );
   }
 }
-

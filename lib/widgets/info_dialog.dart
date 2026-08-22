@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/game_providers.dart';
 import '../providers/theme_provider.dart';
+import 'animations/interactive_scale_card.dart';
 
 enum GameInfoTab {
   settings,
@@ -31,14 +32,29 @@ class GameInfoDialog extends ConsumerStatefulWidget {
     CharacterAlgorithm? algorithm,
     ValueChanged<CharacterAlgorithm>? onAlgorithmChanged,
   }) {
-    return showDialog<void>(
+    return showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => GameInfoDialog(
+      barrierLabel: 'Game Info Dialog',
+      transitionDuration: const Duration(milliseconds: 320),
+      pageBuilder: (context, anim1, anim2) => GameInfoDialog(
         initialTab: initialTab,
         algorithm: algorithm,
         onAlgorithmChanged: onAlgorithmChanged,
       ),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curve = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.9, end: 1.0).animate(curve),
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
     );
   }
 
@@ -1098,35 +1114,41 @@ class _AboutGameView extends StatelessWidget {
     required Color color,
   }) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+    return InteractiveScaleCard(
+      scaleOnHover: 1.05,
+      scaleOnPress: 0.96,
+      glowColor: color,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(height: 6),
-          Text(
-            number,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
+        child: Column(
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(height: 6),
+            Text(
+              number,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: theme.colorScheme.onSurfaceVariant,
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1270,94 +1292,100 @@ class _AboutDevelopersView extends StatelessWidget {
   }) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+    return InteractiveScaleCard(
+      scaleOnHover: 1.02,
+      scaleOnPress: 0.98,
+      glowColor: accentColor,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accentColor.withValues(alpha: 0.12),
-                  border: Border.all(
-                    color: accentColor.withValues(alpha: 0.4),
-                    width: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accentColor.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.4),
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(child: avatarWidget),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        role,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: accentColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: ClipOval(child: avatarWidget),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      role,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: accentColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            bio,
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.4,
-              color: theme.colorScheme.onSurfaceVariant,
+              ],
             ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: links.map((link) {
-              return ActionChip(
-                avatar: Icon(link.icon, size: 14, color: accentColor),
-                label: Text(link.label),
-                labelStyle: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                side: BorderSide(
-                  color: accentColor.withValues(alpha: 0.3),
-                ),
-                onPressed: () => _GameInfoDialogState._launchUrl(link.url),
-              );
-            }).toList(),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              bio,
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.4,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: links.map((link) {
+                return ActionChip(
+                  avatar: Icon(link.icon, size: 14, color: accentColor),
+                  label: Text(link.label),
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  side: BorderSide(
+                    color: accentColor.withValues(alpha: 0.3),
+                  ),
+                  onPressed: () => _GameInfoDialogState._launchUrl(link.url),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }
