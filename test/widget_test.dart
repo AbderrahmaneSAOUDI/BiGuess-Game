@@ -119,7 +119,7 @@ void main() {
       expect(find.byType(GameInfoDialog), findsOneWidget);
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('Character Algorithm'), findsOneWidget);
-      expect(find.text('Countdown Timer Duration'), findsOneWidget);
+      expect(find.text('Countdown Duration'), findsOneWidget);
     });
 
     testWidgets('Info dialog opens and shows How to Play, About Game, and Developers tabs', (
