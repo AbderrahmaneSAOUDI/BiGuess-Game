@@ -56,6 +56,25 @@ void main() {
         CharacterAlgorithm.random,
       );
     });
+    test('CountdownDurationNotifier updates countdown', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(countdownDurationProvider), 2);
+      container.read(countdownDurationProvider.notifier).setDuration(5);
+      expect(container.read(countdownDurationProvider), 5);
+    });
+
+    test('ShowCharacterNameHintNotifier toggles hint', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(showCharacterNameHintProvider), true);
+      container.read(showCharacterNameHintProvider.notifier).toggle();
+      expect(container.read(showCharacterNameHintProvider), false);
+      container.read(showCharacterNameHintProvider.notifier).set(true);
+      expect(container.read(showCharacterNameHintProvider), true);
+    });
   });
 
   group('BiGuess Game Widget Tests', () {
@@ -85,7 +104,25 @@ void main() {
       expect(find.byType(CategoriesScreen), findsOneWidget);
     });
 
-    testWidgets('Info dialog opens and shows game rules & developer tabs', (
+    testWidgets('Settings button opens GameInfoDialog on Settings tab', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
+      await tester.pumpAndSettle();
+
+      final settingsButton = find.byIcon(Icons.settings);
+      expect(settingsButton, findsOneWidget);
+
+      await tester.tap(settingsButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GameInfoDialog), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
+      expect(find.text('Character Algorithm'), findsOneWidget);
+      expect(find.text('Countdown Timer Duration'), findsOneWidget);
+    });
+
+    testWidgets('Info dialog opens and shows How to Play, About Game, and Developers tabs', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
@@ -97,10 +134,10 @@ void main() {
       await tester.tap(infoButton);
       await tester.pumpAndSettle();
 
-      expect(find.byType(RulesContactDialog), findsOneWidget);
-      expect(find.text('About the game'), findsOneWidget);
-      expect(find.text('About the developers'), findsOneWidget);
-      expect(find.text('What is BiGuess Game?'), findsOneWidget);
+      expect(find.byType(GameInfoDialog), findsOneWidget);
+      expect(find.text('How to Play'), findsOneWidget);
+      expect(find.text('About Game'), findsOneWidget);
+      expect(find.text('Developers'), findsOneWidget);
     });
 
     testWidgets('Tapping a category navigates to GameScreen', (
@@ -121,3 +158,4 @@ void main() {
     });
   });
 }
+
