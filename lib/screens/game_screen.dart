@@ -316,16 +316,26 @@ class _GameScreenState extends ConsumerState<GameScreen>
     } else if (_showPicture && _currentImageAsset != null) {
       return LayoutBuilder(
         builder: (context, constraints) {
-          final double maxImageHeight = max(
+          final double screenWidth = MediaQuery.of(context).size.width;
+          final bool showNameHint = ref.watch(showCharacterNameHintProvider);
+          final bool hasName = _correctAnswer != null && showNameHint;
+          // Space reserved for the character name tag + top margin + buffer
+          final double nameReservedHeight = hasName ? 72.0 : 0.0;
+          final double availableHeight = max(
             0.0,
-            constraints.maxHeight - 55.0,
+            constraints.maxHeight - nameReservedHeight - 12.0,
           );
+
+          // 75% of screen width, unless the height is not enough (then bounded by remaining screen height)
+          final double targetWidth = screenWidth * 0.75;
+          final double maxImageHeight = availableHeight;
 
           return AnimatedCharacterCard(
             key: ValueKey(_currentImageAsset),
             imageAsset: _currentImageAsset!,
             characterName: _correctAnswer,
-            showNameHint: ref.watch(showCharacterNameHintProvider),
+            showNameHint: showNameHint,
+            maxWidth: targetWidth,
             maxHeight: maxImageHeight,
           );
         },
