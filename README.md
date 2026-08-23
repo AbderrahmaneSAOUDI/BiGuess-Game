@@ -1,71 +1,266 @@
-# GDG Character Guessing Game
+<div align="center">
 
-A fun, interactive two-player game that combines elements of "20 Questions" with popular anime characters. Perfect for social gatherings and anime fan meetups!
+  <img src="assets/logos/biguess-icon.webp" alt="BiGuess Logo" width="120" height="120" style="border-radius: 24px; margin-bottom: 12px;" />
 
-## Overview
+  # 🎮 BiGuess
 
-The GDG Character Guessing Game is designed to be played in person, making it ideal for social interactions and friendly competitions. Players take turns showing random characters to each other and guessing through yes/no questions.
+  **The Ultimate Face-to-Face 2-Player Anime & Character Guessing Game**
 
-## Game Categories
+  [![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)](https://flutter.dev)
+  [![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+  [![Riverpod](https://img.shields.io/badge/State-Riverpod%202.x-00B4D8?style=for-the-badge)](https://riverpod.dev)
+  [![Material 3](https://img.shields.io/badge/UI-Material%203-6750A4?style=for-the-badge&logo=materialdesign&logoColor=white)](https://m3.material.io)
+  [![Platforms](https://img.shields.io/badge/Platforms-Android%20|%20iOS%20|%20Windows%20|%20macOS%20|%20Linux%20|%20Web-4CAF50?style=for-the-badge)](https://flutter.dev/multi-platform)
+  [![Version](https://img.shields.io/badge/Version-v0.25.0-orange?style=for-the-badge)](pubspec.yaml)
 
-The game features multiple anime categories, including:
-- Naruto
-- Attack on Titan
-- Black Clover
-- Demon Slayer
-- Hunter X Hunter
-And more categories coming soon!
+  <p align="center">
+    <a href="#-about-biguess">About</a> •
+    <a href="#-how-to-play">How to Play</a> •
+    <a href="#-key-features">Key Features</a> •
+    <a href="#-categories">Categories</a> •
+    <a href="#%EF%B8%8F-game-algorithms--settings">Settings</a> •
+    <a href="#-getting-started">Getting Started</a> •
+    <a href="#-team--credits">Team & Credits</a>
+  </p>
 
-## How to Play
+</div>
 
-### Setup
-1. Each player needs their own phone with the game installed
-2. Players choose a category they both know well
-3. Players sit facing each other
+---
 
-### Gameplay
-1. Player 1 clicks the "Random" button on their phone
-2. A 3-second countdown begins, building anticipation
-3. After the countdown, a random character from the selected category appears
-4. Player 1 shows their phone to Player 2
-5. Player 2 then tries to guess the character by asking yes/no questions
-6. Player 1 can only answer with "yes" or "no"
-7. Players take turns being the guesser and the answerer
+## 📖 About BiGuess
 
-### Rules
-- Questions must be answerable with "yes" or "no"
-- The guesser can ask as many questions as needed
-- The answerer must be honest
-- No peeking at the other player's phone during the countdown
-- The game is meant to be played in person for maximum fun and interaction
+**BiGuess** is an interactive, fast-paced two-player social party game that merges the classic deduction mechanics of *"20 Questions"* with rich anime and pop-culture character universes. 
 
-## Features
-- Beautiful, animated interface with staggered animations
-- Multiple anime categories with extensive character collections
-- Random character selection with suspenseful countdown
-- Clean, modern Material Design interface
-- Cross-platform compatibility (iOS, Android, Windows, macOS, Linux)
-- Local storage support for game data
-- External link support for additional resources
-- Regular updates with new categories and characters
+Designed specifically for face-to-face play, gatherings, anime conventions, and tech community events, BiGuess turns quick wits, strategic questioning, and deep franchise trivia into moments of laughter, suspense, and friendly competition.
 
-## Why It's Fun
+> **💡 The Story Behind BiGuess:**  
+> Born out of community meetups and DevFest events organized by **Google Developer Groups (GDG) Ghardaia**, BiGuess was crafted to break the ice and bring people together offline through seamless mobile gaming.
 
-The game's charm lies in its simplicity and social interaction. By requiring two phones and face-to-face play, it encourages:
-- Real social interaction
-- Strategic questioning
-- Knowledge sharing
-- Friendly competition
-- Laughter and fun moments
+---
 
-The countdown feature adds an element of suspense and excitement, while the random selection ensures each game is unique and challenging. The game is perfect for anime fans who want to test their knowledge and have fun with friends in a social setting.
+## 🕹️ How to Play
 
-## Technical Details
-- Built with Flutter SDK 3.0.0 or higher
-- Features smooth staggered animations and transitions
-- Optimized for portrait mode
-- Includes a comprehensive collection of anime character images
-- Uses Flutter Riverpod for state management
-- Implements path_provider for local storage
-- Supports URL launching for external resources
-- Regular updates with new categories and characters
+Playing BiGuess requires **two players** and **one or two phones** sitting opposite each other.
+
+```
+       [ PLAYER 1: The Answerer ]
+       (Knows character & answers)
+                  ▲
+                  │  "Is your character a villain?"
+                  │  "No!"
+                  ▼
+       [ PLAYER 2: The Guesser ]
+     (Asks Yes/No questions to deduce)
+```
+
+### 🎯 Step-by-Step Round
+
+1. **Pick a Category:** Choose a shared favorite franchise from the 18 available universes.
+2. **Hit "Random":** The answerer taps the primary action button to trigger an animated countdown timer (0s - 5s).
+3. **Secret Reveal:** A character card is revealed onto the answerer's screen.
+4. **The Interrogation:** The guesser asks **Yes/No questions** (*e.g., "Do they possess Titan powers?", "Are they a Devil Fruit user?"*).
+5. **Deduce & Victory:** The guesser narrows down the possibilities until they make their final guess!
+6. **Switch Roles:** Rotate turns and keep score!
+
+### 📜 Game Rules
+- ⚖️ **Yes/No Only:** All questions asked by the guesser must be strictly answerable with "Yes", "No", or "Unknown/Irrelevant".
+- 🤝 **Honesty First:** The answerer must answer truthfully according to canon lore.
+- 🙈 **No Peeking:** The guesser must never peek at the answerer's screen during the roll or countdown.
+
+---
+
+## ✨ Key Features
+
+- 🎭 **18 Curated Anime Franchises:** Massive roster of characters featuring custom logos, optimized WebP artwork, and clean metadata.
+- 🎲 **Smart Randomization Engines:**
+  - **Non-Repeating (Fair Shuffle):** Cycles through the entire roster without repeats until all characters have been played.
+  - **Pure Random:** Classic pseudo-random generator for unpredictable rolls.
+- ⏱️ **Customizable Suspense Countdown:** Fine-tune suspense timing from **0s (instant), 1s, 2s, 3s, up to 5 seconds**.
+- 🌓 **Dynamic Theme Engine:** Seamless switching between Dark Mode and Light Mode with Material 3 tokens.
+- ✨ **Fluid Micro-Animations:** Staggered list animations, 3D interactive scale cards, mystery box reveals, and tap-punch feedback powered by `flutter_staggered_animations`.
+- 🎛️ **Comprehensive In-App Game Center:** Built-in modal dialog featuring live settings, rules explanation, about page, and team credits.
+- 📱 **True Multi-Platform Support:** Ready to run natively on Android, iOS, Windows, macOS, Linux, and the Web.
+
+---
+
+## 🎭 Categories
+
+BiGuess includes **18 rich anime universes** with hundreds of characters:
+
+| Franchise | Category | Artwork Status |
+| :--- | :---: | :---: |
+| ⚔️ **Attack on Titan** | `attack_on_titan` | ✅ High-Res Asset Pack |
+| 🍀 **Black Clover** | `black_clover` | ✅ High-Res Asset Pack |
+| 🗡️ **Demon Slayer** | `demon_slayer` | ✅ High-Res Asset Pack |
+| 🎣 **Hunter X Hunter** | `hunter_x_hunter` | ✅ High-Res Asset Pack |
+| 🍥 **Naruto** | `naruto` | ✅ High-Res Asset Pack |
+| 🏴‍☠️ **One Piece** | `one_piece` | ✅ High-Res Asset Pack |
+| 🌸 **Bleach** | `bleach` | 🚀 Active Expansion |
+| 👁️ **Code Geass** | `code_geass` | 🚀 Active Expansion |
+| 📓 **Death Note** | `death_note` | 🚀 Active Expansion |
+| 🔍 **Detective Conan** | `detective_conan` | 🚀 Active Expansion |
+| 🧪 **Dr. Stone** | `dr_stone` | 🚀 Active Expansion |
+| 🐉 **Dragon Ball Z** | `dragon_ball_z` | 🚀 Active Expansion |
+| ⚗️ **FMAB** | `fmab` | 🚀 Active Expansion |
+| 🧿 **Jujutsu Kaisen** | `jujutsu_kaisen` | 🚀 Active Expansion |
+| 💥 **My Hero Academia** | `my_hero_academia` | 🚀 Active Expansion |
+| 🗡️ **Solo Leveling** | `solo_leveling` | 🚀 Active Expansion |
+| ⏳ **Tokyo Revengers** | `tokyo_revengers` | 🚀 Active Expansion |
+| ⛵ **Vinland Saga** | `vinland_saga` | 🚀 Active Expansion |
+
+---
+
+## ⚙️ Game Algorithms & Settings
+
+BiGuess offers in-depth gameplay customization accessible via the **Settings (⚙️)** menu:
+
+| Setting | Options | Description |
+| :--- | :--- | :--- |
+| **Character Algorithm** | `Non-Repeating` / `Random` | Choose between deck-shuffled non-repeating character selection or pure independent random selection. |
+| **Countdown Timer** | `0s`, `1s`, `2s`, `3s`, `5s` | Controls anticipation duration before revealing the character. |
+| **Character Hint** | `Enabled` / `Disabled` | Toggle displaying character name labels for players who may not immediately recognize an image. |
+| **Theme Mode** | `System` / `Light` / `Dark` | Adaptive Material 3 theme mode with custom elevation styling. |
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+BiGuess is built with modern, declarative Flutter best practices:
+
+- **Framework:** [Flutter](https://flutter.dev) (SDK `^3.0.0`)
+- **Language:** [Dart](https://dart.dev)
+- **State Management:** [Riverpod 2.x](https://riverpod.dev) (`flutter_riverpod`)
+- **Animation System:** `flutter_staggered_animations`, Custom Ticker controllers & Matrix4 transforms
+- **System & Device:** `path_provider`, `url_launcher`, `package_info_plus`, `win32`
+
+### 📁 Project Structure
+
+```text
+BiGuess-Game/
+├── assets/
+│   ├── fonts/               # GoogleSans typography suite
+│   ├── images/              # Anime character asset catalogs (WebP)
+│   ├── logos/               # Category logos & app icons
+│   └── profile/             # Developer profile media
+├── lib/
+│   ├── main.dart            # App entrypoint & ProviderScope
+│   ├── assets_manifest.dart # High-performance static asset registry
+│   ├── providers/           # Riverpod state notifiers (Theme, Game, Algo)
+│   ├── screens/
+│   │   ├── categories_screen.dart # Franchise selection grid
+│   │   └── game_screen.dart       # Main gameplay & countdown arena
+│   ├── utils/               # Asset loader & runtime helpers
+│   └── widgets/
+│       ├── animations/      # Character card, countdown & mystery box FX
+│       └── info_dialog.dart # Multi-tab settings, rules & team dialog
+└── pubspec.yaml             # Dependencies, assets & launcher configuration
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (`>= 3.0.0`)
+- [Dart SDK](https://dart.dev/get-dart)
+- Android Studio / VS Code with Flutter extension
+- An Android/iOS device, emulator, or desktop runner
+
+### Installation & Run
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/AbderrahmaneSAOUDI/BiGuess-Game.git
+   cd BiGuess-Game
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Run the app:**
+   ```bash
+   flutter run
+   ```
+
+### 📦 Building Release Packages
+
+- **Android APK:**
+  ```bash
+  flutter build apk --release
+  ```
+- **Android App Bundle (Google Play):**
+  ```bash
+  flutter build appbundle --release
+  ```
+- **Desktop (Windows / macOS / Linux):**
+  ```bash
+  flutter build windows
+  flutter build macos
+  flutter build linux
+  ```
+- **Web:**
+  ```bash
+  flutter build web --release
+  ```
+
+---
+
+## 👥 Team & Credits
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <a href="https://saoudi.online">
+        <img src="assets/profile/profile.webp" width="100px;" alt="Abderrahmane SAOUDI" style="border-radius: 50%;" onerror="this.src='https://github.com/AbderrahmaneSAOUDI.png'"/>
+        <br />
+        <sub><b>Abderrahmane SAOUDI</b></sub>
+      </a>
+      <br />
+      <sub>Lead Developer & UI/UX Designer</sub>
+      <br />
+      <a href="https://saoudi.online">🌐 Website</a> •
+      <a href="https://github.com/AbderrahmaneSAOUDI">🐙 GitHub</a> •
+      <a href="mailto:saoudi.dev@gmail.com">✉️ Email</a>
+    </td>
+    <td align="center" width="50%">
+      <a href="mailto:anas.djribie@gmail.com">
+        <img src="https://github.com/identicons/anasdjribie.png" width="100px;" alt="Anas Oussama DJRIBIE" style="border-radius: 50%;" onerror="this.src='https://ui-avatars.com/api/?name=Anas+Djribie&background=6750A4&color=fff'"/>
+        <br />
+        <sub><b>Anas Oussama DJRIBIE</b></sub>
+      </a>
+      <br />
+      <sub>Data Collector & QA Tester</sub>
+      <br />
+      <sub>Curated datasets, naming conventions & playtesting</sub>
+      <br />
+      <a href="mailto:anas.djribie@gmail.com">✉️ Email</a>
+    </td>
+  </tr>
+</table>
+
+### 🌟 Special Thanks
+- **[GDG Ghardaia](https://gdg.community.dev/)** — For the community inspiration, hackathons, and event support.
+
+---
+
+## 🤝 Contributing
+
+Contributions, new anime categories, character submissions, and bug fixes are very welcome!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the repository for details.
+
+<div align="center">
+  <sub>Crafted with ❤️ by <a href="https://saoudi.online">Abderrahmane SAOUDI</a> and the BiGuess Community.</sub>
+</div>
