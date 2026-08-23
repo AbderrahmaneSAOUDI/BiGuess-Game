@@ -154,6 +154,7 @@ void main() {
               imageAsset: 'assets/images/naruto/Naruto UZUMAKI.webp',
               characterName: 'Naruto UZUMAKI',
               showNameHint: true,
+              cardSize: 320.0,
             ),
           ),
         ),
@@ -162,6 +163,9 @@ void main() {
 
       expect(find.text('Naruto UZUMAKI'), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome_rounded), findsOneWidget);
+
+      final textWidget = tester.widget<Text>(find.text('Naruto UZUMAKI'));
+      expect(textWidget.style?.fontSize, 22.0);
     });
   });
 

@@ -7,13 +7,17 @@ class AnimatedCharacterCard extends StatefulWidget {
   final String? characterName;
   final bool showNameHint;
   final double maxHeight;
+  final double maxWidth;
+  final double? cardSize;
 
   const AnimatedCharacterCard({
     super.key,
     required this.imageAsset,
     this.characterName,
     this.showNameHint = true,
-    this.maxHeight = 290.0,
+    this.maxHeight = 400.0,
+    this.maxWidth = 320.0,
+    this.cardSize,
   });
 
   @override
@@ -102,6 +106,8 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final effectiveMaxWidth = widget.cardSize ?? widget.maxWidth;
+    final effectiveMaxHeight = widget.cardSize ?? widget.maxHeight;
 
     return AnimatedBuilder(
       animation: _flipController,
@@ -119,108 +125,115 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Character Image Card (compact, centered and well-proportioned)
+              // Character Image Card (tightly wraps the image without letterbox gaps)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxWidth: 290.0,
-                      maxHeight: min(widget.maxHeight, 290.0),
+                      maxWidth: effectiveMaxWidth,
+                      maxHeight: effectiveMaxHeight,
                     ),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
                         gradient: LinearGradient(
                           colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.8),
-                            theme.colorScheme.tertiary.withValues(alpha: 0.8),
+                            theme.colorScheme.primary.withValues(alpha: 0.85),
+                            theme.colorScheme.tertiary.withValues(alpha: 0.85),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                            blurRadius: 20,
-                            spreadRadius: 1,
+                            color: theme.colorScheme.primary.withValues(alpha: 0.28),
+                            blurRadius: 22,
+                            spreadRadius: 2,
                             offset: const Offset(0, 6),
                           ),
                         ],
                       ),
-                      padding: const EdgeInsets.all(3), // Gradient border width
+                      padding: const EdgeInsets.all(3.5), // Gradient border width
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(21),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            Container(
-                              color: theme.colorScheme.surface,
-                              child: Image.asset(
-                                widget.imageAsset,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(32.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.broken_image_rounded,
-                                            color: Colors.red,
-                                            size: 50,
-                                          ),
-                                          SizedBox(height: 8),
-                                          Text(
-                                            'Error loading image',
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-
-                            // Holographic diagonal light sweep across the card
-                            AnimatedBuilder(
-                              animation: _shimmerController,
-                              builder: (context, child) {
-                                if (_shimmerController.value <= 0.0 ||
-                                    _shimmerController.value >= 1.0) {
-                                  return const SizedBox.shrink();
-                                }
-                                return Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(21),
-                                      child: Transform.translate(
-                                        offset: Offset(
-                                          _shimmerAnimation.value * 300.0,
-                                          0,
+                            Image.asset(
+                              widget.imageAsset,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(32.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.broken_image_rounded,
+                                          color: Colors.red,
+                                          size: 50,
                                         ),
-                                        child: Transform.rotate(
-                                          angle: 0.4,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.white.withValues(alpha: 0.0),
-                                                  Colors.white.withValues(alpha: 0.45),
-                                                  Colors.white.withValues(alpha: 0.0),
-                                                ],
-                                                stops: const [0.0, 0.5, 1.0],
-                                              ),
-                                            ),
-                                          ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          'Error loading image',
+                                          textAlign: TextAlign.center,
                                         ),
-                                      ),
+                                      ],
                                     ),
                                   ),
                                 );
                               },
+                            ),
+
+                            // Holographic diagonal light sweep across the card
+                            Positioned.fill(
+                              child: AnimatedBuilder(
+                                animation: _shimmerController,
+                                builder: (context, child) {
+                                  if (_shimmerController.value <= 0.0 ||
+                                      _shimmerController.value >= 1.0) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return LayoutBuilder(
+                                    builder: (context, cardConstraints) {
+                                      final sweepDistance =
+                                          (cardConstraints.maxWidth > 0
+                                              ? cardConstraints.maxWidth
+                                              : 300.0) *
+                                          1.5;
+                                      return IgnorePointer(
+                                        child: Transform.translate(
+                                          offset: Offset(
+                                            _shimmerAnimation.value *
+                                                sweepDistance,
+                                            0,
+                                          ),
+                                          child: Transform.rotate(
+                                            angle: 0.4,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.white
+                                                        .withValues(alpha: 0.0),
+                                                    Colors.white
+                                                        .withValues(alpha: 0.45),
+                                                    Colors.white
+                                                        .withValues(alpha: 0.0),
+                                                  ],
+                                                  stops: const [0.0, 0.5, 1.0],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         ),
@@ -243,27 +256,28 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                       child: Transform.scale(
                         scale: (0.7 + 0.3 * value).clamp(0.0, 1.0),
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 16.0),
+                          padding: const EdgeInsets.only(top: 14.0),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
+                              horizontal: 24,
+                              vertical: 10,
                             ),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(22),
                               border: Border.all(
                                 color: theme.colorScheme.primary.withValues(
                                   alpha: 0.4,
                                 ),
+                                width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   color: theme.colorScheme.shadow.withValues(
-                                    alpha: 0.1,
+                                    alpha: 0.12,
                                   ),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
@@ -272,18 +286,18 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                               children: [
                                 Icon(
                                   Icons.auto_awesome_rounded,
-                                  size: 18,
+                                  size: 22,
                                   color: theme.colorScheme.primary,
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 Flexible(
                                   child: Text(
                                     widget.characterName!,
                                     style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
                                       color: theme.colorScheme.onSurface,
-                                      letterSpacing: 0.3,
+                                      letterSpacing: 0.4,
                                     ),
                                     textAlign: TextAlign.center,
                                     maxLines: 1,

@@ -6,7 +6,7 @@ A suite of cross-platform Python and Bash automation scripts for maintaining gam
 
 ## ⚡ Quick Start
 
-Run the interactive dashboard to access all tools via a clean terminal interface:
+Run the interactive dashboard to access all tlools via a clean terminal interface:
 
 ```bash
 ./scripts/run.sh
