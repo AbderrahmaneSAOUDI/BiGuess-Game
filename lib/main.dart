@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'providers/theme_provider.dart';
-import 'screens/categories_screen.dart';
+import 'core/constants/app_constants.dart';
+import 'core/theme/app_theme.dart';
+import 'presentation/controllers/theme_controller.dart';
+import 'presentation/screens/categories/categories_screen.dart';
 
-export 'providers/theme_provider.dart';
+export 'presentation/controllers/theme_controller.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,10 +24,10 @@ class BiGuessApp extends ConsumerWidget {
     final themeMode = ref.watch(themeNotifierProvider);
 
     return MaterialApp(
-      title: 'BiGuess Game',
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      theme: ThemeNotifier.lightTheme,
-      darkTheme: ThemeNotifier.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       home: const CategoriesScreen(),
     );
