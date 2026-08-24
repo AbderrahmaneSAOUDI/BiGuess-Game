@@ -12,6 +12,7 @@ import 'package:gdg_guess_game/domain/models/character_algorithm.dart';
 import 'package:gdg_guess_game/domain/models/developer_info.dart';
 import 'package:gdg_guess_game/domain/models/game_state.dart';
 import 'package:gdg_guess_game/domain/use_cases/select_character_use_case.dart';
+import 'package:gdg_guess_game/presentation/controllers/game_controller.dart';
 import 'package:gdg_guess_game/presentation/dialogs/info/tabs/about_game_tab.dart';
 import 'package:gdg_guess_game/presentation/dialogs/info/tabs/developers_tab.dart';
 import 'package:gdg_guess_game/presentation/dialogs/info/tabs/how_to_play_tab.dart';
@@ -375,6 +376,46 @@ void main() {
       expect(find.text('Jane Doe'), findsOneWidget);
       expect(find.text('Flutter Expert'), findsOneWidget);
       expect(find.text('Portfolio'), findsOneWidget);
+    });
+  });
+
+  group('Presentation Layer - GameRoundNotifier AutoDispose & State Reset', () {
+    test('gameRoundProvider initializes fresh state and auto-disposes on leave', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      // Listen to Naruto category provider
+      final sub = container.listen(
+        gameRoundProvider('Naruto'),
+        (_, __) {},
+        fireImmediately: true,
+      );
+
+      final initialState = container.read(gameRoundProvider('Naruto'));
+      expect(initialState.hasStarted, isFalse);
+      expect(initialState.showPicture, isFalse);
+      expect(initialState.currentImageAsset, isNull);
+      expect(initialState.allImages, isNotEmpty);
+
+      // Start countdown / game round
+      container.read(gameRoundProvider('Naruto').notifier).startCountdown();
+      final inProgressState = container.read(gameRoundProvider('Naruto'));
+      expect(inProgressState.isCountingDown, isTrue);
+      expect(inProgressState.hasStarted, isTrue);
+
+      // Simulate leaving the game screen (unsubscribing/disposing provider)
+      sub.close();
+
+      // Wait a microtask turn for autoDispose cleanup
+      await Future<void>.delayed(Duration.zero);
+
+      // Next time the user opens the category screen, state is fresh and ready
+      final freshState = container.read(gameRoundProvider('Naruto'));
+      expect(freshState.hasStarted, isFalse);
+      expect(freshState.showPicture, isFalse);
+      expect(freshState.isCountingDown, isFalse);
+      expect(freshState.currentImageAsset, isNull);
+      expect(freshState.remainingImages.length, freshState.allImages.length);
     });
   });
 }

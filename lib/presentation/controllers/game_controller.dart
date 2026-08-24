@@ -5,7 +5,7 @@ import 'category_controller.dart';
 import 'game_settings_controller.dart';
 
 /// Notifier managing the active game round state and countdown transitions
-class GameRoundNotifier extends FamilyNotifier<GameRoundState, String> {
+class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState, String> {
   Timer? _countdownTimer;
 
   @override
@@ -100,6 +100,6 @@ class GameRoundNotifier extends FamilyNotifier<GameRoundState, String> {
 }
 
 final gameRoundProvider =
-    NotifierProvider.family<GameRoundNotifier, GameRoundState, String>(
+    NotifierProvider.autoDispose.family<GameRoundNotifier, GameRoundState, String>(
   GameRoundNotifier.new,
 );

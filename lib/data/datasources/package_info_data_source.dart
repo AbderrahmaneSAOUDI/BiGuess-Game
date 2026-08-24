@@ -15,7 +15,7 @@ class PackageInfoDataSource implements IPackageInfoDataSource {
       final info = await PackageInfo.fromPlatform();
       return info.version;
     } catch (_) {
-      return '0.24.0';
+      return '0.28.0';
     }
   }
 }

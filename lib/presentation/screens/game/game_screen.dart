@@ -49,21 +49,23 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   Widget _buildContent(BuildContext context, GameRoundState state) {
     if (state.noImagesFound) {
-      return const GameEmptyState();
+      return const GameEmptyState(key: ValueKey('empty'));
     }
 
     if (state.isCountingDown) {
       return AnimatedCountdown(
-        key: ValueKey(state.countdown),
+        key: ValueKey('countdown_${state.countdown}'),
         countdown: state.countdown,
       );
     } else if (state.showPicture && state.currentImageAsset != null) {
       return GameCharacterDisplay(
+        key: ValueKey('character_${state.currentImageAsset}'),
         imageAsset: state.currentImageAsset!,
         characterName: state.correctAnswer,
       );
     } else {
       return AnimatedMysteryBox(
+        key: const ValueKey('mystery'),
         onTap: state.isLoading || state.isCountingDown
             ? null
             : () => ref
@@ -78,52 +80,81 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final state = ref.watch(gameRoundProvider(widget.categoryName));
-    final notifier = ref.read(gameRoundProvider(widget.categoryName).notifier);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: GameAppBar(categoryName: widget.categoryName),
       body: Stack(
         children: [
-          // Background ambient gradient
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: const Alignment(0, -0.3),
-                radius: 1.2,
-                colors: isDark
-                    ? [
-                        theme.colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.35),
-                        theme.scaffoldBackgroundColor,
-                      ]
-                    : [
-                        theme.colorScheme.primaryContainer
-                            .withValues(alpha: 0.25),
-                        theme.scaffoldBackgroundColor,
-                      ],
+          // Background ambient gradient extending behind the glass AppBar
+          Positioned.fill(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(0, -0.3),
+                  radius: 1.2,
+                  colors: isDark
+                      ? [
+                          theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.35),
+                          theme.scaffoldBackgroundColor,
+                        ]
+                      : [
+                          theme.colorScheme.primaryContainer
+                              .withValues(alpha: 0.25),
+                          theme.scaffoldBackgroundColor,
+                        ],
+                ),
               ),
             ),
           ),
 
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Center(
-                  child: _buildContent(context, state),
-                ),
-              ),
-              if (!state.noImagesFound)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
-                  child: AnimatedActionButton(
-                    hasStarted: state.hasStarted,
-                    isEnabled: !state.isLoading && !state.isCountingDown,
-                    onPressed: notifier.startCountdown,
+          SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Center(
+                    child: RepaintBoundary(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: ScaleTransition(
+                              scale: Tween<double>(
+                                begin: 0.92,
+                                end: 1.0,
+                              ).animate(CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              )),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: _buildContent(context, state),
+                      ),
+                    ),
                   ),
                 ),
-            ],
+                if (!state.noImagesFound)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
+                    child: AnimatedActionButton(
+                      hasStarted: state.hasStarted,
+                      isEnabled: !state.isLoading && !state.isCountingDown,
+                      onPressed: () => ref
+                          .read(
+                              gameRoundProvider(widget.categoryName).notifier)
+                          .startCountdown(),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
