@@ -16,8 +16,8 @@ class AnimatedCharacterCard extends StatefulWidget {
     required this.imageAsset,
     this.characterName,
     this.showNameHint = true,
-    this.maxHeight = 400.0,
-    this.maxWidth = 320.0,
+    this.maxHeight = 600.0,
+    this.maxWidth = 480.0,
     this.cardSize,
   });
 
@@ -33,6 +33,9 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
   late final Animation<double> _scaleAnimation;
   late final Animation<double> _shimmerAnimation;
   Timer? _sequenceTimer;
+  double? _imageAspectRatio;
+  ImageStream? _imageStream;
+  ImageStreamListener? _imageListener;
 
   @override
   void initState() {
@@ -75,7 +78,29 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
       ),
     );
 
+    _resolveImageDimensions();
     _playRevealAnimation();
+  }
+
+  void _resolveImageDimensions() {
+    if (_imageStream != null && _imageListener != null) {
+      _imageStream!.removeListener(_imageListener!);
+    }
+    final imageProvider = AssetImage(widget.imageAsset);
+    _imageStream = imageProvider.resolve(const ImageConfiguration());
+    _imageListener = ImageStreamListener(
+      (ImageInfo info, bool synchronousCall) {
+        final double width = info.image.width.toDouble();
+        final double height = info.image.height.toDouble();
+        if (mounted && height > 0) {
+          setState(() {
+            _imageAspectRatio = width / height;
+          });
+        }
+      },
+      onError: (_, __) {},
+    );
+    _imageStream!.addListener(_imageListener!);
   }
 
   void _playRevealAnimation() {
@@ -92,12 +117,16 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
   void didUpdateWidget(covariant AnimatedCharacterCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.imageAsset != widget.imageAsset) {
+      _resolveImageDimensions();
       _playRevealAnimation();
     }
   }
 
   @override
   void dispose() {
+    if (_imageStream != null && _imageListener != null) {
+      _imageStream!.removeListener(_imageListener!);
+    }
     _sequenceTimer?.cancel();
     _flipController.dispose();
     _shimmerController.dispose();
@@ -109,6 +138,32 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
     final theme = Theme.of(context);
     final effectiveMaxWidth = widget.cardSize ?? widget.maxWidth;
     final effectiveMaxHeight = widget.cardSize ?? widget.maxHeight;
+
+    // Calculate maximum aspect-fit dimensions to eliminate empty card gutters
+    double targetWidth;
+    double targetHeight;
+
+    if (widget.cardSize != null) {
+      targetWidth = widget.cardSize!;
+      targetHeight = widget.cardSize!;
+    } else {
+      final double aspectRatio = _imageAspectRatio ?? 1.0;
+      if (effectiveMaxWidth / effectiveMaxHeight > aspectRatio) {
+        targetHeight = effectiveMaxHeight;
+        targetWidth = targetHeight * aspectRatio;
+        if (targetWidth > effectiveMaxWidth) {
+          targetWidth = effectiveMaxWidth;
+          targetHeight = targetWidth / aspectRatio;
+        }
+      } else {
+        targetWidth = effectiveMaxWidth;
+        targetHeight = targetWidth / aspectRatio;
+        if (targetHeight > effectiveMaxHeight) {
+          targetHeight = effectiveMaxHeight;
+          targetWidth = targetHeight * aspectRatio;
+        }
+      }
+    }
 
     return AnimatedBuilder(
       animation: _flipController,
@@ -127,116 +182,115 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: effectiveMaxWidth,
-                      maxHeight: effectiveMaxHeight,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        gradient: LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.85),
-                            theme.colorScheme.tertiary.withValues(alpha: 0.85),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.28),
-                            blurRadius: 22,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 6),
-                          ),
+                  child: Container(
+                    width: targetWidth,
+                    height: targetHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(22),
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary.withValues(alpha: 0.85),
+                          theme.colorScheme.tertiary.withValues(alpha: 0.85),
                         ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      padding: const EdgeInsets.all(3.5),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(21),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Image.asset(
-                              widget.imageAsset,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(32.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.broken_image_rounded,
-                                          color: Colors.red,
-                                          size: 50,
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          'Error loading image',
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary
+                              .withValues(alpha: 0.32),
+                          blurRadius: 24,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(3.5),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(19),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        fit: StackFit.expand,
+                        children: [
+                          Image.asset(
+                            widget.imageAsset,
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.high,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(32.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.broken_image_rounded,
+                                        color: Colors.red,
+                                        size: 50,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Error loading image',
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                              );
+                            },
+                          ),
 
-                            // Holographic diagonal light sweep
-                            Positioned.fill(
-                              child: AnimatedBuilder(
-                                animation: _shimmerController,
-                                builder: (context, child) {
-                                  if (_shimmerController.value <= 0.0 ||
-                                      _shimmerController.value >= 1.0) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return LayoutBuilder(
-                                    builder: (context, cardConstraints) {
-                                      final sweepDistance =
-                                          (cardConstraints.maxWidth > 0
-                                              ? cardConstraints.maxWidth
-                                              : 300.0) *
-                                          1.5;
-                                      return IgnorePointer(
-                                        child: Transform.translate(
-                                          offset: Offset(
-                                            _shimmerAnimation.value *
-                                                sweepDistance,
-                                            0,
-                                          ),
-                                          child: Transform.rotate(
-                                            angle: 0.4,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    Colors.white
-                                                        .withValues(alpha: 0.0),
-                                                    Colors.white
-                                                        .withValues(alpha: 0.45),
-                                                    Colors.white
-                                                        .withValues(alpha: 0.0),
-                                                  ],
-                                                  stops: const [0.0, 0.5, 1.0],
-                                                ),
+                          // Holographic diagonal light sweep
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _shimmerController,
+                              builder: (context, child) {
+                                if (_shimmerController.value <= 0.0 ||
+                                    _shimmerController.value >= 1.0) {
+                                  return const SizedBox.shrink();
+                                }
+                                return LayoutBuilder(
+                                  builder: (context, cardConstraints) {
+                                    final sweepDistance =
+                                        (cardConstraints.maxWidth > 0
+                                                ? cardConstraints.maxWidth
+                                                : 300.0) *
+                                            1.5;
+                                    return IgnorePointer(
+                                      child: Transform.translate(
+                                        offset: Offset(
+                                          _shimmerAnimation.value *
+                                              sweepDistance,
+                                          0,
+                                        ),
+                                        child: Transform.rotate(
+                                          angle: 0.4,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Colors.white
+                                                      .withValues(alpha: 0.0),
+                                                  Colors.white
+                                                      .withValues(alpha: 0.45),
+                                                  Colors.white
+                                                      .withValues(alpha: 0.0),
+                                                ],
+                                                stops: const [0.0, 0.5, 1.0],
                                               ),
                                             ),
                                           ),
                                         ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -256,7 +310,7 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                       child: Transform.scale(
                         scale: (0.7 + 0.3 * value).clamp(0.0, 1.0),
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 14.0),
+                          padding: const EdgeInsets.only(top: 12.0),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,

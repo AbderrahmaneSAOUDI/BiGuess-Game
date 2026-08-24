@@ -8,8 +8,10 @@ import 'package:gdg_guess_game/screens/game_screen.dart';
 import 'package:gdg_guess_game/utils/asset_loader.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_character_card.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_countdown.dart';
+import 'package:gdg_guess_game/widgets/animations/animated_glass_app_bar_background.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_mystery_box.dart';
 import 'package:gdg_guess_game/widgets/animations/interactive_scale_card.dart';
+import 'package:gdg_guess_game/presentation/widgets/common/glass_icon_button.dart';
 
 void main() {
   group('AssetLoader Unit Tests', () {
@@ -166,6 +168,49 @@ void main() {
 
       final textWidget = tester.widget<Text>(find.text('Naruto UZUMAKI'));
       expect(textWidget.style?.fontSize, 22.0);
+    });
+
+    testWidgets('AnimatedGlassAppBarBackground renders with backdrop filter and glass decor', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              height: 80,
+              child: AnimatedGlassAppBarBackground(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(AnimatedGlassAppBarBackground), findsOneWidget);
+      expect(find.byType(BackdropFilter), findsOneWidget);
+    });
+
+    testWidgets('GlassIconButton renders and triggers onPressed callback on tap', (
+      WidgetTester tester,
+    ) async {
+      bool tapped = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GlassIconButton.icon(
+              iconData: Icons.star_rounded,
+              tooltip: 'Star',
+              onPressed: () => tapped = true,
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+      expect(find.byType(GlassIconButton), findsOneWidget);
+
+      await tester.tap(find.byType(GlassIconButton));
+      expect(tapped, isTrue);
     });
   });
 

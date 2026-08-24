@@ -14,11 +14,15 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(categoriesProvider);
 
+    final topPadding =
+        MediaQuery.paddingOf(context).top + kToolbarHeight + 16;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: const CategoriesAppBar(),
       body: AnimationLimiter(
         child: GridView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(16, topPadding, 16, 16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             childAspectRatio: 1.5,

@@ -112,6 +112,20 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
   }
 
   @override
+  void didUpdateWidget(covariant AnimatedActionButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isEnabled != oldWidget.isEnabled) {
+      if (widget.isEnabled) {
+        if (!_buttonAnimationController.isAnimating) {
+          _buttonAnimationController.repeat(reverse: true);
+        }
+      } else {
+        _buttonAnimationController.stop();
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _buttonAnimationController.dispose();
     _tapClickController.dispose();
