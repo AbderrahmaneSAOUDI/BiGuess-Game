@@ -22,7 +22,9 @@ void main() async {
 }
 
 class BiGuessApp extends ConsumerWidget {
-  const BiGuessApp({super.key});
+  final Widget? home;
+
+  const BiGuessApp({super.key, this.home});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +36,7 @@ class BiGuessApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const SplashScreen(),
+      home: home ?? const SplashScreen(),
     );
   }
 }

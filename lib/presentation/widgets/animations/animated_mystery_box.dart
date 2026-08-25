@@ -134,7 +134,7 @@ class _AnimatedMysteryBoxState extends State<AnimatedMysteryBox>
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            'Click Start to Reveal',
+                            'Tap to Reveal',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,

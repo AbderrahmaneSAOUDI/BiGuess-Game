@@ -19,37 +19,66 @@ if [ $# -eq 0 ]; then
     # Launch interactive menu
     python3 "$SCRIPT_DIR/menu.py"
 else
-    # Forward arguments to specific script
-    case "$1" in
-        convert|optimize|webp)
-            shift
-            python3 "$SCRIPT_DIR/convert_and_optimize.py" "$@"
-            ;;
-        manifest|sync)
-            shift
-            python3 "$SCRIPT_DIR/generate_manifest.py" "$@"
-            ;;
-        audit|check)
-            shift
-            python3 "$SCRIPT_DIR/audit_assets.py" "$@"
-            ;;
-        normalize|clean-names)
-            shift
-            python3 "$SCRIPT_DIR/normalize_filenames.py" "$@"
-            ;;
-        stats|analytics)
-            shift
-            python3 "$SCRIPT_DIR/character_stats.py" "$@"
-            ;;
-        build|release)
-            shift
-            python3 "$SCRIPT_DIR/build_app.py" "$@"
-            ;;
-        *)
-            echo "Unknown command: $1"
-            echo "Available shortcuts: convert, manifest, audit, normalize, stats, build"
-            echo "Or run without arguments for interactive menu: ./scripts/run.sh"
-            exit 1
-            ;;
-    esac
+    # Forward to interactive task runner or specific script
+    TASK="$1"
+    shift
+
+    if [ $# -eq 0 ]; then
+        # Interactive mode via menu.py
+        case "$TASK" in
+            convert|optimize|webp|\
+            manifest|sync|\
+            audit|check|\
+            normalize|clean-names|\
+            stats|analytics|\
+            build|\
+            clean|\
+            release|publish|\
+            version|ver|bump)
+                python3 "$SCRIPT_DIR/menu.py" "$TASK"
+                ;;
+            -h|--help|help)
+                python3 "$SCRIPT_DIR/menu.py" --help
+                ;;
+            *)
+                echo "Unknown command: $TASK"
+                echo "Available shortcuts:"
+                echo "  release, version, build, convert, manifest, audit, normalize, stats, clean"
+                echo "Or run without arguments for interactive menu: ./scripts/run.sh"
+                exit 1
+                ;;
+        esac
+    else
+        # Direct CLI mode with flags passed
+        case "$TASK" in
+            convert|optimize|webp)
+                python3 "$SCRIPT_DIR/convert_and_optimize.py" "$@"
+                ;;
+            manifest|sync)
+                python3 "$SCRIPT_DIR/generate_manifest.py" "$@"
+                ;;
+            audit|check)
+                python3 "$SCRIPT_DIR/audit_assets.py" "$@"
+                ;;
+            normalize|clean-names)
+                python3 "$SCRIPT_DIR/normalize_filenames.py" "$@"
+                ;;
+            stats|analytics)
+                python3 "$SCRIPT_DIR/character_stats.py" "$@"
+                ;;
+            build)
+                python3 "$SCRIPT_DIR/build_app.py" "$@"
+                ;;
+            release|publish)
+                python3 "$SCRIPT_DIR/release.py" "$@"
+                ;;
+            version|ver|bump)
+                python3 "$SCRIPT_DIR/release.py" --version-only "$@"
+                ;;
+            *)
+                echo "Unknown command: $TASK"
+                exit 1
+                ;;
+        esac
+    fi
 fi
