@@ -26,7 +26,7 @@ final otaInstallerServiceProvider = Provider<OtaInstallerService>((_) {
 });
 
 final shorebirdPatchServiceProvider = Provider<ShorebirdPatchService>((_) {
-  return const ShorebirdPatchService();
+  return ShorebirdPatchService();
 });
 
 final updateControllerProvider =

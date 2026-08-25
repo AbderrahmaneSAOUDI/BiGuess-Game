@@ -106,7 +106,6 @@ class _GameInfoDialogState extends State<GameInfoDialog>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final mediaQuery = MediaQuery.of(context);
-    final isCompact = mediaQuery.size.width < 500;
 
     final dialogWidth =
         mediaQuery.size.width > 680 ? 640.0 : mediaQuery.size.width * 0.92;
@@ -132,37 +131,71 @@ class _GameInfoDialogState extends State<GameInfoDialog>
               onClose: () => Navigator.of(context).pop(),
             ),
 
-            // Tab Bar
-            Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+            // Modern Segmented Capsule Tab Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: theme.brightness == Brightness.dark ? 0.45 : 0.60),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: theme.colorScheme.outlineVariant
+                        .withValues(alpha: theme.brightness == Brightness.dark ? 0.25 : 0.35),
                   ),
                 ),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: isCompact,
-                tabAlignment: isCompact ? TabAlignment.start : TabAlignment.fill,
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-                labelStyle: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                child: TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.center,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  dividerColor: Colors.transparent,
+                  splashBorderRadius: BorderRadius.circular(12),
+                  indicator: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primary.withValues(alpha: 0.85),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  labelColor: theme.colorScheme.onPrimary,
+                  unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+                  labelStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  tabs: _tabs.map((tab) {
+                    return Tab(
+                      height: 38,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(tab.icon, size: 17),
+                          const SizedBox(width: 6),
+                          Text(tab.label),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.normal,
-                ),
-                tabs: _tabs.map((tab) {
-                  return Tab(
-                    icon: Icon(tab.icon, size: 20),
-                    text: tab.label,
-                    iconMargin: const EdgeInsets.only(bottom: 4),
-                  );
-                }).toList(),
               ),
             ),
 

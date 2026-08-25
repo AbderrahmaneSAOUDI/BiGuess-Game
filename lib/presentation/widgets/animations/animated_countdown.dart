@@ -71,7 +71,6 @@ class _AnimatedCountdownState extends State<AnimatedCountdown>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final countColor = _getCountdownColor(widget.countdown);
 
     return Center(
