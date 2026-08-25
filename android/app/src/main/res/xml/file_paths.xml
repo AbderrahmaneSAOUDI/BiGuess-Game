@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- External cache directory for temporary APK downloads -->
+    <external-cache-path name="apk_cache" path="." />
+    <!-- External files directory as fallback -->
+    <external-files-path name="apk_files" path="." />
+    <!-- Internal cache directory (used by getTemporaryDirectory) -->
+    <cache-path name="internal_cache" path="." />
+</paths>

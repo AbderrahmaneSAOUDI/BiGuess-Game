@@ -75,117 +75,80 @@ class _AnimatedCountdownState extends State<AnimatedCountdown>
     final countColor = _getCountdownColor(widget.countdown);
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 260,
-            height: 260,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Expanding sonic shockwave rings
-                AnimatedBuilder(
-                  animation: _rippleController,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: _ShockwaveRingsPainter(
-                        progress: _rippleController.value,
-                        color: countColor,
-                      ),
-                      size: const Size(260, 260),
-                    );
-                  },
-                ),
-
-                // Ambient Radial Glow
-                AnimatedBuilder(
-                  animation: _glowAnimation,
-                  builder: (context, child) {
-                    return Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: countColor.withValues(
-                              alpha: 0.35 * _glowAnimation.value,
-                            ),
-                            blurRadius: 50,
-                            spreadRadius: 20 * _glowAnimation.value,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-
-                // Pulsing Count Number
-                AnimatedBuilder(
-                  animation: _scaleAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _scaleAnimation.value,
-                      child: Text(
-                        '${widget.countdown}',
-                        style: TextStyle(
-                          fontSize: 108,
-                          fontWeight: FontWeight.w900,
-                          color: countColor,
-                          letterSpacing: -2.0,
-                          shadows: [
-                            Shadow(
-                              color: countColor.withValues(alpha: 0.8),
-                              blurRadius: 24,
-                            ),
-                            const Shadow(
-                              color: Colors.black38,
-                              offset: Offset(0, 4),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Subtitle badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: countColor.withValues(alpha: 0.4),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.bolt_rounded,
-                  size: 18,
-                  color: countColor,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'GET READY...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2.0,
-                    color: theme.colorScheme.onSurface,
+      child: SizedBox(
+        width: 260,
+        height: 260,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Expanding sonic shockwave rings
+            AnimatedBuilder(
+              animation: _rippleController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _ShockwaveRingsPainter(
+                    progress: _rippleController.value,
+                    color: countColor,
                   ),
-                ),
-              ],
+                  size: const Size(260, 260),
+                );
+              },
             ),
-          ),
-        ],
+
+            // Ambient Radial Glow
+            AnimatedBuilder(
+              animation: _glowAnimation,
+              builder: (context, child) {
+                return Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: countColor.withValues(
+                          alpha: 0.35 * _glowAnimation.value,
+                        ),
+                        blurRadius: 50,
+                        spreadRadius: 20 * _glowAnimation.value,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            // Pulsing Count Number
+            AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Text(
+                    '${widget.countdown}',
+                    style: TextStyle(
+                      fontSize: 108,
+                      fontWeight: FontWeight.w900,
+                      color: countColor,
+                      letterSpacing: -2.0,
+                      shadows: [
+                        Shadow(
+                          color: countColor.withValues(alpha: 0.8),
+                          blurRadius: 24,
+                        ),
+                        const Shadow(
+                          color: Colors.black38,
+                          offset: Offset(0, 4),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

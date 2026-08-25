@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gdg_guess_game/domain/models/remote_version.dart';
+import 'package:gdg_guess_game/domain/models/sem_ver.dart';
+import 'package:gdg_guess_game/domain/models/update_decision.dart';
 import 'package:gdg_guess_game/main.dart';
+import 'package:gdg_guess_game/presentation/widgets/common/glass_icon_button.dart';
 import 'package:gdg_guess_game/providers/game_providers.dart';
 import 'package:gdg_guess_game/screens/categories_screen.dart';
 import 'package:gdg_guess_game/screens/game_screen.dart';
+import 'package:gdg_guess_game/services/version_service.dart';
 import 'package:gdg_guess_game/utils/asset_loader.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_character_card.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_countdown.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_glass_app_bar_background.dart';
 import 'package:gdg_guess_game/widgets/animations/animated_mystery_box.dart';
 import 'package:gdg_guess_game/widgets/animations/interactive_scale_card.dart';
-import 'package:gdg_guess_game/presentation/widgets/common/glass_icon_button.dart';
 
 void main() {
   group('AssetLoader Unit Tests', () {
@@ -93,8 +97,103 @@ void main() {
     });
   });
 
+  group('SemVer & VersionService Unit Tests', () {
+    test('SemVer parses standard versions and build numbers', () {
+      final v1 = SemVer.parse('0.30.2');
+      expect(v1.major, 0);
+      expect(v1.minor, 30);
+      expect(v1.patch, 2);
+      expect(v1.buildNumber, 0);
+
+      final v2 = SemVer.parse('1.2.3+15');
+      expect(v2.major, 1);
+      expect(v2.minor, 2);
+      expect(v2.patch, 3);
+      expect(v2.buildNumber, 15);
+
+      final v3 = SemVer.parse('v2.0.0', 5);
+      expect(v3.major, 2);
+      expect(v3.minor, 0);
+      expect(v3.patch, 0);
+      expect(v3.buildNumber, 5);
+    });
+
+    test('SemVer comparisons work accurately', () {
+      final local = SemVer.parse('0.30.2');
+      final same = SemVer.parse('0.30.2');
+      final newerPatch = SemVer.parse('0.30.3');
+      final newerMinor = SemVer.parse('0.31.0');
+      final older = SemVer.parse('0.30.1');
+
+      expect(local == same, isTrue);
+      expect(local >= same, isTrue);
+      expect(local < newerPatch, isTrue);
+      expect(local < newerMinor, isTrue);
+      expect(local > older, isTrue);
+    });
+
+    test('VersionService returns UpdateNone when local is up to date', () {
+      const service = VersionService();
+      final local = SemVer.parse('0.30.2+2');
+      final remote = RemoteVersion.fromJson({
+        'latest_version': '0.30.2',
+        'build_number': 2,
+        'min_required_version': '0.30.0',
+        'has_native_changes': true,
+        'apk_url': 'https://example.com/app.apk',
+        'release_notes': 'Notes',
+      });
+
+      final decision = service.evaluateUpdate(local, remote);
+      expect(decision, isA<UpdateNone>());
+    });
+
+    test('VersionService returns UpdateFullApk when remote has newer minor or native changes', () {
+      const service = VersionService();
+      final local = SemVer.parse('0.30.0');
+      final remote = RemoteVersion.fromJson({
+        'latest_version': '0.30.2',
+        'build_number': 5,
+        'min_required_version': '0.30.1',
+        'has_native_changes': true,
+        'apk_urls': {
+          'arm64-v8a': 'https://example.com/arm64.apk',
+        },
+        'apk_url': 'https://example.com/default.apk',
+        'release_notes': 'Native update',
+      });
+
+      final decision = service.evaluateUpdate(
+        local,
+        remote,
+        deviceAbis: ['arm64-v8a'],
+      );
+
+      expect(decision, isA<UpdateFullApk>());
+      final fullApk = decision as UpdateFullApk;
+      expect(fullApk.mandatory, isTrue); // local 0.30.0 < min 0.30.1
+      expect(fullApk.apkUrl, 'https://example.com/arm64.apk');
+    });
+
+    test('VersionService returns UpdateShorebirdPatch for patch bump without native changes', () {
+      const service = VersionService();
+      final local = SemVer.parse('0.30.0');
+      final remote = RemoteVersion.fromJson({
+        'latest_version': '0.30.1',
+        'build_number': 2,
+        'min_required_version': '0.28.0',
+        'has_native_changes': false,
+        'apk_url': 'https://example.com/app.apk',
+        'release_notes': 'Patch update',
+      });
+
+      final decision = service.evaluateUpdate(local, remote);
+      expect(decision, isA<UpdateShorebirdPatch>());
+    });
+  });
+
   group('BiGuess Game Animations Widget Tests', () {
-    testWidgets('AnimatedCountdown renders count number and ready text', (
+    testWidgets('AnimatedCountdown renders count number', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -107,7 +206,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('3'), findsOneWidget);
-      expect(find.text('GET READY...'), findsOneWidget);
     });
 
     testWidgets('AnimatedMysteryBox renders with prompt and icon', (
@@ -122,7 +220,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Click Start to Reveal'), findsOneWidget);
+      expect(find.text('Tap to Reveal'), findsOneWidget);
       expect(find.byIcon(Icons.help_outline_rounded), findsOneWidget);
     });
 
@@ -146,7 +244,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('AnimatedCharacterCard renders character name and badge', (
+    testWidgets('AnimatedCharacterCard renders character name without icon', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(
@@ -164,7 +262,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Naruto UZUMAKI'), findsOneWidget);
-      expect(find.byIcon(Icons.auto_awesome_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.auto_awesome_rounded), findsNothing);
 
       final textWidget = tester.widget<Text>(find.text('Naruto UZUMAKI'));
       expect(textWidget.style?.fontSize, 22.0);
@@ -218,7 +316,7 @@ void main() {
     testWidgets('App renders CategoriesScreen with GDG title and initial categories', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp(home: CategoriesScreen())));
       await tester.pumpAndSettle();
 
       expect(find.text('GDG Ghardaia'), findsOneWidget);
@@ -229,7 +327,7 @@ void main() {
     testWidgets('Theme toggling switches light/dark mode', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp(home: CategoriesScreen())));
       await tester.pumpAndSettle();
 
       final themeButton = find.byType(IconButton).last;
@@ -244,7 +342,7 @@ void main() {
     testWidgets('Settings button opens GameInfoDialog on Settings tab', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp(home: CategoriesScreen())));
       await tester.pumpAndSettle();
 
       final settingsButton = find.byIcon(Icons.settings_rounded);
@@ -262,7 +360,7 @@ void main() {
     testWidgets('Info dialog opens and shows How to Play, About Game, and Developers tabs', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp(home: CategoriesScreen())));
       await tester.pumpAndSettle();
 
       final infoButton = find.byIcon(Icons.info_outline_rounded);
@@ -280,7 +378,7 @@ void main() {
     testWidgets('Tapping a category navigates to GameScreen', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const ProviderScope(child: BiGuessApp()));
+      await tester.pumpWidget(const ProviderScope(child: BiGuessApp(home: CategoriesScreen())));
       await tester.pumpAndSettle();
 
       final categoryCard = find.text('Attack on Titan');

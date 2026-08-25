@@ -141,18 +141,55 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     ),
                   ),
                 ),
-                if (!state.noImagesFound)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
-                    child: AnimatedActionButton(
-                      hasStarted: state.hasStarted,
-                      isEnabled: !state.isLoading && !state.isCountingDown,
-                      onPressed: () => ref
-                          .read(
-                              gameRoundProvider(widget.categoryName).notifier)
-                          .startCountdown(),
-                    ),
-                  ),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  reverseDuration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeOutBack,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.4),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutBack,
+                        )),
+                        child: ScaleTransition(
+                          scale: Tween<double>(
+                            begin: 0.85,
+                            end: 1.0,
+                          ).animate(CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutBack,
+                          )),
+                          child: child,
+                        ),
+                      ),
+                    );
+                  },
+                  child: (state.showPicture &&
+                          state.currentImageAsset != null &&
+                          !state.noImagesFound)
+                      ? Padding(
+                          key: const ValueKey('refresh_action_button'),
+                          padding:
+                              const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
+                          child: AnimatedActionButton(
+                            hasStarted: true,
+                            isEnabled: !state.isLoading && !state.isCountingDown,
+                            onPressed: () => ref
+                                .read(gameRoundProvider(widget.categoryName)
+                                    .notifier)
+                                .startCountdown(),
+                          ),
+                        )
+                      : const SizedBox.shrink(
+                          key: ValueKey('no_action_button'),
+                        ),
+                ),
               ],
             ),
           ),

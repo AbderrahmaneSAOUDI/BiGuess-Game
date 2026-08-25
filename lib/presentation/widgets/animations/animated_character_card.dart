@@ -310,7 +310,7 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                       child: Transform.scale(
                         scale: (0.7 + 0.3 * value).clamp(0.0, 1.0),
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 12.0),
+                          padding: const EdgeInsets.only(top: 24.0),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
@@ -335,30 +335,17 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                 ),
                               ],
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.auto_awesome_rounded,
-                                  size: 22,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                const SizedBox(width: 10),
-                                Flexible(
-                                  child: Text(
-                                    widget.characterName!,
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                      color: theme.colorScheme.onSurface,
-                                      letterSpacing: 0.4,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              widget.characterName!,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: theme.colorScheme.onSurface,
+                                letterSpacing: 0.4,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),

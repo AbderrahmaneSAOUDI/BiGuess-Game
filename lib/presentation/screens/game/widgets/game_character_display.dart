@@ -22,7 +22,7 @@ class GameCharacterDisplay extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool hasName = characterName != null && showNameHint;
-        final double nameReservedHeight = hasName ? 54.0 : 0.0;
+        final double nameReservedHeight = hasName ? 68.0 : 0.0;
 
         // Utilize flexible height while constraining width to 80% of available width
         final double availableHeight = max(
