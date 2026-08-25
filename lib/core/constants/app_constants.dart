@@ -7,7 +7,7 @@ class AppConstants {
   static const String appName = 'BiGuess Game';
   static const String appTagline = 'The Ultimate 2-Player Anime Mystery Challenge';
   static const String gdgTitle = 'GDG Ghardaia';
-  static const String defaultVersion = '0.30.2';
+  static const String defaultVersion = '0.30.3';
   static const String fontFamily = 'GoogleSans';
 
   // Asset paths
