@@ -22,7 +22,7 @@ PUBSPEC="$PROJECT_ROOT/pubspec.yaml"
 VERSION_JSON="$PROJECT_ROOT/version.json"
 
 # ---- Defaults ----
-HAS_NATIVE_CHANGES="false"
+HAS_NATIVE_CHANGES="auto"
 RELEASE_NOTES=""
 MIN_REQUIRED_VERSION=""
 AUTO_COMMIT=false
@@ -36,6 +36,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --native)
       HAS_NATIVE_CHANGES="true"
+      shift
+      ;;
+    --no-native)
+      HAS_NATIVE_CHANGES="false"
       shift
       ;;
     --notes)
@@ -81,6 +85,23 @@ else
     BUILD_NUMBER=$((PREV_BUILD + 1))
   else
     BUILD_NUMBER=1
+  fi
+fi
+
+# ---- Auto-detect native changes if not explicitly specified ----
+if [[ "$HAS_NATIVE_CHANGES" == "auto" ]]; then
+  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+  NATIVE_DIFF=""
+  if [[ -n "$LATEST_TAG" ]]; then
+    NATIVE_DIFF=$(git diff --name-only "$LATEST_TAG"..HEAD -- android/ ios/ macos/ windows/ linux/ web/ 2>/dev/null || echo "")
+  fi
+  UNCOMMITTED_NATIVE=$(git status --porcelain android/ ios/ macos/ windows/ linux/ web/ 2>/dev/null || echo "")
+  if [[ -n "$NATIVE_DIFF" || -n "$UNCOMMITTED_NATIVE" ]]; then
+    HAS_NATIVE_CHANGES="true"
+    echo "🔍 Auto-detected native changes → has_native_changes: true"
+  else
+    HAS_NATIVE_CHANGES="false"
+    echo "🔍 Auto-detected pure Dart/assets update → has_native_changes: false (Shorebird OTA eligible)"
   fi
 fi
 

@@ -123,15 +123,80 @@ def write_pubspec_version(new_version: str) -> None:
     print(f"{GREEN}✅ pubspec.yaml → version: {new_version}{RESET}")
 
 
+NATIVE_DIRECTORIES = ("android/", "ios/", "linux/", "macos/", "windows/", "web/")
+
+
+def get_latest_git_tag() -> Optional[str]:
+    """Get the most recent git tag."""
+    res = run(["git", "describe", "--tags", "--abbrev=0"], capture=True)
+    if res.returncode == 0 and res.stdout.strip():
+        return res.stdout.strip()
+    return None
+
+
+def detect_native_changes(since_tag: Optional[str] = None) -> Tuple[bool, list[str]]:
+    """
+    Automatically detect if any native platform files or dependencies changed
+    since the last release tag (or HEAD).
+    Returns (has_native_changes, list_of_changed_native_files).
+    """
+    if not since_tag:
+        since_tag = get_latest_git_tag()
+
+    changed_files: set[str] = set()
+
+    if since_tag:
+        res = run(["git", "diff", "--name-only", f"{since_tag}..HEAD"], capture=True)
+        if res.returncode == 0:
+            for line in res.stdout.splitlines():
+                if line.strip():
+                    changed_files.add(line.strip())
+
+    # Include uncommitted working tree changes
+    res = run(["git", "status", "--porcelain"], capture=True)
+    if res.returncode == 0:
+        for line in res.stdout.splitlines():
+            parts = line.strip().split(maxsplit=1)
+            if len(parts) > 1:
+                changed_files.add(parts[1].strip())
+
+    native_files = []
+    for f in sorted(changed_files):
+        f_norm = f.strip().replace("\\", "/")
+        if any(f_norm.startswith(prefix) for prefix in NATIVE_DIRECTORIES):
+            native_files.append(f_norm)
+        elif f_norm == "pubspec.yaml" and since_tag:
+            diff_res = run(["git", "diff", f"{since_tag}..HEAD", "--", "pubspec.yaml"], capture=True)
+            if diff_res.returncode == 0:
+                for diff_line in diff_res.stdout.splitlines():
+                    if (diff_line.startswith("+") or diff_line.startswith("-")) and not diff_line.startswith("+++") and not diff_line.startswith("---"):
+                        if not re.search(r"^\s*version:\s*", diff_line):
+                            native_files.append("pubspec.yaml (dependencies modified)")
+                            break
+
+    has_native = len(native_files) > 0
+    return has_native, native_files
+
+
 def sync_version_json(
     version: str,
-    has_native_changes: bool = False,
+    has_native_changes: Optional[bool] = None,
     release_notes: str = "",
     min_required_version: Optional[str] = None,
 ) -> dict:
     """Generate / update version.json from the given version string with Split-ABI URLs."""
     ver_part = version.split("+")[0]
     major, minor, patch, build = parse_semver(version)
+
+    # Auto-detect native changes if not explicitly provided
+    if has_native_changes is None:
+        auto_detected, changed_files = detect_native_changes()
+        has_native_changes = auto_detected
+        if has_native_changes:
+            files_preview = ", ".join(changed_files[:3]) + ("..." if len(changed_files) > 3 else "")
+            print(f"{YELLOW}🔍 Auto-detected native changes ({len(changed_files)} files: {files_preview}) → has_native_changes: true{RESET}")
+        else:
+            print(f"{GREEN}🔍 Auto-detected pure Dart/assets update → has_native_changes: false (Shorebird OTA eligible){RESET}")
 
     # Read existing version.json for defaults
     existing = {}
@@ -478,8 +543,8 @@ def main() -> int:
         help="Explicitly set version (e.g. 1.0.0 or 1.0.0+5)",
     )
     ver_group.add_argument(
-        "--native", action="store_true",
-        help="Mark release as containing native code changes",
+        "--native", action=argparse.BooleanOptionalAction, default=None,
+        help="Explicitly mark or unmark native code changes (default: auto-detect from git diff)",
     )
     ver_group.add_argument(
         "--notes", type=str, default="",

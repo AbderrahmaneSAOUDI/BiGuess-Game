@@ -355,10 +355,6 @@ def task_release_pipeline() -> None:
                 bump_map = {"1": "patch", "2": "minor", "3": "major"}
                 args.extend(["--bump", bump_map.get(ver_choice, "patch")])
 
-        native = prompt_input("Has native code changes? (y/n)", "n").lower() == "y"
-        if native:
-            args.append("--native")
-
         notes = prompt_input("Release notes", "Bug fixes and improvements.")
         args.extend(["--notes", notes])
 
@@ -396,10 +392,6 @@ def task_version_management() -> None:
 
         args = ["--version-only", "--bump", bump_map.get(bump_choice, "patch")]
 
-        native = prompt_input("Has native code changes? (y/n)", "n").lower() == "y"
-        if native:
-            args.append("--native")
-
         notes = prompt_input("Release notes (optional)", "")
         if notes:
             args.extend(["--notes", notes])
@@ -415,10 +407,6 @@ def task_version_management() -> None:
         manual_ver = prompt_input("Enter manual version (e.g. 0.31.0 or 0.31.0+1)", current_ver)
 
         args = ["--version-only", "--set-version", manual_ver]
-
-        native = prompt_input("Has native code changes? (y/n)", "n").lower() == "y"
-        if native:
-            args.append("--native")
 
         notes = prompt_input("Release notes (optional)", "")
         if notes:

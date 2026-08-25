@@ -1,22 +1,26 @@
 import 'package:flutter/foundation.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 
-/// Wrapper around the Shorebird code-push SDK.
+/// Wrapper around the Shorebird code-push SDK (`ShorebirdUpdater`).
 ///
 /// All methods are wrapped in try-catch so the app never crashes if the
-/// Shorebird runtime is not present (e.g., during development builds or
+/// Shorebird runtime is not present (e.g., during local development builds or
 /// if Shorebird hasn't been configured yet).
 ///
-/// To activate, ensure your app is built with `shorebird release` and
-/// `shorebird_code_push` is listed in `pubspec.yaml`.
+/// To activate:
+/// 1. Run `shorebird init` to generate `shorebird.yaml`.
+/// 2. Build release with `shorebird release android`.
+/// 3. Push patches with `shorebird patch android`.
 class ShorebirdPatchService {
-  const ShorebirdPatchService();
+  final ShorebirdUpdater _updater;
+
+  ShorebirdPatchService({ShorebirdUpdater? updater})
+      : _updater = updater ?? ShorebirdUpdater();
 
   /// Whether the Shorebird runtime is available in this binary.
   Future<bool> isShorebirdAvailable() async {
     try {
-      // Dynamic import check — if the package isn't present, this will throw.
-      final codePush = await _getCodePush();
-      return codePush != null;
+      return _updater.isAvailable;
     } catch (_) {
       return false;
     }
@@ -25,70 +29,27 @@ class ShorebirdPatchService {
   /// Checks whether a new Shorebird patch is available for download.
   Future<bool> checkForPatch() async {
     try {
-      final codePush = await _getCodePush();
-      if (codePush == null) return false;
-      return await codePush.isNewPatchAvailableForDownload();
+      if (!_updater.isAvailable) return false;
+      final status = await _updater.checkForUpdate();
+      return status == UpdateStatus.outdated ||
+          status == UpdateStatus.restartRequired;
     } catch (e) {
       debugPrint('ShorebirdPatchService.checkForPatch error: $e');
       return false;
     }
   }
 
-  /// Downloads the available patch and triggers an app restart.
+  /// Downloads the available patch.
   ///
-  /// Returns `true` if the patch was applied and a restart was triggered.
+  /// Returns `true` if the patch was successfully downloaded and staged.
   Future<bool> downloadAndApplyPatch() async {
     try {
-      final codePush = await _getCodePush();
-      if (codePush == null) return false;
-
-      await codePush.downloadUpdateIfAvailable();
+      if (!_updater.isAvailable) return false;
+      await _updater.update();
       return true;
     } catch (e) {
       debugPrint('ShorebirdPatchService.downloadAndApplyPatch error: $e');
       return false;
-    }
-  }
-
-  /// Attempts to instantiate the Shorebird code push client.
-  ///
-  /// Returns `null` if the package isn't available at runtime.
-  Future<_ShorebirdProxy?> _getCodePush() async {
-    try {
-      return _ShorebirdProxy();
-    } catch (_) {
-      return null;
-    }
-  }
-}
-
-/// Lightweight proxy wrapping the `shorebird_code_push` API.
-///
-/// When Shorebird is properly configured, replace this proxy's internals
-/// with actual `ShorebirdCodePush` calls. The proxy pattern lets the rest
-/// of the app compile even when the Shorebird runtime is absent.
-class _ShorebirdProxy {
-  /// Checks the Shorebird updater for a new downloadable patch.
-  Future<bool> isNewPatchAvailableForDownload() async {
-    try {
-      // ignore: depend_on_referenced_packages
-      // When Shorebird is configured, uncomment:
-      // final shorebirdCodePush = ShorebirdCodePush();
-      // return await shorebirdCodePush.isNewPatchAvailableForDownload();
-      return false;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  /// Downloads and stages the patch for application on next restart.
-  Future<void> downloadUpdateIfAvailable() async {
-    try {
-      // When Shorebird is configured, uncomment:
-      // final shorebirdCodePush = ShorebirdCodePush();
-      // await shorebirdCodePush.downloadUpdateIfAvailable();
-    } catch (_) {
-      // Silently swallow — the caller will handle the false return.
     }
   }
 }
