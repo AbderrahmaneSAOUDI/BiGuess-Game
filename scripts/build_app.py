@@ -78,6 +78,18 @@ def find_flutter_bin() -> str:
     return "flutter"
 
 
+def find_shorebird_bin() -> Optional[str]:
+    """Find shorebird executable path."""
+    sb = shutil.which("shorebird")
+    if sb:
+        return sb
+    home = Path.home()
+    candidate = home / ".shorebird" / "bin" / "shorebird"
+    if candidate.exists():
+        return str(candidate)
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Build BiGuess Flutter game binaries (APK, App Bundle, Web, Desktop).",
@@ -88,7 +100,7 @@ def main() -> int:
     parser.add_argument(
         "target",
         nargs="?",
-        choices=["apk", "appbundle", "web", "linux", "windows", "all"],
+        choices=["apk", "appbundle", "web", "all"],
         default="apk",
         help="Build target",
     )
@@ -103,6 +115,11 @@ def main() -> int:
         help="Build separate smaller APKs per CPU architecture (armeabi-v7a, arm64-v8a, x86_64)",
     )
     parser.add_argument(
+        "--shorebird",
+        action="store_true",
+        help="Build using Shorebird engine for Code-Push support (release builds only)",
+    )
+    parser.add_argument(
         "--skip-checks",
         action="store_true",
         help="Skip 'flutter analyze' and 'flutter test' before building",
@@ -115,16 +132,21 @@ def main() -> int:
 
     args = parser.parse_args()
     flutter = find_flutter_bin()
+    sb_bin = find_shorebird_bin() if args.shorebird else None
 
     mode = "debug" if args.debug else "release"
+    engine_name = "Shorebird" if sb_bin else "Flutter"
 
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         🚀  BiGuess Flutter Build Automation                 {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"🎯 Target:      {args.target.upper()}")
     print(f"⚙️  Mode:        {mode.upper()}")
+    print(f"🛠️  Engine:      {engine_name}")
     print(f"📁 Repository:  {repo_root}")
     print(f"🛠️  Flutter:     {flutter}")
+    if sb_bin:
+        print(f"🐦 Shorebird:   {sb_bin}")
     print(f"{CYAN}──────────────────────────────────────────────────────────────{RESET}")
 
     # Step 1: Clean if requested
@@ -145,21 +167,23 @@ def main() -> int:
             run_step("Running unit tests", [flutter, "test"], repo_root)
 
     # Step 4: Execute Build
-    build_cmd = [flutter, "build"]
-    if args.target == "apk":
-        build_cmd.extend(["apk", f"--{mode}"])
-        if args.split_per_abi:
-            build_cmd.append("--split-per-abi")
-    elif args.target == "appbundle":
-        build_cmd.extend(["appbundle", f"--{mode}"])
-    elif args.target == "web":
-        build_cmd.extend(["web", f"--{mode}"])
-    elif args.target == "linux":
-        build_cmd.extend(["linux", f"--{mode}"])
-    elif args.target == "windows":
-        build_cmd.extend(["windows", f"--{mode}"])
-    elif args.target == "all":
-        build_cmd.extend(["apk", f"--{mode}"])
+    if sb_bin and mode == "release" and args.target in ("apk", "appbundle"):
+        artifact_type = "apk" if args.target == "apk" else "aab"
+        build_cmd = [sb_bin, "release", "android", "--artifact", artifact_type]
+        if args.split_per_abi and args.target == "apk":
+            build_cmd.extend(["--", "--split-per-abi"])
+    else:
+        build_cmd = [flutter, "build"]
+        if args.target == "apk":
+            build_cmd.extend(["apk", f"--{mode}"])
+            if args.split_per_abi:
+                build_cmd.append("--split-per-abi")
+        elif args.target == "appbundle":
+            build_cmd.extend(["appbundle", f"--{mode}"])
+        elif args.target == "web":
+            build_cmd.extend(["web", f"--{mode}"])
+        elif args.target == "all":
+            build_cmd.extend(["apk", f"--{mode}"])
 
     if not run_step(f"Building {args.target.upper()} ({mode})", build_cmd, repo_root):
         return 1

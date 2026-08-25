@@ -93,9 +93,9 @@ if [[ "$HAS_NATIVE_CHANGES" == "auto" ]]; then
   LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
   NATIVE_DIFF=""
   if [[ -n "$LATEST_TAG" ]]; then
-    NATIVE_DIFF=$(git diff --name-only "$LATEST_TAG"..HEAD -- android/ ios/ macos/ windows/ linux/ web/ 2>/dev/null || echo "")
+    NATIVE_DIFF=$(git diff --name-only "$LATEST_TAG"..HEAD -- android/ web/ 2>/dev/null || echo "")
   fi
-  UNCOMMITTED_NATIVE=$(git status --porcelain android/ ios/ macos/ windows/ linux/ web/ 2>/dev/null || echo "")
+  UNCOMMITTED_NATIVE=$(git status --porcelain android/ web/ 2>/dev/null || echo "")
   if [[ -n "$NATIVE_DIFF" || -n "$UNCOMMITTED_NATIVE" ]]; then
     HAS_NATIVE_CHANGES="true"
     echo "🔍 Auto-detected native changes → has_native_changes: true"

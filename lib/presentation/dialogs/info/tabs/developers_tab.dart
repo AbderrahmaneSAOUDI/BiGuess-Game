@@ -40,6 +40,7 @@ class DevelopersTab extends StatelessWidget {
       bio:
           'Curated anime character datasets, managed image processing and naming conventions across all 18 categories, and performed gameplay balancing and testing.',
       accentColor: Color(0xFF00E676),
+      imageAsset: AppConstants.collectorProfilePath,
       fallbackIcon: Icons.person_pin_rounded,
       links: [
         DeveloperLink(

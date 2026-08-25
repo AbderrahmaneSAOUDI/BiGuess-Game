@@ -12,7 +12,9 @@ class AppConstants {
 
   // Asset paths
   static const String appIconPath = 'assets/logos/biguess-icon.webp';
-  static const String defaultProfilePath = 'assets/profile/profile.webp';
+  static const String defaultProfilePath = 'assets/profile/abderrahmane_saoudi.webp';
+  static const String collectorProfilePath =
+      'assets/profile/anas_oussama_djebie.webp';
 
   // Default game values
   static const int defaultCountdownSeconds = 2;

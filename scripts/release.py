@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -60,6 +61,18 @@ def format_bytes(size: float) -> str:
             return f"{size:.1f} {unit}"
         size /= 1024.0
     return f"{size:.1f} TB"
+
+
+def find_shorebird_bin() -> Optional[str]:
+    """Find shorebird executable path."""
+    sb = shutil.which("shorebird")
+    if sb:
+        return sb
+    home = Path.home()
+    candidate = home / ".shorebird" / "bin" / "shorebird"
+    if candidate.exists():
+        return str(candidate)
+    return None
 
 
 # =============================================================================
@@ -123,7 +136,9 @@ def write_pubspec_version(new_version: str) -> None:
     print(f"{GREEN}✅ pubspec.yaml → version: {new_version}{RESET}")
 
 
-NATIVE_DIRECTORIES = ("android/", "ios/", "linux/", "macos/", "windows/", "web/")
+# Only Android native platform files require a full APK base release.
+# Changes to web/, doc files, assets, or pure Dart are fully compatible with Shorebird OTA Patches.
+NATIVE_DIRECTORIES = ("android/",)
 
 
 def get_latest_git_tag() -> Optional[str]:
@@ -165,14 +180,20 @@ def detect_native_changes(since_tag: Optional[str] = None) -> Tuple[bool, list[s
         f_norm = f.strip().replace("\\", "/")
         if any(f_norm.startswith(prefix) for prefix in NATIVE_DIRECTORIES):
             native_files.append(f_norm)
-        elif f_norm == "pubspec.yaml" and since_tag:
-            diff_res = run(["git", "diff", f"{since_tag}..HEAD", "--", "pubspec.yaml"], capture=True)
+        elif f_norm == "pubspec.yaml":
+            # Check diff in pubspec.yaml excluding version bump, comments, and shorebird asset
+            diff_cmd = ["git", "diff", f"{since_tag}..HEAD", "--", "pubspec.yaml"] if since_tag else ["git", "diff", "HEAD", "--", "pubspec.yaml"]
+            diff_res = run(diff_cmd, capture=True)
             if diff_res.returncode == 0:
                 for diff_line in diff_res.stdout.splitlines():
                     if (diff_line.startswith("+") or diff_line.startswith("-")) and not diff_line.startswith("+++") and not diff_line.startswith("---"):
-                        if not re.search(r"^\s*version:\s*", diff_line):
-                            native_files.append("pubspec.yaml (dependencies modified)")
-                            break
+                        content = diff_line[1:].strip()
+                        if not content or content.startswith("#"):
+                            continue
+                        if re.search(r"^version:\s*", content) or "shorebird.yaml" in content:
+                            continue
+                        native_files.append("pubspec.yaml (dependencies modified)")
+                        break
 
     has_native = len(native_files) > 0
     return has_native, native_files
@@ -268,10 +289,14 @@ def build_apks(
     split_per_abi: bool = True,
     skip_checks: bool = False,
     clean: bool = False,
+    use_shorebird: bool = True,
+    dry_run: bool = False,
 ) -> list[Path]:
-    """Build release APKs (with split-per-abi by default) and return their paths."""
+    """Build release APKs (with split-per-abi by default) via Shorebird or standard Flutter."""
+    sb_bin = find_shorebird_bin() if use_shorebird else None
+    builder_label = "Shorebird Engine" if sb_bin else "Standard Flutter"
     mode_desc = "Split-per-ABI (arm64, armeabi, x86_64)" if split_per_abi else "Universal (Fat APK)"
-    print(f"\n{BOLD}{BLUE}▶ Building Release APKs [{mode_desc}]...{RESET}")
+    print(f"\n{BOLD}{BLUE}▶ Building Release APKs via {builder_label} [{mode_desc}]...{RESET}")
 
     if clean:
         run(["flutter", "clean"])
@@ -283,9 +308,19 @@ def build_apks(
         if result.returncode != 0:
             print(f"{YELLOW}⚠️  Analysis warnings detected. Continuing...{RESET}")
 
-    cmd = ["flutter", "build", "apk", "--release"]
-    if split_per_abi:
-        cmd.append("--split-per-abi")
+    if sb_bin:
+        # Build and register base release with Shorebird
+        cmd = [sb_bin, "release", "android", "--artifact", "apk"]
+        if dry_run:
+            cmd.append("--dry-run")
+        if split_per_abi:
+            cmd.extend(["--", "--split-per-abi"])
+    else:
+        if use_shorebird:
+            print(f"{YELLOW}⚠️  Shorebird CLI not found. Falling back to standard flutter build apk.{RESET}")
+        cmd = ["flutter", "build", "apk", "--release"]
+        if split_per_abi:
+            cmd.append("--split-per-abi")
 
     start = time.time()
     result = run(cmd)
@@ -449,8 +484,16 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
 
     # Step 4: Build APKs
     split_abi = not getattr(args, "universal", False)
+    use_sb = not getattr(args, "no_shorebird", False)
+    dry_run = getattr(args, "dry_run", False)
     if not args.skip_build:
-        apk_paths = build_apks(split_per_abi=split_abi, skip_checks=args.skip_checks, clean=args.clean)
+        apk_paths = build_apks(
+            split_per_abi=split_abi,
+            skip_checks=args.skip_checks,
+            clean=args.clean,
+            use_shorebird=use_sb,
+            dry_run=dry_run,
+        )
         if not apk_paths:
             return 1
     else:
@@ -465,6 +508,8 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
     # Step 5: Git commit & push
     if not args.skip_git:
         files_to_commit = ["pubspec.yaml", "version.json", "lib/core/constants/app_constants.dart"]
+        if (REPO_ROOT / "shorebird.yaml").exists():
+            files_to_commit.append("shorebird.yaml")
         if not git_commit_and_push(version, files_to_commit):
             return 1
     else:
@@ -489,6 +534,150 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
     print(f"{GREEN}{BOLD}🎉 Release v{ver_part} complete!{RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
     return 0
+
+
+def pipeline_patch_release(args: argparse.Namespace) -> int:
+    """Publish a Shorebird OTA patch (pure Dart/UI/assets update without APK reinstall)."""
+    print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
+    print(f"{BOLD}{CYAN}         🚀  BiGuess Shorebird OTA Patch Pipeline             {RESET}")
+    print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
+
+    sb_bin = find_shorebird_bin()
+    if not sb_bin:
+        print(f"{RED}❌ Shorebird CLI not found. Please install Shorebird or run 'shorebird init'.{RESET}")
+        return 1
+
+    current = read_pubspec_version()
+    ver_part = current.split("+")[0]
+    print(f"📋 Current release version: {BOLD}{current}{RESET}")
+
+    # Check for native changes
+    has_native, changed_files = detect_native_changes()
+    if has_native and not getattr(args, "allow_native_diffs", False):
+        print(f"{YELLOW}⚠️  Warning: Native changes detected in {len(changed_files)} file(s):{RESET}")
+        for f in changed_files[:5]:
+            print(f"   • {f}")
+        print(f"{RED}❌ Shorebird OTA patches cannot contain native code changes.{RESET}")
+        print(f"   To publish native changes, create a Full Base Release instead (Option 1 in menu).")
+        print(f"   (Or pass --allow-native-diffs to override if you are sure).")
+        return 1
+
+    if not args.skip_checks:
+        print(f"\n{BOLD}{BLUE}▶ Running static analysis...{RESET}")
+        result = run(["flutter", "analyze"], capture=True)
+        if result.returncode != 0:
+            print(f"{YELLOW}⚠️  Analysis warnings detected. Continuing...{RESET}")
+
+    # Step 1: Run Shorebird patch
+    print(f"\n{BOLD}{BLUE}▶ Creating Shorebird OTA Patch for Android...{RESET}")
+    cmd = [sb_bin, "patch", "android", f"--release-version={current}"]
+    if getattr(args, "dry_run", False):
+        cmd.append("--dry-run")
+    if getattr(args, "allow_native_diffs", False):
+        cmd.append("--allow-native-diffs")
+
+    start = time.time()
+    result = run(cmd)
+    elapsed = time.time() - start
+
+    if result.returncode != 0:
+        print(f"{RED}❌ Shorebird patch failed after {elapsed:.1f}s{RESET}")
+        return 1
+
+    print(f"\n{GREEN}✅ Shorebird patch created & published to Shorebird CDN in {elapsed:.1f}s!{RESET}")
+
+    # Step 2: Sync version.json with has_native_changes = False
+    print(f"\n{BOLD}{BLUE}▶ Updating version.json (has_native_changes: false)...{RESET}")
+    notes = args.notes or f"OTA Patch for v{ver_part}"
+    sync_version_json(
+        current,
+        has_native_changes=False,
+        release_notes=notes,
+        min_required_version=args.min_version,
+    )
+
+    # Step 3: Git commit & push version.json if requested
+    if not args.skip_git:
+        files_to_commit = ["version.json"]
+        print(f"\n{BOLD}{BLUE}▶ Committing updated version.json to git...{RESET}")
+        for f in files_to_commit:
+            run(["git", "add", f])
+        run(["git", "commit", "-m", f"patch: shorebird OTA update for v{current}"])
+        print(f"\n{BOLD}{BLUE}▶ Pushing version.json to remote...{RESET}")
+        run(["git", "push"])
+        print(f"{GREEN}✅ Pushed version.json to GitHub{RESET}")
+    else:
+        print(f"{YELLOW}⏭️  Skipping git commit/push{RESET}")
+
+    print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
+    print(f"{GREEN}{BOLD}🎉 Shorebird OTA Patch for v{ver_part} published!{RESET}")
+    print(f"{CYAN}📱 Active players will receive this update instantly on their next launch!{RESET}")
+    print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
+    return 0
+
+
+def pipeline_auto_release(args: argparse.Namespace) -> int:
+    """
+    Intelligently auto-select between Shorebird OTA Patch and Full Base Release:
+    - If native code changed or native dependencies modified or major/minor bump -> Full Base Release
+    - If pure Dart/UI/assets changed and no major/minor bump -> Instant Shorebird OTA Patch
+    """
+    print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
+    print(f"{BOLD}{CYAN}         ⚡  BiGuess Smart Release Pipeline (Auto-Detect)     {RESET}")
+    print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
+
+    current = read_pubspec_version()
+    print(f"📋 Current release version: {BOLD}{current}{RESET}")
+
+    # Check if a major or minor bump is explicitly requested
+    is_major_or_minor = args.bump in ("major", "minor")
+
+    # If user explicitly passed --native or --no-native
+    if args.native is not None:
+        has_native = args.native
+        changed_files = ["Manual override via --native flag"] if has_native else []
+    else:
+        has_native, changed_files = detect_native_changes()
+
+    print(f"\n{BOLD}{BLUE}🔍 Analyzing changes since last release...{RESET}")
+    if has_native:
+        print(f"   {YELLOW}📦 Native platform changes detected ({len(changed_files)} file(s)):{RESET}")
+        for f in changed_files[:5]:
+            print(f"      • {f}")
+        if len(changed_files) > 5:
+            print(f"      ... and {len(changed_files) - 5} more")
+        print(f"\n{BOLD}{MAGENTA}➡️  Auto-selected Mode: 📦 FULL BASE RELEASE (APKs + GitHub Release){RESET}")
+        print(f"{DIM}   Reason: Native platform code/dependencies were modified.{RESET}\n")
+        return pipeline_full_release(args)
+
+    elif is_major_or_minor:
+        print(f"   {YELLOW}🏷️  Major/Minor version bump requested ({args.bump}){RESET}")
+        print(f"\n{BOLD}{MAGENTA}➡️  Auto-selected Mode: 📦 FULL BASE RELEASE (APKs + GitHub Release){RESET}")
+        print(f"{DIM}   Reason: Major/Minor version transitions require a new base release.{RESET}\n")
+        return pipeline_full_release(args)
+
+    else:
+        sb_bin = find_shorebird_bin()
+        if sb_bin:
+            print(f"   {GREEN}✨ Pure Dart/UI/asset changes detected (No native diffs){RESET}")
+            print(f"\n{BOLD}{GREEN}➡️  Auto-selected Mode: 🚀 INSTANT SHOREBIRD OTA PATCH (Code Push){RESET}")
+            print(f"{DIM}   Reason: No native changes; update will apply silently over the air without APK download.{RESET}\n")
+            return pipeline_patch_release(args)
+        else:
+            print(f"   {YELLOW}⚠️  Pure Dart changes detected, but Shorebird CLI is not installed.{RESET}")
+            print(f"\n{BOLD}{MAGENTA}➡️  Fallback Mode: 📦 FULL BASE RELEASE{RESET}\n")
+            return pipeline_full_release(args)
+
+
+def pipeline_doctor() -> int:
+    """Run shorebird doctor for diagnostics."""
+    sb_bin = find_shorebird_bin()
+    if not sb_bin:
+        print(f"{RED}❌ Shorebird CLI not found at ~/.shorebird/bin/shorebird{RESET}")
+        return 1
+    print(f"\n{BOLD}{BLUE}▶ Running Shorebird Doctor...{RESET}\n")
+    res = run([sb_bin, "doctor"])
+    return res.returncode
 
 
 def pipeline_version_only(args: argparse.Namespace) -> int:
@@ -520,15 +709,16 @@ def pipeline_version_only(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="BiGuess Release Automation — build, version, and publish.",
+        description="BiGuess Release Automation — Smart Shorebird Code-Push & Full Base Release.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 {BOLD}Examples:{RESET}
-  python3 release.py --bump patch --notes "Bug fixes"
-  python3 release.py --set-version "1.0.0+1" --notes "First official release"
-  python3 release.py --bump minor --native --notes "New anime pack"
-  python3 release.py --version-only --set-version "0.31.0"
-  python3 release.py --skip-build --skip-github
+  python3 release.py                              # Auto-detects: Pure Dart → Shorebird Patch, Native → Full Release
+  python3 release.py --notes "Updated animations" # Auto-detect with release notes
+  python3 release.py --patch --notes "UI fix"     # Force Shorebird OTA Patch
+  python3 release.py --full-release --bump patch  # Force Full Base Release
+  python3 release.py --version-only --bump minor  # Just bump version
+  python3 release.py --doctor                     # Diagnose Shorebird
 """,
     )
 
@@ -558,10 +748,25 @@ def main() -> int:
     # Pipeline controls
     pipe_group = parser.add_argument_group("Pipeline")
     pipe_group.add_argument(
+        "--patch", action="store_true",
+        help="Force Shorebird OTA Patch (pure Dart/UI update without building APK)",
+    )
+    pipe_group.add_argument(
+        "--full-release", "--release", action="store_true",
+        help="Force Full Base Release (always build Shorebird Split APKs and GitHub Release)",
+    )
+    pipe_group.add_argument(
         "--version-only", action="store_true",
         help="Only bump version and sync files — skip build/git/release",
     )
+    pipe_group.add_argument(
+        "--doctor", action="store_true",
+        help="Run Shorebird doctor to check tooling health",
+    )
     pipe_group.add_argument("--universal", action="store_true", help="Build single fat universal APK instead of Split-per-ABI")
+    pipe_group.add_argument("--no-shorebird", action="store_true", help="Build with standard Flutter instead of Shorebird")
+    pipe_group.add_argument("--dry-run", action="store_true", help="Validate build/patch without uploading to Shorebird")
+    pipe_group.add_argument("--allow-native-diffs", action="store_true", help="Force patch even if native diffs are detected")
     pipe_group.add_argument("--skip-build", action="store_true", help="Skip APK build (use existing)")
     pipe_group.add_argument("--skip-checks", action="store_true", help="Skip flutter analyze")
     pipe_group.add_argument("--skip-git", action="store_true", help="Skip git commit/push/tag")
@@ -572,10 +777,16 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    if args.version_only:
+    if args.doctor:
+        return pipeline_doctor()
+    elif args.patch:
+        return pipeline_patch_release(args)
+    elif getattr(args, "full_release", False):
+        return pipeline_full_release(args)
+    elif args.version_only:
         return pipeline_version_only(args)
     else:
-        return pipeline_full_release(args)
+        return pipeline_auto_release(args)
 
 
 if __name__ == "__main__":

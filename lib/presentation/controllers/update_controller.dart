@@ -3,8 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gdg_guess_game/domain/models/remote_version.dart';
 import 'package:restart_app/restart_app.dart';
+
+import '../../domain/models/remote_version.dart';
 
 import '../../domain/models/sem_ver.dart';
 import '../../domain/models/update_decision.dart';

@@ -216,7 +216,7 @@ class AboutGameTab extends ConsumerWidget {
                   const FeatureBullet(
                     icon: Icons.groups_rounded,
                     title: 'Community Driven:',
-                    desc: 'Born from Google Developer Groups (GDG) Ghardaia community meetups and DevFest celebration events.',
+                    desc: 'Crafted for anime enthusiasts, local duel matchups, and community gaming events.',
                   ),
                 ],
               ),
