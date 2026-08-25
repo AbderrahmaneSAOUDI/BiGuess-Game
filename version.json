@@ -1,0 +1,8 @@
+{
+  "latest_version": "0.30.2",
+  "build_number": 7,
+  "min_required_version": "0.30.0",
+  "has_native_changes": true,
+  "apk_url": "https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-release.apk",
+  "release_notes": "Bug fixes and improvements."
+}
