@@ -5,13 +5,12 @@ class AppConstants {
   AppConstants._();
 
   static const String appName = 'BiGuess Game';
+  static const String appTitle = 'BiGuess';
   static const String appTagline = 'The Ultimate 2-Player Anime Mystery Challenge';
-  static const String gdgTitle = 'GDG Ghardaia';
-  static const String defaultVersion = '0.30.6';
+  static const String defaultVersion = '0.30.4';
   static const String fontFamily = 'GoogleSans';
 
   // Asset paths
-  static const String gdgLogoPath = 'assets/logos/gdg_logo.webp';
   static const String appIconPath = 'assets/logos/biguess-icon.webp';
   static const String defaultProfilePath = 'assets/profile/profile.webp';
 
