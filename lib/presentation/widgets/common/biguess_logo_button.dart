@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_constants.dart';
 
-/// Animated GDG logo button that spins on tap
-class GdgLogoButton extends StatefulWidget {
+/// Animated BiGuess logo button that spins on tap
+class BiGuessLogoButton extends StatefulWidget {
   final double size;
 
-  const GdgLogoButton({
+  const BiGuessLogoButton({
     super.key,
     this.size = 36.0,
   });
 
   @override
-  State<GdgLogoButton> createState() => _GdgLogoButtonState();
+  State<BiGuessLogoButton> createState() => _BiGuessLogoButtonState();
 }
 
-class _GdgLogoButtonState extends State<GdgLogoButton>
+class _BiGuessLogoButtonState extends State<BiGuessLogoButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _spinController;
 
@@ -50,10 +50,28 @@ class _GdgLogoButtonState extends State<GdgLogoButton>
             curve: Curves.easeOutBack,
           ),
         ),
-        child: Image.asset(
-          AppConstants.gdgLogoPath,
+        child: Container(
           width: widget.size,
           height: widget.size,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.size * 0.25),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(widget.size * 0.25),
+            child: Image.asset(
+              AppConstants.appIconPath,
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
       ),
     );

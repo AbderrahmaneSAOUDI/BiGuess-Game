@@ -1,11 +1,11 @@
 {
-    "name": "gdg_guess_game",
-    "short_name": "gdg_guess_game",
+    "name": "BiGuess Game",
+    "short_name": "BiGuess",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "The Ultimate 2-Player Anime Mystery Challenge.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

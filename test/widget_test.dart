@@ -313,13 +313,13 @@ void main() {
   });
 
   group('BiGuess Game Integration Widget Tests', () {
-    testWidgets('App renders CategoriesScreen with GDG title and initial categories', (
+    testWidgets('App renders CategoriesScreen with BiGuess title and initial categories', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(const ProviderScope(child: BiGuessApp(home: CategoriesScreen())));
       await tester.pumpAndSettle();
 
-      expect(find.text('GDG Ghardaia'), findsOneWidget);
+      expect(find.text('BiGuess'), findsOneWidget);
       expect(find.text('Attack on Titan'), findsOneWidget);
       expect(find.text('Black Clover'), findsOneWidget);
     });

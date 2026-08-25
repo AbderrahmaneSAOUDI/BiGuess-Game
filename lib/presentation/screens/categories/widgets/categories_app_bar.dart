@@ -4,7 +4,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../controllers/theme_controller.dart';
 import '../../../dialogs/info/game_info_dialog.dart';
 import '../../../widgets/animations/animated_glass_app_bar_background.dart';
-import '../../../widgets/common/gdg_logo_button.dart';
+import '../../../widgets/common/biguess_logo_button.dart';
 import '../../../widgets/common/glass_icon_button.dart';
 
 /// Top AppBar for Categories Screen with animated glass background and actions
@@ -78,7 +78,7 @@ class _CategoriesAppBarState extends ConsumerState<CategoriesAppBar>
           scrolledUnderElevation: 0,
           flexibleSpace: const AnimatedGlassAppBarBackground(),
           title: Text(
-            AppConstants.gdgTitle,
+            AppConstants.appTitle,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               letterSpacing: -0.2,
@@ -95,7 +95,7 @@ class _CategoriesAppBarState extends ConsumerState<CategoriesAppBar>
           ),
           leading: const Padding(
             padding: EdgeInsets.only(left: 12.0),
-            child: GdgLogoButton(),
+            child: BiGuessLogoButton(),
           ),
           actions: [
             Padding(

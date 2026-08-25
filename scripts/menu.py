@@ -272,22 +272,20 @@ def task_character_stats() -> None:
 def task_build_app() -> None:
     """Task 6: Build Game."""
     print(f"\n{BOLD}{BLUE}▶ Build BiGuess Flutter App{RESET}")
-    print(f"  {CYAN}[1]{RESET} Android APK (Release)")
-    print(f"  {CYAN}[2]{RESET} Android APK (Split per ABI - smaller APKs)")
-    print(f"  {CYAN}[3]{RESET} Android App Bundle (AAB - for Google Play)")
-    print(f"  {CYAN}[4]{RESET} Web Build")
-    print(f"  {CYAN}[5]{RESET} Linux Desktop")
+    print(f"  {CYAN}[1]{RESET} 🐦 Android Split APKs with Shorebird (Code-Push enabled, recommended)")
+    print(f"  {CYAN}[2]{RESET} 📦 Android APK Standard Flutter (Universal fat APK)")
+    print(f"  {CYAN}[3]{RESET} 🐦 Android App Bundle with Shorebird (AAB - for Google Play)")
+    print(f"  {CYAN}[4]{RESET} 🌐 Web Build")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select build target", "1")
     target_map = {
-        "1": (["apk"], "Android APK Release"),
-        "2": (["apk", "--split-per-abi"], "Android Split APKs"),
-        "3": (["appbundle"], "Android App Bundle"),
+        "1": (["apk", "--split-per-abi", "--shorebird"], "Android Split APKs (Shorebird)"),
+        "2": (["apk"], "Android APK Release"),
+        "3": (["appbundle", "--shorebird"], "Android App Bundle (Shorebird)"),
         "4": (["web"], "Web"),
-        "5": (["linux"], "Linux Desktop"),
     }
-    args, label = target_map.get(choice, (["apk"], "Android APK"))
+    args, label = target_map.get(choice, (["apk", "--split-per-abi", "--shorebird"], "Android APK"))
 
     clean_first = prompt_input("Run flutter clean first? (y/n)", "n").lower() == "y"
     if clean_first:
@@ -324,36 +322,68 @@ def task_clean_project() -> None:
         subprocess.run(["flutter", "clean"], cwd=str(REPO_ROOT))
 
 
+def task_shorebird_patch() -> None:
+    """Direct Shorebird OTA Patch task."""
+    print(f"\n{BOLD}{BLUE}▶ Shorebird Instant OTA Patch{RESET}")
+    print(f"{DIM}Pushes pure Dart/UI/asset updates to players over the air without APK download/reinstall.{RESET}\n")
+    notes = prompt_input("Patch description / Release notes", "Bug fixes and improvements.")
+    args = ["--patch", "--notes", notes]
+    dry_run = prompt_input("Dry run only? (validate without publishing) (y/n)", "n").lower() == "y"
+    if dry_run:
+        args.append("--dry-run")
+    run_script("release.py", args)
+
+
 def task_release_pipeline() -> None:
     """Task 8: Full Release Pipeline."""
     print(f"\n{BOLD}{BLUE}▶ Release Pipeline{RESET}")
-    print(f"  {CYAN}[1]{RESET} Full Release (version change → build Split APKs → GitHub release → push)")
-    print(f"  {CYAN}[2]{RESET} Build & Release (keep current version)")
-    print(f"  {CYAN}[3]{RESET} GitHub Release Only (use existing APKs)")
+    print(f"  {GREEN}{BOLD}[1]{RESET} ⚡ {BOLD}Auto Release Pipeline{RESET} (Auto-selects: Pure Dart → Shorebird Patch, Native → Full Release)")
+    print(f"  {CYAN}[2]{RESET} 🚀 Force Shorebird OTA Patch (Push instant Dart/UI patch over the air)")
+    print(f"  {CYAN}[3]{RESET} 📦 Force Full Base Release (Version bump → Build Shorebird Split APKs → GitHub Release → Push)")
+    print(f"  {CYAN}[4]{RESET} 🔨 Build & Release without bump (Shorebird APKs → GitHub Release)")
+    print(f"  {CYAN}[5]{RESET} 🌐 GitHub Release Only (upload existing APKs to GitHub)")
+    print(f"  {CYAN}[6]{RESET} 🐦 Shorebird Doctor (Diagnose Shorebird setup)")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select mode", "1")
 
     args = []
-    if choice in ("1", "2"):
-        if choice == "1":
-            print(f"\n{BOLD}Version selection:{RESET}")
-            print(f"  {CYAN}[1]{RESET} patch  (e.g. 0.30.0 → 0.30.1)")
-            print(f"  {CYAN}[2]{RESET} minor  (e.g. 0.30.0 → 0.31.0)")
-            print(f"  {CYAN}[3]{RESET} major  (e.g. 0.30.0 → 1.0.0)")
-            print(f"  {CYAN}[4]{RESET} Enter manual version (e.g. 1.0.0+1)")
-            print(f"  {CYAN}[0]{RESET} ↩️  Back\n")
-            ver_choice = prompt_input("Select", "1")
+    if choice == "1":
+        # Auto Release Pipeline
+        notes = prompt_input("Release notes / Patch description", "Bug fixes and improvements.")
+        if notes:
+            args.extend(["--notes", notes])
 
-            if ver_choice == "4":
-                pubspec_text = (REPO_ROOT / "pubspec.yaml").read_text()
-                ver_match = re.search(r"^version:\s*(.+)$", pubspec_text, re.MULTILINE)
-                current_ver = ver_match.group(1).strip() if ver_match else "0.30.0"
-                manual_ver = prompt_input("Enter manual version", current_ver)
-                args.extend(["--set-version", manual_ver])
-            else:
-                bump_map = {"1": "patch", "2": "minor", "3": "major"}
-                args.extend(["--bump", bump_map.get(ver_choice, "patch")])
+    elif choice == "2":
+        # Force Shorebird OTA Patch
+        args.append("--patch")
+        notes = prompt_input("Patch description / Release notes", "Bug fixes and improvements.")
+        if notes:
+            args.extend(["--notes", notes])
+        dry_run = prompt_input("Dry run only? (validate without publishing) (y/n)", "n").lower() == "y"
+        if dry_run:
+            args.append("--dry-run")
+
+    elif choice == "3":
+        # Force Full Base Release
+        args.append("--full-release")
+        print(f"\n{BOLD}Version selection:{RESET}")
+        print(f"  {CYAN}[1]{RESET} patch  (e.g. 0.30.3 → 0.30.4)")
+        print(f"  {CYAN}[2]{RESET} minor  (e.g. 0.30.0 → 0.31.0)")
+        print(f"  {CYAN}[3]{RESET} major  (e.g. 0.30.0 → 1.0.0)")
+        print(f"  {CYAN}[4]{RESET} Enter manual version (e.g. 1.0.0+1)")
+        print(f"  {CYAN}[0]{RESET} ↩️  Back\n")
+        ver_choice = prompt_input("Select", "1")
+
+        if ver_choice == "4":
+            pubspec_text = (REPO_ROOT / "pubspec.yaml").read_text()
+            ver_match = re.search(r"^version:\s*(.+)$", pubspec_text, re.MULTILINE)
+            current_ver = ver_match.group(1).strip() if ver_match else "0.30.0"
+            manual_ver = prompt_input("Enter manual version", current_ver)
+            args.extend(["--set-version", manual_ver])
+        else:
+            bump_map = {"1": "patch", "2": "minor", "3": "major"}
+            args.extend(["--bump", bump_map.get(ver_choice, "patch")])
 
         notes = prompt_input("Release notes", "Bug fixes and improvements.")
         args.extend(["--notes", notes])
@@ -362,10 +392,22 @@ def task_release_pipeline() -> None:
         if draft:
             args.append("--draft")
 
-    elif choice == "3":
-        args.extend(["--skip-build"])
+    elif choice == "4":
+        # Build & Release without version bump
+        args.append("--full-release")
         notes = prompt_input("Release notes", "Bug fixes and improvements.")
         args.extend(["--notes", notes])
+        draft = prompt_input("Create as draft release? (y/n)", "n").lower() == "y"
+        if draft:
+            args.append("--draft")
+
+    elif choice == "5":
+        args.extend(["--skip-build", "--full-release"])
+        notes = prompt_input("Release notes", "Bug fixes and improvements.")
+        args.extend(["--notes", notes])
+
+    elif choice == "6":
+        args.append("--doctor")
 
     run_script("release.py", args)
 
@@ -470,6 +512,9 @@ TASK_MAP = {
     "8": task_release_pipeline,
     "release": task_release_pipeline,
     "publish": task_release_pipeline,
+    "patch": task_shorebird_patch,
+    "ota": task_shorebird_patch,
+    "doctor": lambda: run_script("release.py", ["--doctor"]),
     "9": task_version_management,
     "version": task_version_management,
     "ver": task_version_management,

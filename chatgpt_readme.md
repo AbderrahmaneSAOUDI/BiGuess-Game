@@ -1,6 +1,6 @@
-# 🎮 What is GDG Character Guessing Game?
+# 🎮 What is BiGuess Game?
 
-**GDG Character Guessing Game** is a fast-paced, two-player challenge where each player tries to guess their **own mystery character** by asking clever **yes/no questions**. The first to guess correctly wins the round and scores a point!
+**BiGuess Game** is a fast-paced, two-player challenge where each player tries to guess their **own mystery character** by asking clever **yes/no questions**. The first to guess correctly wins the round and scores a point!
 
 ---
 

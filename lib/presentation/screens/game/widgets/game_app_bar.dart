@@ -164,7 +164,7 @@ class _GameAppBarState extends State<GameAppBar>
                 child: Container(
                   padding: const EdgeInsets.all(4.0),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(8),
                     color: isDark
                         ? Colors.white.withValues(alpha: 0.06)
                         : Colors.black.withValues(alpha: 0.04),
@@ -175,10 +175,14 @@ class _GameAppBarState extends State<GameAppBar>
                       width: 1,
                     ),
                   ),
-                  child: Image.asset(
-                    AppConstants.gdgLogoPath,
-                    width: 26,
-                    height: 26,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      AppConstants.appIconPath,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),

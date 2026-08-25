@@ -10,7 +10,7 @@
   [![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
   [![Riverpod](https://img.shields.io/badge/State-Riverpod%202.x-00B4D8?style=for-the-badge)](https://riverpod.dev)
   [![Material 3](https://img.shields.io/badge/UI-Material%203-6750A4?style=for-the-badge&logo=materialdesign&logoColor=white)](https://m3.material.io)
-  [![Platforms](https://img.shields.io/badge/Platforms-Android%20|%20iOS%20|%20Windows%20|%20macOS%20|%20Linux%20|%20Web-4CAF50?style=for-the-badge)](https://flutter.dev/multi-platform)
+  [![Platforms](https://img.shields.io/badge/Platforms-Android%20|%20Web-4CAF50?style=for-the-badge)](https://flutter.dev/multi-platform)
   [![Version](https://img.shields.io/badge/Version-v0.25.0-orange?style=for-the-badge)](pubspec.yaml)
 
   <p align="center">
@@ -34,7 +34,7 @@
 Designed specifically for face-to-face play, gatherings, anime conventions, and tech community events, BiGuess turns quick wits, strategic questioning, and deep franchise trivia into moments of laughter, suspense, and friendly competition.
 
 > **💡 The Story Behind BiGuess:**  
-> Born out of community meetups and DevFest events organized by **Google Developer Groups (GDG) Ghardaia**, BiGuess was crafted to break the ice and bring people together offline through seamless mobile gaming.
+> BiGuess was crafted to break the ice and bring people together offline through seamless mobile gaming and fast-paced 2-player character duels.
 
 ---
 
@@ -79,7 +79,7 @@ Playing BiGuess requires **two players** and **one or two phones** sitting oppos
 - 🌓 **Dynamic Theme Engine:** Seamless switching between Dark Mode and Light Mode with Material 3 tokens.
 - ✨ **Fluid Micro-Animations:** Staggered list animations, 3D interactive scale cards, mystery box reveals, and tap-punch feedback powered by `flutter_staggered_animations`.
 - 🎛️ **Comprehensive In-App Game Center:** Built-in modal dialog featuring live settings, rules explanation, about page, and team credits.
-- 📱 **True Multi-Platform Support:** Ready to run natively on Android, iOS, Windows, macOS, Linux, and the Web.
+- 📱 **Cross-Platform Support:** Ready to run natively on Android and the Web.
 
 ---
 
@@ -131,7 +131,7 @@ BiGuess is built with modern, declarative Flutter best practices:
 - **Language:** [Dart](https://dart.dev)
 - **State Management:** [Riverpod 2.x](https://riverpod.dev) (`flutter_riverpod`)
 - **Animation System:** `flutter_staggered_animations`, Custom Ticker controllers & Matrix4 transforms
-- **System & Device:** `path_provider`, `url_launcher`, `package_info_plus`, `win32`
+- **System & Device:** `path_provider`, `url_launcher`, `package_info_plus`, `device_info_plus`
 
 ### 📁 Project Structure
 
@@ -164,7 +164,7 @@ BiGuess-Game/
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (`>= 3.0.0`)
 - [Dart SDK](https://dart.dev/get-dart)
 - Android Studio / VS Code with Flutter extension
-- An Android/iOS device, emulator, or desktop runner
+- An Android device, emulator, or modern web browser
 
 ### Installation & Run
 
@@ -188,17 +188,11 @@ BiGuess-Game/
 
 - **Android APK:**
   ```bash
-  flutter build apk --release
+  flutter build apk --release --split-per-abi
   ```
 - **Android App Bundle (Google Play):**
   ```bash
   flutter build appbundle --release
-  ```
-- **Desktop (Windows / macOS / Linux):**
-  ```bash
-  flutter build windows
-  flutter build macos
-  flutter build linux
   ```
 - **Web:**
   ```bash
@@ -213,7 +207,7 @@ BiGuess-Game/
   <tr>
     <td align="center" width="50%">
       <a href="https://saoudi.online">
-        <img src="assets/profile/profile.webp" width="100px;" alt="Abderrahmane SAOUDI" style="border-radius: 50%;" onerror="this.src='https://github.com/AbderrahmaneSAOUDI.png'"/>
+        <img src="assets/profile/abderrahmane_saoudi.webp" width="100px;" alt="Abderrahmane SAOUDI" style="border-radius: 50%;" onerror="this.src='https://github.com/AbderrahmaneSAOUDI.png'"/>
         <br />
         <sub><b>Abderrahmane SAOUDI</b></sub>
       </a>
@@ -226,7 +220,7 @@ BiGuess-Game/
     </td>
     <td align="center" width="50%">
       <a href="mailto:anas.djribie@gmail.com">
-        <img src="https://github.com/identicons/anasdjribie.png" width="100px;" alt="Anas Oussama DJRIBIE" style="border-radius: 50%;" onerror="this.src='https://ui-avatars.com/api/?name=Anas+Djribie&background=6750A4&color=fff'"/>
+        <img src="assets/profile/anas_oussama_djebie.webp" width="100px;" alt="Anas Oussama DJRIBIE" style="border-radius: 50%;" onerror="this.src='https://ui-avatars.com/api/?name=Anas+Djribie&background=6750A4&color=fff'"/>
         <br />
         <sub><b>Anas Oussama DJRIBIE</b></sub>
       </a>
@@ -241,7 +235,7 @@ BiGuess-Game/
 </table>
 
 ### 🌟 Special Thanks
-- **[GDG Ghardaia](https://gdg.community.dev/)** — For the community inspiration, hackathons, and event support.
+- **Open-source community & anime fans** — For the continuous inspiration, feedback, and playtesting support.
 
 ---
 
