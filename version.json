@@ -1,8 +1,8 @@
 {
   "latest_version": "0.30.3",
-  "build_number": 10,
+  "build_number": 11,
   "min_required_version": "0.30.0",
-  "has_native_changes": false,
+  "has_native_changes": true,
   "apk_urls": {
     "arm64-v8a": "https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-arm64-v8a-release.apk",
     "armeabi-v7a": "https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-armeabi-v7a-release.apk",
@@ -10,5 +10,5 @@
     "universal": "https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-release.apk"
   },
   "apk_url": "https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-arm64-v8a-release.apk",
-  "release_notes": "Bug fixes and UI improvements."
+  "release_notes": "Bug fixes and improvements."
 }
