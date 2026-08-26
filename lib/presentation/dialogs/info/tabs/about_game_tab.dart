@@ -149,7 +149,7 @@ class AboutGameTab extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: StatBadge(
-                    number: '300+',
+                    number: '1000+',
                     label: 'Characters',
                     icon: Icons.people_outline_rounded,
                     color: theme.colorScheme.secondary,

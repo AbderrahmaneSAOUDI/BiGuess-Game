@@ -66,7 +66,9 @@ class RemoteVersion {
         return apkUrls['universal']!;
       }
     }
-    return apkUrl;
+    return apkUrl.isNotEmpty
+        ? apkUrl
+        : 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-release.apk';
   }
 
   Map<String, dynamic> toJson() => {

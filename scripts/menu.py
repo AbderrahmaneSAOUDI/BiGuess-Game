@@ -272,20 +272,20 @@ def task_character_stats() -> None:
 def task_build_app() -> None:
     """Task 6: Build Game."""
     print(f"\n{BOLD}{BLUE}▶ Build BiGuess Flutter App{RESET}")
-    print(f"  {CYAN}[1]{RESET} 🐦 Android Split APKs with Shorebird (Code-Push enabled, recommended)")
-    print(f"  {CYAN}[2]{RESET} 📦 Android APK Standard Flutter (Universal fat APK)")
+    print(f"  {CYAN}[1]{RESET} 🐦 Android APK with Shorebird (Code-Push enabled, recommended)")
+    print(f"  {CYAN}[2]{RESET} 📦 Android Split APKs Standard Flutter (arm64, v7a, x86_64)")
     print(f"  {CYAN}[3]{RESET} 🐦 Android App Bundle with Shorebird (AAB - for Google Play)")
     print(f"  {CYAN}[4]{RESET} 🌐 Web Build")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select build target", "1")
     target_map = {
-        "1": (["apk", "--split-per-abi", "--shorebird"], "Android Split APKs (Shorebird)"),
-        "2": (["apk"], "Android APK Release"),
+        "1": (["apk", "--shorebird"], "Android APK (Shorebird)"),
+        "2": (["apk", "--split-per-abi"], "Android Split APKs"),
         "3": (["appbundle", "--shorebird"], "Android App Bundle (Shorebird)"),
         "4": (["web"], "Web"),
     }
-    args, label = target_map.get(choice, (["apk", "--split-per-abi", "--shorebird"], "Android APK"))
+    args, label = target_map.get(choice, (["apk", "--shorebird"], "Android APK (Shorebird)"))
 
     clean_first = prompt_input("Run flutter clean first? (y/n)", "n").lower() == "y"
     if clean_first:
@@ -408,6 +408,11 @@ def task_release_pipeline() -> None:
 
     elif choice == "6":
         args.append("--doctor")
+
+    if choice in ("1", "2", "3", "4", "5"):
+        verbose = prompt_input("Enable verbose upload logs & byte stats? (y/n)", "n").lower() == "y"
+        if verbose:
+            args.append("-v")
 
     run_script("release.py", args)
 

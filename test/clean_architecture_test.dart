@@ -326,7 +326,7 @@ void main() {
 
       expect(find.text('BiGuess Game'), findsOneWidget);
       expect(find.text('18+'), findsOneWidget);
-      expect(find.text('300+'), findsOneWidget);
+      expect(find.text('1000+'), findsOneWidget);
       expect(find.text('2P'), findsOneWidget);
       expect(find.text('100% Offline'), findsOneWidget);
     });

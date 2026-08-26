@@ -132,12 +132,12 @@ void main() {
       expect(local > older, isTrue);
     });
 
-    test('VersionService returns UpdateNone when local is up to date', () {
+    test('VersionService returns UpdateNone when local matches remote with native changes', () {
       const service = VersionService();
-      final local = SemVer.parse('0.30.2+2');
+      final local = SemVer.parse('0.30.5+6');
       final remote = RemoteVersion.fromJson({
-        'latest_version': '0.30.2',
-        'build_number': 2,
+        'latest_version': '0.30.5',
+        'build_number': 6,
         'min_required_version': '0.30.0',
         'has_native_changes': true,
         'apk_url': 'https://example.com/app.apk',
@@ -146,6 +146,38 @@ void main() {
 
       final decision = service.evaluateUpdate(local, remote);
       expect(decision, isA<UpdateNone>());
+    });
+
+    test('VersionService returns UpdateShorebirdPatch when local matches remote without native changes', () {
+      const service = VersionService();
+      final local = SemVer.parse('0.30.5+6');
+      final remote = RemoteVersion.fromJson({
+        'latest_version': '0.30.5',
+        'build_number': 6,
+        'min_required_version': '0.30.0',
+        'has_native_changes': false,
+        'apk_url': 'https://example.com/app.apk',
+        'release_notes': 'Notes',
+      });
+
+      final decision = service.evaluateUpdate(local, remote);
+      expect(decision, isA<UpdateShorebirdPatch>());
+    });
+
+    test('VersionService returns UpdateFullApk when remote has newer native build number', () {
+      const service = VersionService();
+      final local = SemVer.parse('0.30.5+6');
+      final remote = RemoteVersion.fromJson({
+        'latest_version': '0.30.5',
+        'build_number': 7,
+        'min_required_version': '0.30.0',
+        'has_native_changes': true,
+        'apk_url': 'https://example.com/app.apk',
+        'release_notes': 'Native hotfix',
+      });
+
+      final decision = service.evaluateUpdate(local, remote);
+      expect(decision, isA<UpdateFullApk>());
     });
 
     test('VersionService returns UpdateFullApk when remote has newer minor or native changes', () {
