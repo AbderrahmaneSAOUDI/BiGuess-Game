@@ -101,17 +101,12 @@ class VersionService {
     final remoteSemVer = SemVer.parse(remote.latestVersion, remote.buildNumber);
     final minRequired = SemVer.parse(remote.minRequiredVersion);
 
-    // 1. If local version is already equal to or newer than remote, no update is needed!
-    if (local >= remoteSemVer) {
-      return const UpdateNone();
-    }
+    // 1. Full APK path:
+    // Required if remote has a newer major/minor, or if native code changed and remote is strictly newer than local.
+    final hasNewerMajorOrMinor = remoteSemVer.isNewerMajorOrMinorThan(local);
+    final hasNewerNativeBuild = remote.hasNativeChanges && local < remoteSemVer;
 
-    // 2. Full APK path:
-    // Required if remote has a newer major/minor, or if native code changed.
-    final needsFullApk = remoteSemVer.isNewerMajorOrMinorThan(local) ||
-        remote.hasNativeChanges;
-
-    if (needsFullApk) {
+    if (hasNewerMajorOrMinor || hasNewerNativeBuild) {
       final isMandatory = local < minRequired;
       final targetApkUrl = remote.resolveApkUrl(deviceAbis);
 
@@ -122,13 +117,13 @@ class VersionService {
       );
     }
 
-    // 3. Shorebird patch path:
-    // If remote is a newer patch with NO native changes.
-    if (remoteSemVer.isNewerPatchThan(local) && !remote.hasNativeChanges) {
+    // 2. Shorebird patch path:
+    // If no native changes and no major/minor bump, delegate to Shorebird OTA code-push.
+    if (!remote.hasNativeChanges && !hasNewerMajorOrMinor) {
       return const UpdateShorebirdPatch();
     }
 
-    // 4. Otherwise up to date
+    // 3. Otherwise up to date
     return const UpdateNone();
   }
 }

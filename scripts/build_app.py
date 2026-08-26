@@ -170,8 +170,6 @@ def main() -> int:
     if sb_bin and mode == "release" and args.target in ("apk", "appbundle"):
         artifact_type = "apk" if args.target == "apk" else "aab"
         build_cmd = [sb_bin, "release", "android", "--artifact", artifact_type]
-        if args.split_per_abi and args.target == "apk":
-            build_cmd.extend(["--", "--split-per-abi"])
     else:
         build_cmd = [flutter, "build"]
         if args.target == "apk":

@@ -75,6 +75,22 @@ def find_shorebird_bin() -> Optional[str]:
     return None
 
 
+def get_shorebird_active_releases(sb_bin: str) -> list[str]:
+    """Query Shorebird for registered active releases."""
+    res = run([sb_bin, "releases", "list"], capture=True)
+    releases = []
+    if res.returncode == 0:
+        for line in res.stdout.splitlines():
+            parts = line.strip().split()
+            if len(parts) >= 2:
+                for p in parts:
+                    if re.match(r"^\d+\.\d+\.\d+", p):
+                        if p not in releases:
+                            releases.append(p)
+                        break
+    return releases
+
+
 # =============================================================================
 # Version Management
 # =============================================================================
@@ -179,7 +195,22 @@ def detect_native_changes(since_tag: Optional[str] = None) -> Tuple[bool, list[s
     for f in sorted(changed_files):
         f_norm = f.strip().replace("\\", "/")
         if any(f_norm.startswith(prefix) for prefix in NATIVE_DIRECTORIES):
-            native_files.append(f_norm)
+            # Check diff ignoring whitespace and empty lines
+            diff_cmd = ["git", "diff", f"{since_tag}..HEAD", "--", f_norm] if since_tag else ["git", "diff", "HEAD", "--", f_norm]
+            diff_res = run(diff_cmd, capture=True)
+            has_real_diff = False
+            if diff_res.returncode == 0 and diff_res.stdout.strip():
+                for diff_line in diff_res.stdout.splitlines():
+                    if (diff_line.startswith("+") or diff_line.startswith("-")) and not diff_line.startswith("+++") and not diff_line.startswith("---"):
+                        content = diff_line[1:].strip()
+                        if content and not content.startswith("//") and not content.startswith("#"):
+                            has_real_diff = True
+                            break
+            elif diff_res.returncode != 0:
+                has_real_diff = True
+
+            if has_real_diff:
+                native_files.append(f_norm)
         elif f_norm == "pubspec.yaml":
             # Check diff in pubspec.yaml excluding version bump, comments, and shorebird asset
             diff_cmd = ["git", "diff", f"{since_tag}..HEAD", "--", "pubspec.yaml"] if since_tag else ["git", "diff", "HEAD", "--", "pubspec.yaml"]
@@ -204,8 +235,12 @@ def sync_version_json(
     has_native_changes: Optional[bool] = None,
     release_notes: str = "",
     min_required_version: Optional[str] = None,
+    apk_files: Optional[list[Path]] = None,
 ) -> dict:
-    """Generate / update version.json from the given version string with Split-ABI URLs."""
+    """
+    Generate / update version.json strictly matching pubspec.yaml version and build number.
+    Ensures zero version desynchronization between installed APK and remote update manifest.
+    """
     ver_part = version.split("+")[0]
     major, minor, patch, build = parse_semver(version)
 
@@ -234,19 +269,33 @@ def sync_version_json(
     if not release_notes:
         release_notes = existing.get("release_notes", "Bug fixes and improvements.")
 
-    # Auto-increment build number
-    prev_build = existing.get("build_number", 0)
-    build_number = max(build, prev_build + 1)
+    # Build number MUST match the binary built from pubspec.yaml (single source of truth)
+    build_number = build
 
     apk_base = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/latest/download"
-    apk_urls = {
-        "arm64-v8a": f"{apk_base}/app-arm64-v8a-release.apk",
-        "armeabi-v7a": f"{apk_base}/app-armeabi-v7a-release.apk",
-        "x86_64": f"{apk_base}/app-x86_64-release.apk",
-        "universal": f"{apk_base}/app-release.apk",
-    }
-    # Default fallback url (arm64-v8a covers 95%+ of modern smartphones)
-    default_apk_url = f"{apk_base}/app-arm64-v8a-release.apk"
+    
+    # Dynamically match built APK filenames
+    has_split_abis = False
+    if apk_files:
+        has_split_abis = any("arm64" in f.name or "v7a" in f.name for f in apk_files)
+
+    if has_split_abis:
+        apk_urls = {
+            "arm64-v8a": f"{apk_base}/app-arm64-v8a-release.apk",
+            "armeabi-v7a": f"{apk_base}/app-armeabi-v7a-release.apk",
+            "x86_64": f"{apk_base}/app-x86_64-release.apk",
+            "universal": f"{apk_base}/app-release.apk",
+        }
+        default_apk_url = f"{apk_base}/app-arm64-v8a-release.apk"
+    else:
+        # Shorebird release produces single universal app-release.apk
+        apk_urls = {
+            "arm64-v8a": f"{apk_base}/app-arm64-v8a-release.apk",
+            "armeabi-v7a": f"{apk_base}/app-armeabi-v7a-release.apk",
+            "x86_64": f"{apk_base}/app-x86_64-release.apk",
+            "universal": f"{apk_base}/app-release.apk",
+        }
+        default_apk_url = f"{apk_base}/app-release.apk"
 
     payload = {
         "latest_version": ver_part,
@@ -259,7 +308,7 @@ def sync_version_json(
     }
 
     VERSION_JSON.write_text(json.dumps(payload, indent=2) + "\n")
-    print(f"{GREEN}✅ version.json → v{ver_part}+{build_number} (Split-ABI supported){RESET}")
+    print(f"{GREEN}✅ version.json → v{ver_part}+{build_number} (has_native_changes: {has_native_changes}){RESET}")
     return payload
 
 
@@ -291,6 +340,7 @@ def build_apks(
     clean: bool = False,
     use_shorebird: bool = True,
     dry_run: bool = False,
+    verbose: bool = False,
 ) -> list[Path]:
     """Build release APKs (with split-per-abi by default) via Shorebird or standard Flutter."""
     sb_bin = find_shorebird_bin() if use_shorebird else None
@@ -310,17 +360,20 @@ def build_apks(
 
     if sb_bin:
         # Build and register base release with Shorebird
+        # (Shorebird release android builds an AAB and generates APK; it does not take --split-per-abi)
         cmd = [sb_bin, "release", "android", "--artifact", "apk"]
         if dry_run:
             cmd.append("--dry-run")
-        if split_per_abi:
-            cmd.extend(["--", "--split-per-abi"])
+        if verbose:
+            cmd.append("--verbose")
     else:
         if use_shorebird:
             print(f"{YELLOW}⚠️  Shorebird CLI not found. Falling back to standard flutter build apk.{RESET}")
         cmd = ["flutter", "build", "apk", "--release"]
         if split_per_abi:
             cmd.append("--split-per-abi")
+        if verbose:
+            cmd.append("--verbose")
 
     start = time.time()
     result = run(cmd)
@@ -330,20 +383,32 @@ def build_apks(
         print(f"{RED}❌ APK build failed after {elapsed:.1f}s{RESET}")
         return []
 
-    # Find all generated output APKs
-    apk_dir = REPO_ROOT / "build" / "app" / "outputs" / "flutter-apk"
-    apk_files = [f for f in apk_dir.glob("*.apk") if "debug" not in f.name]
+    # Find all generated output APKs across output directories
+    candidate_dirs = [
+        REPO_ROOT / "build" / "app" / "outputs" / "flutter-apk",
+        REPO_ROOT / "build" / "app" / "outputs" / "apk" / "release",
+        REPO_ROOT / "build" / "app" / "outputs" / "apk",
+    ]
+    apk_files: list[Path] = []
+    for c_dir in candidate_dirs:
+        if c_dir.exists():
+            for f in c_dir.glob("*.apk"):
+                if "debug" not in f.name and f not in apk_files:
+                    apk_files.append(f)
 
     if not apk_files:
-        print(f"{RED}❌ Could not find built APKs in {apk_dir}{RESET}")
+        print(f"{RED}❌ Could not find built APKs in outputs directory{RESET}")
         return []
 
-    print(f"\n{GREEN}✅ {len(apk_files)} APK(s) built in {elapsed:.1f}s:{RESET}")
+    total_size = sum(f.stat().st_size for f in apk_files)
+    print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
+    print(f"{GREEN}✅ {len(apk_files)} APK(s) built in {elapsed:.1f}s (Total: {format_bytes(total_size)}):{RESET}")
     for apk_file in sorted(apk_files):
         size = apk_file.stat().st_size
         sha = calculate_sha256(apk_file)
-        print(f"   📦 {BOLD}{apk_file.name}{RESET} ({format_bytes(size)})")
+        print(f"   📦 {BOLD}{apk_file.name}{RESET} ({format_bytes(size)} / {size:,} bytes)")
         print(f"      🔑 SHA256: {DIM}{sha}{RESET}")
+    print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
 
     return apk_files
 
@@ -353,10 +418,13 @@ def build_apks(
 # =============================================================================
 
 def check_gh_cli() -> bool:
-    """Check if the GitHub CLI (gh) is installed and authenticated."""
+    """Check if the GitHub CLI (gh) is installed and authenticated, or GITHUB_TOKEN exists."""
+    if os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"):
+        return True
     result = run(["gh", "auth", "status"], capture=True)
     if result.returncode != 0:
-        print(f"{RED}❌ GitHub CLI not authenticated. Run: gh auth login{RESET}")
+        print(f"{YELLOW}⚠️  GitHub CLI not authenticated. Run: {BOLD}gh auth login{RESET}")
+        print(f"{DIM}   (Or set GITHUB_TOKEN or GH_TOKEN environment variable){RESET}")
         return False
     return True
 
@@ -368,10 +436,22 @@ def create_github_release(
     draft: bool = False,
     prerelease: bool = False,
 ) -> bool:
-    """Create a GitHub release and upload all APK binaries."""
+    """Create a GitHub release and upload all APK binaries with live progress and byte metrics."""
     tag = f"v{version.split('+')[0]}"
+    total_bytes = sum(p.stat().st_size for p in apk_paths if p.exists())
 
-    print(f"\n{BOLD}{BLUE}▶ Creating GitHub Release {tag} ({len(apk_paths)} assets)...{RESET}")
+    print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
+    print(f"{BOLD}{BLUE}▶ Uploading {len(apk_paths)} Asset(s) to GitHub Release {tag}{RESET}")
+    print(f"   📊 Total Batch Size: {format_bytes(total_bytes)} ({total_bytes:,} bytes)")
+    print(f"   🔗 Target Repo:       {GITHUB_USER}/{GITHUB_REPO}")
+    print(f"{CYAN}──────────────────────────────────────────────────────────────{RESET}")
+    for p in sorted(apk_paths):
+        if p.exists():
+            sz = p.stat().st_size
+            sha = calculate_sha256(p)
+            print(f"   • {GREEN}{BOLD}{p.name}{RESET} ({format_bytes(sz)} / {sz:,} bytes)")
+            print(f"     🔑 SHA256: {DIM}{sha}{RESET}")
+    print(f"{CYAN}──────────────────────────────────────────────────────────────{RESET}\n")
 
     cmd = [
         "gh", "release", "create", tag,
@@ -386,27 +466,23 @@ def create_github_release(
     if prerelease:
         cmd.append("--prerelease")
 
-    result = run(cmd, capture=True)
+    # Run without capturing so gh's live progress bar (showing %, speed, bytes) streams to terminal
+    result = run(cmd, capture=False)
 
     if result.returncode != 0:
-        stderr = result.stderr or ""
-        if "already exists" in stderr:
-            print(f"{YELLOW}⚠️  Release {tag} already exists. Uploading APKs to existing release...{RESET}")
-            upload_cmd = [
-                "gh", "release", "upload", tag,
-                *[str(p) for p in apk_paths],
-                "--repo", f"{GITHUB_USER}/{GITHUB_REPO}",
-                "--clobber",
-            ]
-            upload_result = run(upload_cmd, capture=True)
-            if upload_result.returncode != 0:
-                print(f"{RED}❌ Failed to upload APKs: {upload_result.stderr}{RESET}")
-                return False
-        else:
-            print(f"{RED}❌ Failed to create release: {stderr}{RESET}")
+        print(f"\n{YELLOW}⚠️  Release creation returned non-zero. Attempting update on existing release...{RESET}")
+        upload_cmd = [
+            "gh", "release", "upload", tag,
+            *[str(p) for p in apk_paths],
+            "--repo", f"{GITHUB_USER}/{GITHUB_REPO}",
+            "--clobber",
+        ]
+        upload_result = run(upload_cmd, capture=False)
+        if upload_result.returncode != 0:
+            print(f"{RED}❌ Failed to upload APKs to GitHub.{RESET}")
             return False
 
-    print(f"{GREEN}✅ GitHub Release {tag} published with {len(apk_paths)} APK(s) attached{RESET}")
+    print(f"\n{GREEN}✅ GitHub Release {tag} published with {len(apk_paths)} APK(s) attached ({format_bytes(total_bytes)}){RESET}")
     print(f"   🔗 https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/tag/{tag}")
     return True
 
@@ -453,6 +529,11 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
     print(f"{BOLD}{CYAN}         🚀  BiGuess Full Release Pipeline                    {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
 
+    # Step 0: Pre-flight checks
+    if not args.skip_github:
+        if not check_gh_cli():
+            print(f"{YELLOW}⚠️  GitHub upload will be skipped because 'gh auth login' has not been performed.{RESET}")
+
     # Step 1: Version
     current = read_pubspec_version()
     print(f"📋 Current version: {BOLD}{current}{RESET}")
@@ -471,18 +552,16 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
     ver_part = version.split("+")[0]
     print(f"🎯 Release version: {BOLD}{ver_part}{RESET}\n")
 
-    # Step 2: Sync version.json
+    # Step 2: Initial sync version.json & app_constants.dart
     payload = sync_version_json(
         version,
         has_native_changes=args.native,
         release_notes=args.notes or "",
         min_required_version=args.min_version,
     )
-
-    # Step 3: Sync app_constants.dart
     update_app_constants(version)
 
-    # Step 4: Build APKs
+    # Step 3: Build APKs
     split_abi = not getattr(args, "universal", False)
     use_sb = not getattr(args, "no_shorebird", False)
     dry_run = getattr(args, "dry_run", False)
@@ -493,6 +572,7 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
             clean=args.clean,
             use_shorebird=use_sb,
             dry_run=dry_run,
+            verbose=getattr(args, "verbose", False),
         )
         if not apk_paths:
             return 1
@@ -504,6 +584,15 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
             print(f"{RED}❌ No existing APKs found in {apk_dir}. Remove --skip-build to build.{RESET}")
             return 1
         print(f"{YELLOW}⏭️  Skipping build — using {len(apk_paths)} existing APK(s){RESET}")
+
+    # Step 4: Resync version.json with actual built APK outputs
+    payload = sync_version_json(
+        version,
+        has_native_changes=args.native,
+        release_notes=args.notes or "",
+        min_required_version=args.min_version,
+        apk_files=apk_paths,
+    )
 
     # Step 5: Git commit & push
     if not args.skip_git:
@@ -551,6 +640,20 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
     ver_part = current.split("+")[0]
     print(f"📋 Current release version: {BOLD}{current}{RESET}")
 
+    # Check Shorebird active releases
+    active_releases = get_shorebird_active_releases(sb_bin)
+    target_version = current
+    if active_releases and current not in active_releases:
+        latest_active = active_releases[0]
+        print(f"\n{YELLOW}⚠️  Note: Version '{current}' is not an active base release on Shorebird.{RESET}")
+        print(f"   Registered active base release is: {BOLD}{latest_active}{RESET}")
+        print(f"   {GREEN}🎯 Auto-targeting active release {BOLD}{latest_active}{RESET} for this OTA patch.{RESET}\n")
+        target_version = latest_active
+        write_pubspec_version(target_version)
+        update_app_constants(target_version)
+        current = target_version
+        ver_part = current.split("+")[0]
+
     # Check for native changes
     has_native, changed_files = detect_native_changes()
     if has_native and not getattr(args, "allow_native_diffs", False):
@@ -558,7 +661,7 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
         for f in changed_files[:5]:
             print(f"   • {f}")
         print(f"{RED}❌ Shorebird OTA patches cannot contain native code changes.{RESET}")
-        print(f"   To publish native changes, create a Full Base Release instead (Option 1 in menu).")
+        print(f"   To publish native changes, create a Full Base Release instead (Option 3 in menu).")
         print(f"   (Or pass --allow-native-diffs to override if you are sure).")
         return 1
 
@@ -569,12 +672,14 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
             print(f"{YELLOW}⚠️  Analysis warnings detected. Continuing...{RESET}")
 
     # Step 1: Run Shorebird patch
-    print(f"\n{BOLD}{BLUE}▶ Creating Shorebird OTA Patch for Android...{RESET}")
-    cmd = [sb_bin, "patch", "android", f"--release-version={current}"]
+    print(f"\n{BOLD}{BLUE}▶ Creating Shorebird OTA Patch for Android (Release: {target_version})...{RESET}")
+    cmd = [sb_bin, "patch", "android", f"--release-version={target_version}"]
     if getattr(args, "dry_run", False):
         cmd.append("--dry-run")
     if getattr(args, "allow_native_diffs", False):
         cmd.append("--allow-native-diffs")
+    if getattr(args, "verbose", False):
+        cmd.append("--verbose")
 
     start = time.time()
     result = run(cmd)
@@ -604,8 +709,11 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
             run(["git", "add", f])
         run(["git", "commit", "-m", f"patch: shorebird OTA update for v{current}"])
         print(f"\n{BOLD}{BLUE}▶ Pushing version.json to remote...{RESET}")
-        run(["git", "push"])
-        print(f"{GREEN}✅ Pushed version.json to GitHub{RESET}")
+        res = run(["git", "push"])
+        if res.returncode == 0:
+            print(f"{GREEN}✅ Pushed version.json to GitHub{RESET}")
+        else:
+            print(f"{YELLOW}⚠️  Git push failed. Run 'git push' manually when internet connection is stable.{RESET}")
     else:
         print(f"{YELLOW}⏭️  Skipping git commit/push{RESET}")
 
@@ -774,6 +882,7 @@ def main() -> int:
     pipe_group.add_argument("--clean", action="store_true", help="Run flutter clean before build")
     pipe_group.add_argument("--draft", action="store_true", help="Create GitHub release as draft")
     pipe_group.add_argument("--prerelease", action="store_true", help="Mark GitHub release as pre-release")
+    pipe_group.add_argument("-v", "--verbose", action="store_true", help="Show detailed network transfer and upload logs")
 
     args = parser.parse_args()
 
