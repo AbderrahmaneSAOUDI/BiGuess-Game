@@ -112,7 +112,8 @@ def main() -> int:
     parser.add_argument(
         "--split-per-abi",
         action="store_true",
-        help="Build separate smaller APKs per CPU architecture (armeabi-v7a, arm64-v8a, x86_64)",
+        default=True,
+        help="Build separate smaller APKs per CPU architecture (always enabled by default for APK builds)",
     )
     parser.add_argument(
         "--shorebird",
@@ -140,7 +141,7 @@ def main() -> int:
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         🚀  BiGuess Flutter Build Automation                 {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
-    print(f"🎯 Target:      {args.target.upper()}")
+    print(f"🎯 Target:      {args.target.upper()}{' (Split-per-ABI)' if args.target in ('apk', 'all') else ''}")
     print(f"⚙️  Mode:        {mode.upper()}")
     print(f"🛠️  Engine:      {engine_name}")
     print(f"📁 Repository:  {repo_root}")
@@ -173,15 +174,13 @@ def main() -> int:
     else:
         build_cmd = [flutter, "build"]
         if args.target == "apk":
-            build_cmd.extend(["apk", f"--{mode}"])
-            if args.split_per_abi:
-                build_cmd.append("--split-per-abi")
+            build_cmd.extend(["apk", f"--{mode}", "--split-per-abi"])
         elif args.target == "appbundle":
             build_cmd.extend(["appbundle", f"--{mode}"])
         elif args.target == "web":
             build_cmd.extend(["web", f"--{mode}"])
         elif args.target == "all":
-            build_cmd.extend(["apk", f"--{mode}"])
+            build_cmd.extend(["apk", f"--{mode}", "--split-per-abi"])
 
     if not run_step(f"Building {args.target.upper()} ({mode})", build_cmd, repo_root):
         return 1

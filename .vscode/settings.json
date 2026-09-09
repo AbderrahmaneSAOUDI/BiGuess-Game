@@ -1,0 +1,23 @@
+{
+  "files.exclude": {
+    ".agents": true,
+    ".dart_tool": true,
+    ".vscode": true,
+    "ChatGPT": true,
+    "doc": true,
+    "Obsidian": true,
+    "test": true,
+    "web": true,
+    "assets": true,
+    ".flutter-plugins-dependencies": true,
+    ".gitattributes": true,
+    ".metadata": true,
+    ".gitignore": true,
+    "analysis_options.yaml": true,
+    "devtools_options.yaml": true,
+    "chatgpt_readme.md": true,
+    "CHATGPT_CHAT.md": true,
+    "pubspec.lock": true,
+    "shorebird.yaml": true
+  }
+}

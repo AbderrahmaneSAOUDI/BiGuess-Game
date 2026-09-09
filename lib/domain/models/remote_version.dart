@@ -51,7 +51,7 @@ class RemoteVersion {
   ///
   /// Traverses [deviceAbis] in priority order (e.g. `['arm64-v8a', 'armeabi-v7a']`).
   /// If a match is found in [apkUrls], returns it; otherwise falls back to
-  /// `apkUrls['universal']` or [apkUrl].
+  /// [apkUrl] or the default 64-bit ARM APK.
   String resolveApkUrl(List<String> deviceAbis) {
     if (apkUrls.isNotEmpty) {
       for (final abi in deviceAbis) {
@@ -68,7 +68,7 @@ class RemoteVersion {
     }
     return apkUrl.isNotEmpty
         ? apkUrl
-        : 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-release.apk';
+        : 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-arm64-v8a-release.apk';
   }
 
   Map<String, dynamic> toJson() => {
