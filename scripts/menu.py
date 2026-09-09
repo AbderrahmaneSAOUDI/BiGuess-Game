@@ -272,20 +272,18 @@ def task_character_stats() -> None:
 def task_build_app() -> None:
     """Task 6: Build Game."""
     print(f"\n{BOLD}{BLUE}▶ Build BiGuess Flutter App{RESET}")
-    print(f"  {CYAN}[1]{RESET} 🐦 Android APK with Shorebird (Code-Push enabled, recommended)")
-    print(f"  {CYAN}[2]{RESET} 📦 Android Split APKs Standard Flutter (arm64, v7a, x86_64)")
-    print(f"  {CYAN}[3]{RESET} 🐦 Android App Bundle with Shorebird (AAB - for Google Play)")
-    print(f"  {CYAN}[4]{RESET} 🌐 Web Build")
+    print(f"  {CYAN}[1]{RESET} 📦 Android Split APKs (arm64-v8a, armeabi-v7a, x86_64)")
+    print(f"  {CYAN}[2]{RESET} 🐦 Android App Bundle with Shorebird (AAB - for Google Play)")
+    print(f"  {CYAN}[3]{RESET} 🌐 Web Build")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select build target", "1")
     target_map = {
-        "1": (["apk", "--shorebird"], "Android APK (Shorebird)"),
-        "2": (["apk", "--split-per-abi"], "Android Split APKs"),
-        "3": (["appbundle", "--shorebird"], "Android App Bundle (Shorebird)"),
-        "4": (["web"], "Web"),
+        "1": (["apk"], "Android Split APKs"),
+        "2": (["appbundle", "--shorebird"], "Android App Bundle (Shorebird)"),
+        "3": (["web"], "Web"),
     }
-    args, label = target_map.get(choice, (["apk", "--shorebird"], "Android APK (Shorebird)"))
+    args, label = target_map.get(choice, (["apk"], "Android Split APKs"))
 
     clean_first = prompt_input("Run flutter clean first? (y/n)", "n").lower() == "y"
     if clean_first:

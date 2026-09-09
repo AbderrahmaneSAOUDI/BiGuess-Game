@@ -134,14 +134,11 @@ python3 scripts/character_stats.py --export-json characters.json --export-csv ch
 ---
 
 ### 6. `build_app.py` - Flutter Build & Release Automation
-Automates pre-flight checks (`flutter pub get`, `flutter analyze`, `flutter test`), builds the requested target, and reports output file size and SHA-256 checksums.
+Automates pre-flight checks (`flutter pub get`, `flutter analyze`, `flutter test`), builds the requested target (strictly generating architecture-specific split APKs for Android), and reports output file size and SHA-256 checksums.
 
 ```bash
-# Build Android APK (Release)
+# Build Android Split APKs (arm64-v8a, armeabi-v7a, x86_64)
 python3 scripts/build_app.py apk
-
-# Build smaller split APKs per architecture (arm64, v7a, x86_64)
-python3 scripts/build_app.py apk --split-per-abi
 
 # Build Android App Bundle (.aab) for Google Play Store
 python3 scripts/build_app.py appbundle
@@ -149,7 +146,7 @@ python3 scripts/build_app.py appbundle
 # Build Web version
 python3 scripts/build_app.py web
 
-# Clean before building
+# Clean cache before building
 python3 scripts/build_app.py apk --clean
 ```
 

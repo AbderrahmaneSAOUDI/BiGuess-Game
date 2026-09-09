@@ -274,28 +274,13 @@ def sync_version_json(
 
     apk_base = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/latest/download"
     
-    # Dynamically match built APK filenames
-    has_split_abis = False
-    if apk_files:
-        has_split_abis = any("arm64" in f.name or "v7a" in f.name for f in apk_files)
-
-    if has_split_abis:
-        apk_urls = {
-            "arm64-v8a": f"{apk_base}/app-arm64-v8a-release.apk",
-            "armeabi-v7a": f"{apk_base}/app-armeabi-v7a-release.apk",
-            "x86_64": f"{apk_base}/app-x86_64-release.apk",
-            "universal": f"{apk_base}/app-release.apk",
-        }
-        default_apk_url = f"{apk_base}/app-arm64-v8a-release.apk"
-    else:
-        # Shorebird release produces single universal app-release.apk
-        apk_urls = {
-            "arm64-v8a": f"{apk_base}/app-arm64-v8a-release.apk",
-            "armeabi-v7a": f"{apk_base}/app-armeabi-v7a-release.apk",
-            "x86_64": f"{apk_base}/app-x86_64-release.apk",
-            "universal": f"{apk_base}/app-release.apk",
-        }
-        default_apk_url = f"{apk_base}/app-release.apk"
+    # Strictly split-ABI APK mapping (no universal/fat APK)
+    apk_urls = {
+        "arm64-v8a": f"{apk_base}/app-arm64-v8a-release.apk",
+        "armeabi-v7a": f"{apk_base}/app-armeabi-v7a-release.apk",
+        "x86_64": f"{apk_base}/app-x86_64-release.apk",
+    }
+    default_apk_url = f"{apk_base}/app-arm64-v8a-release.apk"
 
     payload = {
         "latest_version": ver_part,
@@ -335,18 +320,16 @@ def update_app_constants(version: str) -> None:
 # =============================================================================
 
 def build_apks(
-    split_per_abi: bool = True,
     skip_checks: bool = False,
     clean: bool = False,
     use_shorebird: bool = True,
     dry_run: bool = False,
     verbose: bool = False,
 ) -> list[Path]:
-    """Build release APKs (with split-per-abi by default) via Shorebird or standard Flutter."""
+    """Build release APKs (strictly split-per-abi) via Shorebird or standard Flutter."""
     sb_bin = find_shorebird_bin() if use_shorebird else None
     builder_label = "Shorebird Engine" if sb_bin else "Standard Flutter"
-    mode_desc = "Split-per-ABI (arm64, armeabi, x86_64)" if split_per_abi else "Universal (Fat APK)"
-    print(f"\n{BOLD}{BLUE}▶ Building Release APKs via {builder_label} [{mode_desc}]...{RESET}")
+    print(f"\n{BOLD}{BLUE}▶ Building Release APKs via {builder_label} [Split-per-ABI (arm64, armeabi, x86_64)]...{RESET}")
 
     if clean:
         run(["flutter", "clean"])
@@ -360,7 +343,6 @@ def build_apks(
 
     if sb_bin:
         # Build and register base release with Shorebird
-        # (Shorebird release android builds an AAB and generates APK; it does not take --split-per-abi)
         cmd = [sb_bin, "release", "android", "--artifact", "apk"]
         if dry_run:
             cmd.append("--dry-run")
@@ -369,9 +351,7 @@ def build_apks(
     else:
         if use_shorebird:
             print(f"{YELLOW}⚠️  Shorebird CLI not found. Falling back to standard flutter build apk.{RESET}")
-        cmd = ["flutter", "build", "apk", "--release"]
-        if split_per_abi:
-            cmd.append("--split-per-abi")
+        cmd = ["flutter", "build", "apk", "--release", "--split-per-abi"]
         if verbose:
             cmd.append("--verbose")
 
@@ -562,12 +542,10 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
     update_app_constants(version)
 
     # Step 3: Build APKs
-    split_abi = not getattr(args, "universal", False)
     use_sb = not getattr(args, "no_shorebird", False)
     dry_run = getattr(args, "dry_run", False)
     if not args.skip_build:
         apk_paths = build_apks(
-            split_per_abi=split_abi,
             skip_checks=args.skip_checks,
             clean=args.clean,
             use_shorebird=use_sb,
@@ -871,7 +849,7 @@ def main() -> int:
         "--doctor", action="store_true",
         help="Run Shorebird doctor to check tooling health",
     )
-    pipe_group.add_argument("--universal", action="store_true", help="Build single fat universal APK instead of Split-per-ABI")
+    pipe_group.add_argument("--split-apk", "--split-per-abi", action="store_true", default=True, help="Enforce Split-per-ABI APK build (always enabled by default)")
     pipe_group.add_argument("--no-shorebird", action="store_true", help="Build with standard Flutter instead of Shorebird")
     pipe_group.add_argument("--dry-run", action="store_true", help="Validate build/patch without uploading to Shorebird")
     pipe_group.add_argument("--allow-native-diffs", action="store_true", help="Force patch even if native diffs are detected")

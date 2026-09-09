@@ -138,8 +138,7 @@ cat > "$VERSION_JSON" <<EOF
   "apk_urls": {
     "arm64-v8a": "$APK_BASE/app-arm64-v8a-release.apk",
     "armeabi-v7a": "$APK_BASE/app-armeabi-v7a-release.apk",
-    "x86_64": "$APK_BASE/app-x86_64-release.apk",
-    "universal": "$APK_BASE/app-release.apk"
+    "x86_64": "$APK_BASE/app-x86_64-release.apk"
   },
   "apk_url": "$APK_URL",
   "release_notes": "$RELEASE_NOTES"
@@ -151,7 +150,7 @@ echo "   Version:        $VERSION"
 echo "   Build:          $BUILD_NUMBER"
 echo "   Min required:   $MIN_REQUIRED_VERSION"
 echo "   Native changes: $HAS_NATIVE_CHANGES"
-echo "   Split-ABI URLs: arm64-v8a, armeabi-v7a, x86_64, universal"
+echo "   Split-ABI URLs: arm64-v8a, armeabi-v7a, x86_64"
 echo "   Default APK:    $APK_URL"
 
 # ---- Auto-commit if requested ----
