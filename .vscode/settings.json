@@ -8,7 +8,7 @@
     "Obsidian": true,
     "test": true,
     "web": true,
-    "assets": true,
+    "assets": false,
     ".flutter-plugins-dependencies": true,
     ".gitattributes": true,
     ".metadata": true,
