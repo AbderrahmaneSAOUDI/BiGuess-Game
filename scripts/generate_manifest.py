@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-BiGuess Game - Asset Manifest Generator
-Generates and synchronizes lib/assets_manifest.dart from the files in assets/images/
+BiGuess Game - Asset Manifest Generator & Config Sync
+Generates and synchronizes lib/assets_manifest.dart and pubspec.yaml
+from the Topic/Pack hierarchy in assets/images/<Topic>/<Pack>/
 """
 
 import argparse
 import os
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -19,80 +21,7 @@ CYAN = "\033[96m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
-# Canonical mapping of folder names to game display names
-KNOWN_CATEGORIES: Dict[str, str] = {
-    "attack_on_titan": "Attack on Titan",
-    "black_clover": "Black Clover",
-    "bleach": "Bleach",
-    "code_geass": "Code Geass",
-    "death_note": "Death Note",
-    "demon_slayer": "Demon Slayer",
-    "detective_conan": "Detective Conan",
-    "dr_stone": "Dr. Stone",
-    "dragon_ball_z": "Dragon Ball Z",
-    "fmab": "FMAB",
-    "hunter_x_hunter": "Hunter X Hunter",
-    "jujutsu_kaisen": "Jujutsu Kaisen",
-    "my_hero_academia": "My Hero Academia",
-    "naruto": "Naruto",
-    "one_piece": "One Piece",
-    "solo_leveling": "Solo Leveling",
-    "tokyo_revengers": "Tokyo Revengers",
-    "vinland_saga": "Vinland Saga",
-}
-
-
-def folder_to_category_name(folder_name: str) -> str:
-    """Convert folder name to category display name."""
-    clean_folder = folder_name.lower().strip()
-    if clean_folder in KNOWN_CATEGORIES:
-        return KNOWN_CATEGORIES[clean_folder]
-
-    # Smart fallback for custom folders
-    words = clean_folder.replace("-", " ").replace("_", " ").split()
-    capitalized = []
-    for w in words:
-        if w in {"on", "in", "the", "of", "and", "x", "d"}:
-            capitalized.append(w)
-        elif w.upper() in {"FMAB", "DBZ", "AOT", "HxH", "MHA", "JJK"}:
-            capitalized.append(w.upper())
-        else:
-            capitalized.append(w.capitalize())
-    res = " ".join(capitalized)
-    return res[0].upper() + res[1:] if res else folder_name
-
-
-def scan_assets(images_dir: Path) -> Dict[str, List[str]]:
-    """
-    Scans images_dir and returns mapping of {Category Name: [list of relative asset paths]}.
-    """
-    valid_exts = {".webp", ".png", ".jpg", ".jpeg"}
-    result: Dict[str, List[str]] = {}
-
-    if not images_dir.exists():
-        print(f"{RED}❌ Directory not found: {images_dir}{RESET}")
-        return result
-
-    # Find all subdirectories
-    subdirs = sorted([d for d in images_dir.iterdir() if d.is_dir()])
-
-    for subdir in subdirs:
-        category_name = folder_to_category_name(subdir.name)
-        asset_list: List[str] = []
-
-        for item in subdir.iterdir():
-            if item.is_file() and item.suffix.lower() in valid_exts:
-                # Normalize unicode to NFC for consistent lookup in Flutter
-                normalized_name = unicodedata.normalize("NFC", item.name)
-                # Form posix relative path
-                rel_path = f"assets/images/{subdir.name}/{normalized_name}"
-                asset_list.append(rel_path)
-
-        # Sort asset paths case-insensitively
-        asset_list.sort(key=lambda x: unicodedata.normalize("NFC", x.lower()))
-        result[category_name] = asset_list
-
-    return result
+VALID_EXTENSIONS = {".webp", ".png", ".jpg", ".jpeg"}
 
 
 def dart_quote(s: str) -> str:
@@ -108,41 +37,70 @@ def dart_quote(s: str) -> str:
         return f"'{s}'"
 
 
-def generate_dart_content(manifest: Dict[str, List[str]]) -> str:
+def scan_topic_pack_assets(images_dir: Path) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Scans images_dir and returns mapping of:
+    { Topic: { Pack: [list of relative asset paths] } }
+    """
+    result: Dict[str, Dict[str, List[str]]] = {}
+
+    if not images_dir.exists():
+        print(f"{RED}❌ Directory not found: {images_dir}{RESET}")
+        return result
+
+    # Find all topic subdirectories
+    topic_dirs = sorted([d for d in images_dir.iterdir() if d.is_dir() and not d.name.startswith(".")])
+
+    for topic_dir in topic_dirs:
+        topic_name = topic_dir.name
+        pack_map: Dict[str, List[str]] = {}
+
+        pack_dirs = sorted([p for p in topic_dir.iterdir() if p.is_dir() and not p.name.startswith(".")])
+        for pack_dir in pack_dirs:
+            pack_name = pack_dir.name
+            asset_list: List[str] = []
+
+            for item in pack_dir.iterdir():
+                if item.is_file() and item.suffix.lower() in VALID_EXTENSIONS and not item.name.startswith("."):
+                    normalized_name = unicodedata.normalize("NFC", item.name)
+                    rel_path = f"assets/images/{topic_name}/{pack_name}/{normalized_name}"
+                    asset_list.append(rel_path)
+
+            asset_list.sort(key=lambda x: unicodedata.normalize("NFC", x.lower()))
+            pack_map[pack_name] = asset_list
+
+        if pack_map:
+            result[topic_name] = pack_map
+
+    return result
+
+
+def generate_dart_content(manifest: Dict[str, Dict[str, List[str]]]) -> str:
     """Generate Dart code string for assets_manifest.dart."""
     lines = [
         "// GENERATED FILE - DO NOT EDIT MANUALLY",
         "// Generated by scripts/generate_manifest.py",
         "",
-        "const Map<String, List<String>> categoryAssets = {",
+        "/// Topic -> Pack -> List of asset paths",
+        "const Map<String, Map<String, List<String>>> topicPackAssets = {",
     ]
 
-    for category, assets in sorted(manifest.items()):
-        lines.append(f"  {dart_quote(category)}: [")
-        for asset in assets:
-            lines.append(f"    {dart_quote(asset)},")
-        lines.append("  ],")
+    for topic, packs in sorted(manifest.items()):
+        lines.append(f"  {dart_quote(topic)}: {{")
+        for pack, assets in sorted(packs.items()):
+            lines.append(f"    {dart_quote(pack)}: [")
+            for asset in assets:
+                lines.append(f"      {dart_quote(asset)},")
+            lines.append("    ],")
+        lines.append("  },")
 
     lines.append("};")
     lines.append("")
     return "\n".join(lines)
 
 
-def generate_txt_content(manifest: Dict[str, List[str]]) -> str:
-    """Generate legacy categoryAssets.txt content."""
-    lines = ["const Map<String, List<String>> categoryAssets = {"]
-    for category, assets in sorted(manifest.items()):
-        lines.append(f"  {dart_quote(category)}: [")
-        for asset in assets:
-            lines.append(f"    {dart_quote(asset)},")
-        lines.append("  ],")
-    lines.append("};")
-    lines.append("")
-    return "\n".join(lines)
-
-
-def sync_pubspec_assets(pubspec_path: Path, images_dir: Path) -> bool:
-    """Ensure all category asset subfolders are listed under assets: in pubspec.yaml."""
+def sync_pubspec_assets(pubspec_path: Path, manifest: Dict[str, Dict[str, List[str]]]) -> bool:
+    """Ensure all active Topic/Pack subfolders are accurately listed under assets: in pubspec.yaml."""
     if not pubspec_path.exists():
         print(f"{YELLOW}⚠️  pubspec.yaml not found at {pubspec_path}{RESET}")
         return False
@@ -150,36 +108,42 @@ def sync_pubspec_assets(pubspec_path: Path, images_dir: Path) -> bool:
     with open(pubspec_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    subdirs = sorted([d.name for d in images_dir.iterdir() if d.is_dir()])
-    missing_declarations = []
+    # Build the list of active pack directories
+    expected_pack_entries = []
+    for topic, packs in sorted(manifest.items()):
+        expected_pack_entries.append(f"    # {topic} Topic")
+        for pack in sorted(packs.keys()):
+            expected_pack_entries.append(f"    - assets/images/{topic}/{pack}/")
 
-    for subdir in subdirs:
-        decl = f"- assets/images/{subdir}/"
-        if decl not in content:
-            missing_declarations.append(decl)
+    # Locate assets block in pubspec.yaml
+    # We want to replace whatever is between `assets:` and `shorebird.yaml` (or `fonts:`)
+    assets_match = re.search(r"(\s+assets:\s*\n)(.*?)(    - shorebird\.yaml)", content, re.DOTALL)
+    if not assets_match:
+        print(f"{RED}❌ Could not locate assets section in pubspec.yaml to sync.{RESET}")
+        return False
 
-    if not missing_declarations:
+    header = assets_match.group(1)
+    footer = assets_match.group(3)
+
+    # Standard static assets that must always be bundled
+    base_assets = [
+        "    - assets/logos/",
+        "    - assets/profile/",
+        "    - assets/fonts/",
+    ]
+
+    new_assets_block = "\n".join(base_assets + expected_pack_entries) + "\n"
+    new_content = content[:assets_match.start(2)] + new_assets_block + content[assets_match.start(3):]
+
+    if new_content == content:
         print(f"{GREEN}✅ pubspec.yaml assets section is already up to date.{RESET}")
         return True
 
-    print(f"{YELLOW}⚠️  Found {len(missing_declarations)} folder(s) not registered in pubspec.yaml:{RESET}")
-    for m in missing_declarations:
-        print(f"   + {m}")
+    with open(pubspec_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
 
-    # Add missing entries right after `assets/images/`
-    target_needle = "assets/images/"
-    if target_needle in content:
-        insert_text = "\n".join(f"    {m}" for m in missing_declarations) + "\n"
-        idx = content.find(target_needle)
-        line_end = content.find("\n", idx)
-        new_content = content[: line_end + 1] + insert_text + content[line_end + 1 :]
-        with open(pubspec_path, "w", encoding="utf-8") as f:
-            f.write(new_content)
-        print(f"{GREEN}✅ Updated pubspec.yaml with missing asset folders.{RESET}")
-        return True
-    else:
-        print(f"{RED}❌ Could not locate 'assets/images/' in pubspec.yaml to insert new entries.{RESET}")
-        return False
+    print(f"{GREEN}✅ Updated pubspec.yaml with all active Topic/Pack directories.{RESET}")
+    return True
 
 
 def main() -> int:
@@ -190,7 +154,6 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parent.parent
     default_images = repo_root / "assets" / "images"
     default_dart_out = repo_root / "lib" / "assets_manifest.dart"
-    default_txt_out = repo_root / "assets" / "images" / "categoryAssets.txt"
     default_pubspec = repo_root / "pubspec.yaml"
 
     parser.add_argument(
@@ -206,15 +169,9 @@ def main() -> int:
         help="Path to write assets_manifest.dart",
     )
     parser.add_argument(
-        "--txt",
-        type=Path,
-        default=default_txt_out,
-        help="Path to write categoryAssets.txt",
-    )
-    parser.add_argument(
         "--sync-pubspec",
         action="store_true",
-        help="Automatically register new category folders in pubspec.yaml",
+        help="Automatically register all Topic/Pack folders in pubspec.yaml",
     )
     parser.add_argument(
         "--check",
@@ -225,20 +182,27 @@ def main() -> int:
     args = parser.parse_args()
 
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
-    print(f"{BOLD}{CYAN}         📋  BiGuess Asset Manifest Generator                  {RESET}")
+    print(f"{BOLD}{CYAN}         📋  BiGuess Topic & Pack Manifest Generator           {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"📁 Scanning:    {args.images_dir}")
     print(f"📄 Output:      {args.output}")
     print(f"{CYAN}──────────────────────────────────────────────────────────────{RESET}\n")
 
-    manifest = scan_assets(args.images_dir)
-    total_categories = len(manifest)
-    total_images = sum(len(items) for items in manifest.values())
+    manifest = scan_topic_pack_assets(args.images_dir)
+    total_topics = len(manifest)
+    total_packs = sum(len(packs) for packs in manifest.values())
+    total_images = sum(
+        sum(len(items) for items in packs.values())
+        for packs in manifest.values()
+    )
 
-    for cat, items in sorted(manifest.items()):
-        print(f"  • {BOLD}{cat:<22}{RESET}: {len(items):>4} images")
+    for topic, packs in sorted(manifest.items()):
+        topic_count = sum(len(items) for items in packs.values())
+        print(f"  📂 {BOLD}{topic}{RESET} ({len(packs)} packs, {topic_count} items):")
+        for pack, items in sorted(packs.items()):
+            print(f"     • {pack:<25}: {len(items):>4} items")
 
-    print(f"\n📊 Total: {BOLD}{total_categories}{RESET} categories, {BOLD}{total_images}{RESET} images.\n")
+    print(f"\n📊 Total: {BOLD}{total_topics}{RESET} topics, {BOLD}{total_packs}{RESET} packs, {BOLD}{total_images}{RESET} images.\n")
 
     new_dart_code = generate_dart_content(manifest)
 
@@ -263,18 +227,9 @@ def main() -> int:
         f.write(new_dart_code)
     print(f"{GREEN}✅ Successfully generated: {args.output}{RESET}")
 
-    # Write txt file if directory exists
-    if args.txt:
-        try:
-            with open(args.txt, "w", encoding="utf-8") as f:
-                f.write(generate_txt_content(manifest))
-            print(f"{GREEN}✅ Successfully updated:   {args.txt}{RESET}")
-        except Exception as e:
-            print(f"{YELLOW}⚠️  Could not write {args.txt}: {e}{RESET}")
-
     # Sync pubspec if requested
     if args.sync_pubspec:
-        sync_pubspec_assets(default_pubspec, args.images_dir)
+        sync_pubspec_assets(default_pubspec, manifest)
 
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
     return 0

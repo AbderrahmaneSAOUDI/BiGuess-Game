@@ -18,8 +18,7 @@ class PacksScreen extends ConsumerWidget {
     final packs = ref.watch(packsProvider(topicName));
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final accent =
-        AppConstants.topicColors[topicName] ?? theme.colorScheme.primary;
+    final accent = AppConstants.getTopicColor(topicName);
 
     final topPadding =
         MediaQuery.paddingOf(context).top + kToolbarHeight + 24;
@@ -308,7 +307,7 @@ class _PacksAppBar extends StatelessWidget implements PreferredSizeWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              AppConstants.topicIcons[topicName] ?? Icons.category_rounded,
+              AppConstants.getTopicIcon(topicName),
               size: 18,
               color: accent,
             ),

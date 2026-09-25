@@ -57,30 +57,48 @@ def levenshtein_distance(s1: str, s2: str) -> int:
 
 
 def collect_characters(images_dir: Path) -> List[CharacterInfo]:
-    """Scan images directory and collect all character info."""
+    """Scan images directory and collect all character/flag info across Topic/Pack hierarchy."""
     valid_exts = {".webp", ".png", ".jpg", ".jpeg"}
     characters: List[CharacterInfo] = []
 
     if not images_dir.exists():
         return characters
 
-    for subdir in sorted([d for d in images_dir.iterdir() if d.is_dir()]):
-        category_name = subdir.name.replace("_", " ").title()
-        for item in sorted(subdir.iterdir()):
-            if item.is_file() and item.suffix.lower() in valid_exts:
-                char_name = unicodedata.normalize("NFC", item.stem)
-                sz_kb = item.stat().st_size / 1024.0
-                rel_path = f"assets/images/{subdir.name}/{item.name}"
-
-                characters.append(
-                    CharacterInfo(
-                        name=char_name,
-                        category=category_name,
-                        asset_path=rel_path,
-                        file_size_kb=round(sz_kb, 2),
-                        name_length=len(char_name),
+    for topic_dir in sorted([d for d in images_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]):
+        pack_dirs = sorted([p for p in topic_dir.iterdir() if p.is_dir() and not p.name.startswith(".")])
+        if pack_dirs:
+            for pack_dir in pack_dirs:
+                category_label = f"{topic_dir.name} / {pack_dir.name}"
+                for item in sorted(pack_dir.iterdir()):
+                    if item.is_file() and item.suffix.lower() in valid_exts and not item.name.startswith("."):
+                        char_name = unicodedata.normalize("NFC", item.stem)
+                        sz_kb = item.stat().st_size / 1024.0
+                        rel_path = f"assets/images/{topic_dir.name}/{pack_dir.name}/{item.name}"
+                        characters.append(
+                            CharacterInfo(
+                                name=char_name,
+                                category=category_label,
+                                asset_path=rel_path,
+                                file_size_kb=round(sz_kb, 2),
+                                name_length=len(char_name),
+                            )
+                        )
+        else:
+            category_label = topic_dir.name.replace("_", " ").title()
+            for item in sorted(topic_dir.iterdir()):
+                if item.is_file() and item.suffix.lower() in valid_exts and not item.name.startswith("."):
+                    char_name = unicodedata.normalize("NFC", item.stem)
+                    sz_kb = item.stat().st_size / 1024.0
+                    rel_path = f"assets/images/{topic_dir.name}/{item.name}"
+                    characters.append(
+                        CharacterInfo(
+                            name=char_name,
+                            category=category_label,
+                            asset_path=rel_path,
+                            file_size_kb=round(sz_kb, 2),
+                            name_length=len(char_name),
+                        )
                     )
-                )
 
     return characters
 
