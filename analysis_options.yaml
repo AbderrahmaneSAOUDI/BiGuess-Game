@@ -8,6 +8,8 @@ analyzer:
   errors:
     avoid_print: ignore
   exclude:
+    - old-lib/**
+    - old-test/**
     - build/**
     - android/**
     - web/**
