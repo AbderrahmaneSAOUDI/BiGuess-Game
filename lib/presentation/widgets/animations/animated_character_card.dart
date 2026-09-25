@@ -92,10 +92,15 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
       (ImageInfo info, bool synchronousCall) {
         final double width = info.image.width.toDouble();
         final double height = info.image.height.toDouble();
-        if (mounted && height > 0) {
-          setState(() {
-            _imageAspectRatio = width / height;
-          });
+        if (height > 0) {
+          final ratio = width / height;
+          if (synchronousCall) {
+            _imageAspectRatio = ratio;
+          } else if (mounted) {
+            setState(() {
+              _imageAspectRatio = ratio;
+            });
+          }
         }
       },
       onError: (_, __) {},
@@ -120,6 +125,14 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
       _resolveImageDimensions();
       _playRevealAnimation();
     }
+  }
+
+  @override
+  void deactivate() {
+    _sequenceTimer?.cancel();
+    _flipController.stop();
+    _shimmerController.stop();
+    super.deactivate();
   }
 
   @override
@@ -251,41 +264,34 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                     _shimmerController.value >= 1.0) {
                                   return const SizedBox.shrink();
                                 }
-                                return LayoutBuilder(
-                                  builder: (context, cardConstraints) {
-                                    final sweepDistance =
-                                        (cardConstraints.maxWidth > 0
-                                                ? cardConstraints.maxWidth
-                                                : 300.0) *
-                                            1.5;
-                                    return IgnorePointer(
-                                      child: Transform.translate(
-                                        offset: Offset(
-                                          _shimmerAnimation.value *
-                                              sweepDistance,
-                                          0,
-                                        ),
-                                        child: Transform.rotate(
-                                          angle: 0.4,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.white
-                                                      .withValues(alpha: 0.0),
-                                                  Colors.white
-                                                      .withValues(alpha: 0.45),
-                                                  Colors.white
-                                                      .withValues(alpha: 0.0),
-                                                ],
-                                                stops: const [0.0, 0.5, 1.0],
-                                              ),
-                                            ),
+                                final sweepDistance =
+                                    (targetWidth > 0 ? targetWidth : 300.0) *
+                                        1.5;
+                                return IgnorePointer(
+                                  child: Transform.translate(
+                                    offset: Offset(
+                                      _shimmerAnimation.value * sweepDistance,
+                                      0,
+                                    ),
+                                    child: Transform.rotate(
+                                      angle: 0.4,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.white
+                                                  .withValues(alpha: 0.0),
+                                              Colors.white
+                                                  .withValues(alpha: 0.45),
+                                              Colors.white
+                                                  .withValues(alpha: 0.0),
+                                            ],
+                                            stops: const [0.0, 0.5, 1.0],
                                           ),
                                         ),
                                       ),
-                                    );
-                                  },
+                                    ),
+                                  ),
                                 );
                               },
                             ),
