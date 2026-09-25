@@ -47,7 +47,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     });
   }
 
-  Widget _buildContent(BuildContext context, GameRoundState state) {
+  Widget _buildContent(
+    BuildContext context,
+    GameRoundState state,
+    BoxConstraints constraints,
+  ) {
     if (state.noImagesFound) {
       return const GameEmptyState(key: ValueKey('empty'));
     }
@@ -62,6 +66,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         key: ValueKey('character_${state.currentImageAsset}'),
         imageAsset: state.currentImageAsset!,
         characterName: state.correctAnswer,
+        constraints: constraints,
       );
     } else {
       return AnimatedMysteryBox(
@@ -119,30 +124,33 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Center(
-                    child: RepaintBoundary(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: (child, animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: ScaleTransition(
-                              scale: Tween<double>(
-                                begin: 0.92,
-                                end: 1.0,
-                              ).animate(CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeOutCubic,
-                              )),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: _buildContent(context, state),
-                      ),
-                    ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Center(
+                        child: RepaintBoundary(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 400),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            transitionBuilder: (child, animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: Tween<double>(
+                                    begin: 0.92,
+                                    end: 1.0,
+                                  )
+                                      .chain(CurveTween(curve: Curves.easeOutCubic))
+                                      .animate(animation),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: _buildContent(context, state, constraints),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 AnimatedSwitcher(
@@ -157,18 +165,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                         position: Tween<Offset>(
                           begin: const Offset(0, 0.4),
                           end: Offset.zero,
-                        ).animate(CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutBack,
-                        )),
+                        )
+                            .chain(CurveTween(curve: Curves.easeOutBack))
+                            .animate(animation),
                         child: ScaleTransition(
                           scale: Tween<double>(
                             begin: 0.85,
                             end: 1.0,
-                          ).animate(CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutBack,
-                          )),
+                          )
+                              .chain(CurveTween(curve: Curves.easeOutBack))
+                              .animate(animation),
                           child: child,
                         ),
                       ),
@@ -207,37 +213,34 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 class _GameCharacterDisplay extends ConsumerWidget {
   final String imageAsset;
   final String? characterName;
+  final BoxConstraints constraints;
 
   const _GameCharacterDisplay({
     super.key,
     required this.imageAsset,
     this.characterName,
+    required this.constraints,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showNameHint = ref.watch(showCharacterNameHintProvider);
+    final bool hasName = characterName != null && showNameHint;
+    final double nameReservedHeight = hasName ? 68.0 : 0.0;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool hasName = characterName != null && showNameHint;
-        final double nameReservedHeight = hasName ? 68.0 : 0.0;
+    final double availableHeight =
+        (constraints.maxHeight - nameReservedHeight - 6.0).clamp(0.0, double.infinity);
+    final double effectiveContainerWidth =
+        constraints.maxWidth > 0 ? constraints.maxWidth : 360.0;
+    final double availableWidth = effectiveContainerWidth * 0.80;
 
-        final double availableHeight =
-            (constraints.maxHeight - nameReservedHeight - 6.0).clamp(0.0, double.infinity);
-        final double effectiveContainerWidth =
-            constraints.maxWidth > 0 ? constraints.maxWidth : 360.0;
-        final double availableWidth = effectiveContainerWidth * 0.80;
-
-        return AnimatedCharacterCard(
-          key: ValueKey(imageAsset),
-          imageAsset: imageAsset,
-          characterName: characterName,
-          showNameHint: showNameHint,
-          maxWidth: availableWidth,
-          maxHeight: availableHeight,
-        );
-      },
+    return AnimatedCharacterCard(
+      key: ValueKey(imageAsset),
+      imageAsset: imageAsset,
+      characterName: characterName,
+      showNameHint: showNameHint,
+      maxWidth: availableWidth,
+      maxHeight: availableHeight,
     );
   }
 }
