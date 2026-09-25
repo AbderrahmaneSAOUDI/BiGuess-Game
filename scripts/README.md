@@ -17,7 +17,9 @@ python3 scripts/menu.py
 You can also run any tool directly using CLI flags or shortcuts:
 
 ```bash
-./scripts/run.sh convert assets/images/one_piece/ -q 80
+./scripts/run.sh topics list
+./scripts/run.sh topics create-topic "Gaming"
+./scripts/run.sh topics create-pack "Gaming" "Pokemon"
 ./scripts/run.sh manifest --sync-pubspec
 ./scripts/run.sh audit
 ./scripts/run.sh stats --check-duplicates
@@ -28,7 +30,27 @@ You can also run any tool directly using CLI flags or shortcuts:
 
 ## 📚 Tools Overview
 
-### 1. `convert_and_optimize.py` - Image Converter & Compressor
+### 1. `manage_topics.py` - Topic & Pack Manager (CRUD)
+Provides both an interactive terminal interface and CLI commands to create, list, rename, and delete Topics and Packs within `assets/images/`, with automatic synchronization of `lib/assets_manifest.dart` and `pubspec.yaml`.
+
+```bash
+# Launch interactive CRUD dashboard:
+python3 scripts/manage_topics.py
+# or via shortcut:
+./scripts/run.sh topics
+
+# CLI Usage:
+python3 scripts/manage_topics.py list
+python3 scripts/manage_topics.py create-topic "Gaming"
+python3 scripts/manage_topics.py create-pack "Gaming" "Pokemon"
+python3 scripts/manage_topics.py rename-topic "Gaming" "Video Games"
+python3 scripts/manage_topics.py rename-pack "Video Games" "Pokemon" "Nintendo"
+python3 scripts/manage_topics.py delete-pack "Video Games" "Nintendo"
+python3 scripts/manage_topics.py delete-topic "Video Games"
+python3 scripts/manage_topics.py sync
+```
+
+### 2. `convert_and_optimize.py` - Image Converter & Compressor
 Converts images (PNG, JPG, JPEG, BMP, GIF, TIFF) to WebP, recompresses existing WebP files, strips unnecessary EXIF metadata, and scales down oversized assets.
 
 ```bash
@@ -55,7 +77,7 @@ python3 scripts/convert_and_optimize.py --dry-run
 
 ---
 
-### 2. `generate_manifest.py` - Asset Manifest & Config Sync
+### 3. `generate_manifest.py` - Asset Manifest & Config Sync
 Scans all anime subfolders in `assets/images/` and regenerates `lib/assets_manifest.dart` with deterministic sorting and Unicode NFC normalization (preventing broken characters like `Bell-mère` or `Charlotte Brûlée`).
 
 ```bash
@@ -77,7 +99,7 @@ python3 scripts/generate_manifest.py --check
 
 ---
 
-### 3. `audit_assets.py` - Health & Integrity Auditor
+### 4. `audit_assets.py` - Health & Integrity Auditor
 Scans the entire repository to detect broken links, missing files referenced in Dart, orphaned assets on disk, corrupted images, and suspicious filenames.
 
 ```bash
@@ -101,7 +123,7 @@ python3 scripts/audit_assets.py --max-size 100
 
 ---
 
-### 4. `normalize_filenames.py` - Character Filename Cleaner
+### 5. `normalize_filenames.py` - Character Filename Cleaner
 Cleans up character image filenames by removing common web download artifacts (`_1`, `(1)`, `[HQ]`, `%20`, double spaces) and applying Unicode NFC normalization.
 
 ```bash
@@ -114,7 +136,7 @@ python3 scripts/normalize_filenames.py --apply --sync-manifest
 
 ---
 
-### 5. `character_stats.py` - Analytics, Typos & Exporter
+### 6. `character_stats.py` - Analytics, Typos & Exporter
 Analyzes character distributions across anime categories, detects near-duplicate names or typos using Levenshtein distance, searches character names, and exports data.
 
 ```bash
@@ -133,7 +155,7 @@ python3 scripts/character_stats.py --export-json characters.json --export-csv ch
 
 ---
 
-### 6. `build_app.py` - Flutter Build & Release Automation
+### 7. `build_app.py` - Flutter Build & Release Automation
 Automates pre-flight checks (`flutter pub get`, `flutter analyze`, `flutter test`), builds the requested target (strictly generating architecture-specific split APKs for Android), and reports output file size and SHA-256 checksums.
 
 ```bash

@@ -26,6 +26,7 @@ else
     if [ $# -eq 0 ]; then
         # Interactive mode via menu.py
         case "$TASK" in
+            topics|topic|pack|packs|crud|\
             convert|optimize|webp|\
             manifest|sync|\
             audit|check|\
@@ -43,7 +44,7 @@ else
             *)
                 echo "Unknown command: $TASK"
                 echo "Available shortcuts:"
-                echo "  release, version, build, convert, manifest, audit, normalize, stats, clean"
+                echo "  topics, convert, manifest, audit, normalize, stats, build, clean, release, version"
                 echo "Or run without arguments for interactive menu: ./scripts/run.sh"
                 exit 1
                 ;;
@@ -51,6 +52,9 @@ else
     else
         # Direct CLI mode with flags passed
         case "$TASK" in
+            topics|topic|pack|packs|crud)
+                python3 "$SCRIPT_DIR/manage_topics.py" "$@"
+                ;;
             convert|optimize|webp)
                 python3 "$SCRIPT_DIR/convert_and_optimize.py" "$@"
                 ;;

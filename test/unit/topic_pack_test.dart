@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gdg_guess_game/core/constants/app_constants.dart';
 import 'package:gdg_guess_game/core/utils/asset_loader.dart';
 import 'package:gdg_guess_game/data/datasources/topic_pack_data_source.dart';
 
@@ -76,6 +78,31 @@ void main() {
         AssetLoader.extractCharacterName('assets/images/Anime/Attack on Titan/Eren YAEGER.webp'),
         'Eren YAEGER',
       );
+    });
+  });
+
+  group('AppConstants Dynamic Theme & Icons', () {
+    test('known topics return configured colors', () {
+      expect(AppConstants.getTopicColor('Anime'), AppConstants.topicColors['Anime']);
+      expect(AppConstants.getTopicColor('Geography'), AppConstants.topicColors['Geography']);
+      expect(AppConstants.getTopicColor('Movies'), AppConstants.topicColors['Movies']);
+    });
+
+    test('future custom topics dynamically receive valid colors', () {
+      final gamingColor = AppConstants.getTopicColor('Gaming');
+      final scienceColor = AppConstants.getTopicColor('Science');
+      expect(gamingColor, isNotNull);
+      expect(scienceColor, isNotNull);
+    });
+
+    test('future custom topics dynamically receive contextual icons', () {
+      expect(AppConstants.getTopicIcon('Anime'), Icons.auto_awesome_rounded);
+      expect(AppConstants.getTopicIcon('Flags of the World'), Icons.public_rounded);
+      expect(AppConstants.getTopicIcon('Classic Cinema'), Icons.movie_creation_rounded);
+      expect(AppConstants.getTopicIcon('Video Games'), Icons.sports_esports_rounded);
+      expect(AppConstants.getTopicIcon('Pop Music'), Icons.music_note_rounded);
+      expect(AppConstants.getTopicIcon('Football Legends'), Icons.sports_soccer_rounded);
+      expect(AppConstants.getTopicIcon('Unknown Topic 123'), Icons.category_rounded);
     });
   });
 }

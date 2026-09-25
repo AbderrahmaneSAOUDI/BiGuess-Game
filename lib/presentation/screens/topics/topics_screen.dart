@@ -58,10 +58,8 @@ class TopicsScreen extends ConsumerWidget {
                 final totalAssets =
                     ref.watch(topicAssetCountProvider(topic));
                 final packs = ref.watch(packsProvider(topic));
-                final accentColor =
-                    AppConstants.topicColors[topic] ?? theme.colorScheme.primary;
-                final icon = AppConstants.topicIcons[topic] ??
-                    Icons.category_rounded;
+                final accentColor = AppConstants.getTopicColor(topic);
+                final icon = AppConstants.getTopicIcon(topic);
 
                 return AnimationConfiguration.staggeredList(
                   position: index,

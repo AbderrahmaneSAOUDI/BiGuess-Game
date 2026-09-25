@@ -53,7 +53,7 @@ class AuditReport:
 
 
 def parse_dart_manifest(manifest_path: Path) -> Dict[str, List[str]]:
-    """Parse categoryAssets map from lib/assets_manifest.dart."""
+    """Parse topicPackAssets or categoryAssets map from lib/assets_manifest.dart."""
     if not manifest_path.exists():
         print(f"{RED}❌ Manifest file not found at {manifest_path}{RESET}")
         return {}
@@ -62,27 +62,41 @@ def parse_dart_manifest(manifest_path: Path) -> Dict[str, List[str]]:
         content = f.read()
 
     categories: Dict[str, List[str]] = {}
-    current_category: Optional[str] = None
+    current_topic: Optional[str] = None
+    current_pack: Optional[str] = None
 
-    for line in content.splitlines():
-        line = line.strip()
-        # Match category header: 'Attack on Titan': [ or "Attack on Titan": [
-        cat_match = re.match(r'''^\s*(?P<quote>['"])(?P<cat>.*?)(?<!\\)(?P=quote)\s*:\s*\[\s*$''', line)
-        if cat_match:
-            current_category = cat_match.group("cat").replace("\\'", "'").replace('\\"', '"')
-            categories[current_category] = []
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+
+        # Check for topic header: 'Anime': {
+        topic_match = re.match(r'''^\s*(?P<quote>['"])(?P<topic>[^'"]+)(?P=quote)\s*:\s*\{\s*$''', line)
+        if topic_match:
+            current_topic = topic_match.group("topic")
+            continue
+
+        # Check for pack header: 'Attack on Titan': [
+        pack_match = re.match(r'''^\s*(?P<quote>['"])(?P<pack>[^'"]+)(?P=quote)\s*:\s*\[\s*$''', line)
+        if pack_match:
+            pack_name = pack_match.group("pack")
+            key = f"{current_topic} / {pack_name}" if current_topic else pack_name
+            current_pack = key
+            categories[current_pack] = []
             continue
 
         if line.startswith("],"):
-            current_category = None
+            current_pack = None
             continue
 
-        # Match item: 'assets/images/attack_on_titan/Eren YAEGER.webp', or "assets/..."
-        if current_category and (line.startswith("'") or line.startswith('"')):
+        if line.startswith("},"):
+            current_topic = None
+            continue
+
+        # Match item: 'assets/images/Anime/...',
+        if current_pack and (line.startswith("'") or line.startswith('"')):
             item_match = re.match(r'''^\s*(?P<quote>['"])(?P<path>.*?)(?<!\\)(?P=quote)\s*,?\s*$''', line)
             if item_match:
                 asset_path = item_match.group("path").replace("\\'", "'").replace('\\"', '"')
-                categories[current_category].append(asset_path)
+                categories[current_pack].append(asset_path)
 
     return categories
 

@@ -184,8 +184,13 @@ def run_script(script_name: str, args: list) -> None:
 # Tasks
 # =============================================================================
 
+def task_manage_topics() -> None:
+    """Task: Manage Topics & Packs (CRUD)."""
+    run_script("manage_topics.py", [])
+
+
 def task_convert_images() -> None:
-    """Task 1: Convert & Compress Images."""
+    """Task 2: Convert & Compress Images."""
     print(f"\n{BOLD}{BLUE}▶ Convert & Compress Images to WebP{RESET}")
     print(f"{DIM}Target can be assets/images, a specific category, or a single file.{RESET}")
 
@@ -492,33 +497,39 @@ def task_version_management() -> None:
 # =============================================================================
 
 TASK_MAP = {
-    "1": task_convert_images,
+    "1": task_manage_topics,
+    "topics": task_manage_topics,
+    "topic": task_manage_topics,
+    "packs": task_manage_topics,
+    "pack": task_manage_topics,
+    "crud": task_manage_topics,
+    "2": task_convert_images,
     "convert": task_convert_images,
     "optimize": task_convert_images,
     "webp": task_convert_images,
-    "2": task_generate_manifest,
+    "3": task_generate_manifest,
     "manifest": task_generate_manifest,
     "sync": task_generate_manifest,
-    "3": task_audit_assets,
+    "4": task_audit_assets,
     "audit": task_audit_assets,
     "check": task_audit_assets,
-    "4": task_normalize_filenames,
+    "5": task_normalize_filenames,
     "normalize": task_normalize_filenames,
     "clean-names": task_normalize_filenames,
-    "5": task_character_stats,
+    "6": task_character_stats,
     "stats": task_character_stats,
     "analytics": task_character_stats,
-    "6": task_build_app,
+    "7": task_build_app,
     "build": task_build_app,
-    "7": task_clean_project,
+    "8": task_clean_project,
     "clean": task_clean_project,
-    "8": task_release_pipeline,
+    "9": task_release_pipeline,
     "release": task_release_pipeline,
     "publish": task_release_pipeline,
     "patch": task_shorebird_patch,
     "ota": task_shorebird_patch,
     "doctor": lambda: run_script("release.py", ["--doctor"]),
-    "9": task_version_management,
+    "10": task_version_management,
     "version": task_version_management,
     "ver": task_version_management,
     "bump": task_version_management,
@@ -551,7 +562,7 @@ def main() -> None:
             print(f"{BOLD}Usage:{RESET}")
             print("  ./scripts/run.sh [task_name]")
             print("\nAvailable tasks:")
-            print("  release, version, build, convert, manifest, audit, normalize, stats, clean")
+            print("  topics, convert, manifest, audit, normalize, stats, build, clean, release, version")
             print("Or run without arguments for the full interactive menu.")
             return
         run_single_task(arg)
@@ -562,15 +573,16 @@ def main() -> None:
         print_banner()
 
         print(f"{BOLD}Choose a task:{RESET}")
-        print(f"  {CYAN}[1]{RESET} 🖼️   Convert & Compress Images to WebP")
-        print(f"  {CYAN}[2]{RESET} 📋  Generate / Sync assets_manifest.dart")
-        print(f"  {CYAN}[3]{RESET} 🔍  Audit Asset Health (Missing, Broken, Orphans)")
-        print(f"  {CYAN}[4]{RESET} ✏️   Normalize & Clean Character Filenames")
-        print(f"  {CYAN}[5]{RESET} 📊  Character Analytics & Typo/Duplicate Checker")
-        print(f"  {CYAN}[6]{RESET} 🚀  Build Game (APK, App Bundle, Web, Desktop)")
-        print(f"  {CYAN}[7]{RESET} 🧹  Clean Cache & Temporary Files")
-        print(f"  {MAGENTA}[8]{RESET} 📦  Release Pipeline (build → publish → push)")
-        print(f"  {MAGENTA}[9]{RESET} 🏷️   Version Management (bump, sync, view)")
+        print(f"  {MAGENTA}[1]{RESET} 📂  Manage Topics & Packs (CRUD, add, rename, delete)")
+        print(f"  {CYAN}[2]{RESET} 🖼️   Convert & Compress Images to WebP")
+        print(f"  {CYAN}[3]{RESET} 📋  Generate / Sync assets_manifest.dart & pubspec.yaml")
+        print(f"  {CYAN}[4]{RESET} 🔍  Audit Asset Health (Missing, Broken, Orphans)")
+        print(f"  {CYAN}[5]{RESET} ✏️   Normalize & Clean Character Filenames")
+        print(f"  {CYAN}[6]{RESET} 📊  Character Analytics & Typo/Duplicate Checker")
+        print(f"  {CYAN}[7]{RESET} 🚀  Build Game (APK, App Bundle, Web, Desktop)")
+        print(f"  {CYAN}[8]{RESET} 🧹  Clean Cache & Temporary Files")
+        print(f"  {MAGENTA}[9]{RESET} 📦  Release Pipeline (build → publish → push)")
+        print(f"  {MAGENTA}[10]{RESET} 🏷️   Version Management (bump, sync, view)")
         print(f"  {CYAN}[0]{RESET} 🚪  Exit\n")
 
         choice = prompt_input("Enter selection", "1", is_main_menu=True)
