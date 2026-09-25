@@ -36,13 +36,15 @@ flutter:
     - assets/logos/
     - assets/profile/
     - assets/fonts/
-    - assets/images/
-    - assets/images/attack_on_titan/
-    - assets/images/black_clover/
-    - assets/images/demon_slayer/
-    - assets/images/hunter_x_hunter/
-    - assets/images/naruto/
-    - assets/images/one_piece/
+    # Anime Topic
+    - assets/images/Anime/Attack on Titan/
+    - assets/images/Anime/Black Clover/
+    - assets/images/Anime/Demon Slayer/
+    - assets/images/Anime/Hunter X Hunter/
+    - assets/images/Anime/Naruto/
+    - assets/images/Anime/One Piece/
+    # Geography Topic
+    - assets/images/Geography/Flags/
     - shorebird.yaml
 
   fonts:
