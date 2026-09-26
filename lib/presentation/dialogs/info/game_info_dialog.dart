@@ -1,0 +1,238 @@
+import 'package:flutter/material.dart';
+import '../../../../domain/models/character_algorithm.dart';
+import '../../../../domain/models/game_info_tab.dart';
+import 'tabs/about_game_tab.dart';
+import 'tabs/developers_tab.dart';
+import 'tabs/how_to_play_tab.dart';
+import 'tabs/settings_tab.dart';
+import 'widgets/info_dialog_header.dart';
+
+export '../../../../domain/models/game_info_tab.dart';
+
+/// Modal dialog providing game configuration, rules, branding, and contributor information
+class GameInfoDialog extends StatefulWidget {
+  final GameInfoTab initialTab;
+  final CharacterAlgorithm? algorithm;
+  final ValueChanged<CharacterAlgorithm>? onAlgorithmChanged;
+
+  const GameInfoDialog({
+    super.key,
+    this.initialTab = GameInfoTab.settings,
+    this.algorithm,
+    this.onAlgorithmChanged,
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    GameInfoTab initialTab = GameInfoTab.settings,
+    CharacterAlgorithm? algorithm,
+    ValueChanged<CharacterAlgorithm>? onAlgorithmChanged,
+  }) {
+    return showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Game Info Dialog',
+      transitionDuration: const Duration(milliseconds: 320),
+      pageBuilder: (context, anim1, anim2) => GameInfoDialog(
+        initialTab: initialTab,
+        algorithm: algorithm,
+        onAlgorithmChanged: onAlgorithmChanged,
+      ),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curve = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.9, end: 1.0).animate(curve),
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  State<GameInfoDialog> createState() => _GameInfoDialogState();
+}
+
+class _GameInfoDialogState extends State<GameInfoDialog>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  static const List<_TabItem> _tabs = [
+    _TabItem(
+      label: 'Settings',
+      icon: Icons.tune_rounded,
+      tab: GameInfoTab.settings,
+    ),
+    _TabItem(
+      label: 'How to Play',
+      icon: Icons.sports_esports_rounded,
+      tab: GameInfoTab.howToPlay,
+    ),
+    _TabItem(
+      label: 'About Game',
+      icon: Icons.auto_awesome_rounded,
+      tab: GameInfoTab.aboutGame,
+    ),
+    _TabItem(
+      label: 'Developers',
+      icon: Icons.people_alt_rounded,
+      tab: GameInfoTab.developers,
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final initialIndex = _tabs.indexWhere((t) => t.tab == widget.initialTab);
+    _tabController = TabController(
+      length: _tabs.length,
+      initialIndex: initialIndex >= 0 ? initialIndex : 0,
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+    final isCompact = mediaQuery.size.width < 500;
+
+    final dialogWidth =
+        mediaQuery.size.width > 680 ? 640.0 : mediaQuery.size.width * 0.92;
+    final dialogHeight =
+        mediaQuery.size.height > 720 ? 620.0 : mediaQuery.size.height * 0.88;
+
+    return Dialog(
+      backgroundColor: theme.colorScheme.surface,
+      surfaceTintColor: theme.colorScheme.surfaceTint,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      elevation: 6,
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        width: dialogWidth,
+        height: dialogHeight,
+        child: Column(
+          children: [
+            // Top Bar
+            InfoDialogHeader(
+              onClose: () => Navigator.of(context).pop(),
+            ),
+
+            // Tab Bar
+            Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: isCompact,
+                tabAlignment: isCompact ? TabAlignment.start : TabAlignment.fill,
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+                labelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.normal,
+                ),
+                tabs: _tabs.map((tab) {
+                  return Tab(
+                    icon: Icon(tab.icon, size: 20),
+                    text: tab.label,
+                    iconMargin: const EdgeInsets.only(bottom: 4),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            // Tab Content Views
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  SettingsTab(
+                    algorithm: widget.algorithm,
+                    onAlgorithmChanged: widget.onAlgorithmChanged,
+                  ),
+                  const HowToPlayTab(),
+                  const AboutGameTab(),
+                  const DevelopersTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TabItem {
+  final String label;
+  final IconData icon;
+  final GameInfoTab tab;
+
+  const _TabItem({
+    required this.label,
+    required this.icon,
+    required this.tab,
+  });
+}
+
+/// Backward compatibility alias wrappers
+class GameSettingsDialog extends StatelessWidget {
+  final CharacterAlgorithm? algorithm;
+  final ValueChanged<CharacterAlgorithm>? onAlgorithmChanged;
+
+  const GameSettingsDialog({
+    super.key,
+    this.algorithm,
+    this.onAlgorithmChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GameInfoDialog(
+      initialTab: GameInfoTab.settings,
+      algorithm: algorithm,
+      onAlgorithmChanged: onAlgorithmChanged,
+    );
+  }
+}
+
+class RulesContactDialog extends StatelessWidget {
+  final GameInfoTab initialTab;
+
+  const RulesContactDialog({
+    super.key,
+    this.initialTab = GameInfoTab.howToPlay,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GameInfoDialog(
+      initialTab: initialTab,
+    );
+  }
+}

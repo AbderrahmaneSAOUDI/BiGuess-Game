@@ -35,6 +35,9 @@ else
             build|\
             clean|\
             release|publish|\
+            patch|\
+            doctor|\
+            check-update|verify-update|status|\
             version|ver|bump)
                 python3 "$SCRIPT_DIR/menu.py" "$TASK"
                 ;;
@@ -44,7 +47,7 @@ else
             *)
                 echo "Unknown command: $TASK"
                 echo "Available shortcuts:"
-                echo "  topics, convert, manifest, audit, normalize, stats, build, clean, release, version"
+                echo "  topics, convert, manifest, audit, normalize, stats, build, clean, release, patch, doctor, check-update, version"
                 echo "Or run without arguments for interactive menu: ./scripts/run.sh"
                 exit 1
                 ;;
@@ -75,6 +78,15 @@ else
                 ;;
             release|publish)
                 python3 "$SCRIPT_DIR/release.py" "$@"
+                ;;
+            patch)
+                python3 "$SCRIPT_DIR/release.py" --patch "$@"
+                ;;
+            doctor)
+                python3 "$SCRIPT_DIR/release.py" --doctor "$@"
+                ;;
+            check-update|verify-update|status)
+                python3 "$SCRIPT_DIR/release.py" --check-update "$@"
                 ;;
             version|ver|bump)
                 python3 "$SCRIPT_DIR/release.py" --version-only "$@"

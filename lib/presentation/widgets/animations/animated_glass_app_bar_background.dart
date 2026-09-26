@@ -121,8 +121,7 @@ class _AnimatedGlassAppBarBackgroundState
                           colors: [
                             Colors.transparent,
                             primary.withValues(alpha: isDark ? 0.7 : 0.5),
-                            theme.colorScheme.tertiary
-                                .withValues(alpha: isDark ? 0.6 : 0.4),
+                            Colors.white.withValues(alpha: isDark ? 0.6 : 0.4),
                             Colors.transparent,
                           ],
                           stops: const [0.0, 0.45, 0.55, 1.0],

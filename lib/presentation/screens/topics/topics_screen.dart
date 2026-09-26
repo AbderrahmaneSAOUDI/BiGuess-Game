@@ -1,19 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:restart_app/restart_app.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../domain/models/update_state.dart';
 import '../../../providers/topic_pack_providers.dart';
 import '../../../providers/theme_controller.dart';
+import '../../controllers/update_controller.dart';
 import '../../widgets/animations/animated_glass_app_bar_background.dart';
 import '../../widgets/animations/interactive_scale_card.dart';
+import '../../widgets/common/biguess_logo_button.dart';
+import '../../widgets/common/glass_icon_button.dart';
+import '../../dialogs/info/game_info_dialog.dart';
+import '../../dialogs/update/update_dialog.dart';
 import '../packs/packs_screen.dart';
 
 /// First screen: Topic selection dashboard (Anime, Geography, Movies…)
-class TopicsScreen extends ConsumerWidget {
+class TopicsScreen extends ConsumerStatefulWidget {
   const TopicsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TopicsScreen> createState() => _TopicsScreenState();
+}
+
+class _TopicsScreenState extends ConsumerState<TopicsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(updateControllerProvider.notifier).checkForUpdates(silent: true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<UpdateState>(updateControllerProvider, (previous, next) {
+      if (next is UpdateAvailable) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('🚀 BiGuess v${next.latestVersion} is available!'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 8),
+            action: SnackBarAction(
+              label: 'Update',
+              onPressed: () => UpdateDialog.show(context),
+            ),
+          ),
+        );
+      } else if (next is UpdateCompleted && next.message.contains('Restart')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.message),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 8),
+            action: SnackBarAction(
+              label: 'Restart',
+              onPressed: () => Restart.restartApp(),
+            ),
+          ),
+        );
+      }
+    });
+
     final topics = ref.watch(topicsProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -146,52 +194,46 @@ class _TopicCard extends StatelessWidget {
 
     return InteractiveScaleCard(
       onTap: onTap,
-      glowColor: accent,
-      borderRadius: BorderRadius.circular(22),
+      glowColor: theme.colorScheme.primary,
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         height: 130,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    accent.withValues(alpha: 0.18),
-                    theme.colorScheme.surface.withValues(alpha: 0.9),
-                  ]
-                : [
-                    accent.withValues(alpha: 0.12),
-                    theme.colorScheme.surface,
-                  ],
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            ],
           ),
           border: Border.all(
-            color: accent.withValues(alpha: isDark ? 0.35 : 0.25),
-            width: 1.5,
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+            width: 1.2,
           ),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
           child: Row(
             children: [
-              // Accent icon circle
+              // Clean icon circle
               Container(
-                width: 64,
-                height: 64,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      accent.withValues(alpha: 0.3),
-                      accent.withValues(alpha: 0.05),
-                    ],
-                  ),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.black.withValues(alpha: 0.04),
                   border: Border.all(
-                    color: accent.withValues(alpha: 0.4),
-                    width: 1.5,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : Colors.black.withValues(alpha: 0.08),
+                    width: 1.2,
                   ),
                 ),
-                child: Icon(icon, size: 30, color: accent),
+                child: Icon(icon, size: 28, color: theme.colorScheme.primary),
               ),
               const SizedBox(width: 20),
               // Text content
@@ -215,13 +257,11 @@ class _TopicCard extends StatelessWidget {
                         _MetadataChip(
                           icon: Icons.folder_rounded,
                           label: '$packCount packs',
-                          color: accent,
                         ),
                         const SizedBox(width: 10),
                         _MetadataChip(
                           icon: Icons.image_rounded,
                           label: '$totalAssets items',
-                          color: accent,
                         ),
                       ],
                     ),
@@ -232,7 +272,7 @@ class _TopicCard extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 18,
-                color: accent.withValues(alpha: 0.7),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
               ),
             ],
           ),
@@ -245,12 +285,10 @@ class _TopicCard extends StatelessWidget {
 class _MetadataChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
 
   const _MetadataChip({
     required this.icon,
     required this.label,
-    required this.color,
   });
 
   @override
@@ -262,19 +300,31 @@ class _MetadataChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: color.withValues(alpha: isDark ? 0.15 : 0.1),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.04),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: color.withValues(alpha: 0.8)),
+          Icon(
+            icon,
+            size: 13,
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+          ),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: color.withValues(alpha: 0.9),
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -301,34 +351,9 @@ class _TopicsAppBar extends ConsumerWidget implements PreferredSizeWidget {
       elevation: 0,
       scrolledUnderElevation: 0,
       flexibleSpace: const AnimatedGlassAppBarBackground(),
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 12.0),
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.black.withValues(alpha: 0.04),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.06),
-                width: 1,
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset(
-                AppConstants.appIconPath,
-                width: 26,
-                height: 26,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-        ),
+      leading: const Padding(
+        padding: EdgeInsets.only(left: 12.0),
+        child: BiGuessLogoButton(),
       ),
       title: Text(
         AppConstants.appTitle,
@@ -348,8 +373,34 @@ class _TopicsAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 12.0),
-          child: IconButton(
+          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+          child: GlassIconButton.icon(
+            iconData: Icons.settings_rounded,
+            tooltip: 'Settings',
+            onPressed: () {
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.settings,
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+          child: GlassIconButton.icon(
+            iconData: Icons.info_outline_rounded,
+            tooltip: 'Rules & About',
+            onPressed: () {
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.howToPlay,
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 3.0, right: 12.0),
+          child: GlassIconButton(
             tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
             onPressed: () =>
                 ref.read(themeNotifierProvider.notifier).toggleTheme(),

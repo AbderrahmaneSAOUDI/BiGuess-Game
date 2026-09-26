@@ -44,6 +44,9 @@ class GameRoundNotifier
     _countdownTimer?.cancel();
     final countdownDuration = ref.read(countdownDurationProvider);
 
+    // Reset character name to hidden state when refreshing or drawing a card
+    ref.read(showCharacterNameHintProvider.notifier).set(false);
+
     state = state.copyWith(
       isCountingDown: true,
       showPicture: false,

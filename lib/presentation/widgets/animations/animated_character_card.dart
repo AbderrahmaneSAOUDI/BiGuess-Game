@@ -7,6 +7,7 @@ class AnimatedCharacterCard extends StatefulWidget {
   final String imageAsset;
   final String? characterName;
   final bool showNameHint;
+  final VoidCallback? onToggleName;
   final double maxHeight;
   final double maxWidth;
   final double? cardSize;
@@ -16,6 +17,7 @@ class AnimatedCharacterCard extends StatefulWidget {
     required this.imageAsset,
     this.characterName,
     this.showNameHint = true,
+    this.onToggleName,
     this.maxHeight = 600.0,
     this.maxWidth = 480.0,
     this.cardSize,
@@ -149,10 +151,11 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final effectiveMaxWidth = widget.cardSize ?? widget.maxWidth;
     final effectiveMaxHeight = widget.cardSize ?? widget.maxHeight;
 
-    // Calculate maximum aspect-fit dimensions to eliminate empty card gutters
+    // Calculate maximum aspect-fit dimensions so card takes the exact height of the image
     double targetWidth;
     double targetHeight;
 
@@ -205,7 +208,7 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                       gradient: LinearGradient(
                         colors: [
                           theme.colorScheme.primary.withValues(alpha: 0.85),
-                          theme.colorScheme.tertiary.withValues(alpha: 0.85),
+                          theme.colorScheme.primaryContainer.withValues(alpha: 0.85),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -303,61 +306,116 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                 ),
               ),
 
-              // Character Name Hint with spring entrance
-              if (widget.characterName != null && widget.showNameHint)
-                TweenAnimationBuilder<double>(
-                  key: ValueKey(widget.characterName),
-                  duration: const Duration(milliseconds: 600),
-                  tween: Tween<double>(begin: 0.0, end: 1.0),
-                  curve: Curves.elasticOut,
-                  builder: (context, value, child) {
-                    return Transform.translate(
-                      offset: Offset(0, 20 * (1 - value)),
-                      child: Transform.scale(
-                        scale: (0.7 + 0.3 * value).clamp(0.0, 1.0),
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 10,
+              // All-in-one Character Name & Toggle Button
+              if (widget.characterName != null &&
+                  (widget.showNameHint || widget.onToggleName != null))
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: SizedBox(
+                    height: 44.0,
+                    child: Center(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        layoutBuilder: (currentChild, previousChildren) {
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: <Widget>[
+                              ...previousChildren,
+                              if (currentChild != null) currentChild,
+                            ],
+                          );
+                        },
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: ScaleTransition(
+                              scale: Tween<double>(begin: 0.94, end: 1.0)
+                                  .animate(animation),
+                              child: child,
                             ),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHighest,
+                          );
+                        },
+                        child: Material(
+                          key: ValueKey(widget.showNameHint
+                              ? 'toggle_name_button'
+                              : 'show_name_button'),
+                          color: Colors.transparent,
+                          child: Tooltip(
+                            message: widget.showNameHint
+                                ? 'Tap to hide name'
+                                : 'Tap to show name',
+                            child: InkWell(
+                              onTap: widget.onToggleName,
                               borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: theme.colorScheme.primary.withValues(
-                                  alpha: 0.4,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                height: 44.0,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
                                 ),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.shadow.withValues(
-                                    alpha: 0.12,
+                                decoration: BoxDecoration(
+                                  color: widget.showNameHint
+                                      ? theme.colorScheme
+                                          .surfaceContainerHighest
+                                      : (isDark
+                                          ? Colors.white
+                                              .withValues(alpha: 0.08)
+                                          : Colors.black
+                                              .withValues(alpha: 0.05)),
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.45),
+                                    width: 1.5,
                                   ),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: theme.colorScheme.shadow
+                                          .withValues(
+                                        alpha: isDark ? 0.25 : 0.10,
+                                      ),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Text(
-                              widget.characterName!,
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: theme.colorScheme.onSurface,
-                                letterSpacing: 0.4,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      widget.showNameHint
+                                          ? Icons.visibility_rounded
+                                          : Icons.visibility_off_rounded,
+                                      size: 19,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        widget.showNameHint
+                                            ? widget.characterName!
+                                            : 'Show Name',
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w800,
+                                          color:
+                                              theme.colorScheme.onSurface,
+                                          letterSpacing: 0.3,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
             ],
           ),

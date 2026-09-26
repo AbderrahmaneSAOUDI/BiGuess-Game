@@ -346,6 +346,7 @@ def task_release_pipeline() -> None:
     print(f"  {CYAN}[4]{RESET} 🔨 Build & Release without bump (Shorebird APKs → GitHub Release)")
     print(f"  {CYAN}[5]{RESET} 🌐 GitHub Release Only (upload existing APKs to GitHub)")
     print(f"  {CYAN}[6]{RESET} 🐦 Shorebird Doctor (Diagnose Shorebird setup)")
+    print(f"  {CYAN}[7]{RESET} 🔍 Check Remote Manifest & OTA Update Status")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select mode", "1")
@@ -412,6 +413,9 @@ def task_release_pipeline() -> None:
     elif choice == "6":
         args.append("--doctor")
 
+    elif choice == "7":
+        args.append("--check-update")
+
     if choice in ("1", "2", "3", "4", "5"):
         verbose = prompt_input("Enable verbose upload logs & byte stats? (y/n)", "n").lower() == "y"
         if verbose:
@@ -427,6 +431,7 @@ def task_version_management() -> None:
     print(f"  {CYAN}[2]{RESET} Set manual version (e.g. 1.0.0+1) & sync all files")
     print(f"  {CYAN}[3]{RESET} Sync version.json from current pubspec version")
     print(f"  {CYAN}[4]{RESET} View current version info")
+    print(f"  {CYAN}[5]{RESET} 🔍 Check remote version.json & OTA update health")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select option", "1")
@@ -491,6 +496,9 @@ def task_version_management() -> None:
                 print(f"  🔧 app_constants.dart defaultVersion: {BOLD}{dv_match.group(1)}{RESET}")
         print()
 
+    elif choice == "5":
+        run_script("release.py", ["--check-update"])
+
 
 # =============================================================================
 # Task Mapping & CLI Runner
@@ -529,6 +537,9 @@ TASK_MAP = {
     "patch": task_shorebird_patch,
     "ota": task_shorebird_patch,
     "doctor": lambda: run_script("release.py", ["--doctor"]),
+    "check-update": lambda: run_script("release.py", ["--check-update"]),
+    "verify-update": lambda: run_script("release.py", ["--check-update"]),
+    "status": lambda: run_script("release.py", ["--check-update"]),
     "10": task_version_management,
     "version": task_version_management,
     "ver": task_version_management,
