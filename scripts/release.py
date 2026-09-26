@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.request
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -793,6 +794,93 @@ def pipeline_version_only(args: argparse.Namespace) -> int:
     return 0
 
 
+def pipeline_check_update() -> int:
+    """Fetch remote version.json and diagnose update pipeline health."""
+    print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
+    print(f"{BOLD}{CYAN}         🔍  BiGuess Update Pipeline Diagnostics               {RESET}")
+    print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
+
+    current_pubspec = read_pubspec_version()
+    major, minor, patch, build = parse_semver(current_pubspec)
+    ver_str = f"{major}.{minor}.{patch}"
+
+    print(f"📦 Local pubspec.yaml:        {BOLD}v{ver_str}+{build}{RESET}")
+
+    # Check version triad
+    constants_file = REPO_ROOT / "lib" / "core" / "constants" / "app_constants.dart"
+    if constants_file.exists():
+        match = re.search(r"static const String defaultVersion = '([^']*)';", constants_file.read_text())
+        const_ver = match.group(1) if match else "unknown"
+        status = f"{GREEN}synced{RESET}" if const_ver == ver_str else f"{RED}MISMATCH ({const_ver}){RESET}"
+        print(f"📄 lib/.../app_constants.dart: {BOLD}v{const_ver}{RESET} ({status})")
+
+    if VERSION_JSON.exists():
+        try:
+            local_vj = json.loads(VERSION_JSON.read_text())
+            local_vj_ver = f"{local_vj.get('latest_version')}+{local_vj.get('build_number')}"
+            is_synced = local_vj.get('latest_version') == ver_str and local_vj.get('build_number') == build
+            status = f"{GREEN}synced{RESET}" if is_synced else f"{YELLOW}differs ({local_vj_ver}){RESET}"
+            print(f"📋 Local version.json:         {BOLD}v{local_vj_ver}{RESET} ({status})")
+        except Exception as e:
+            print(f"📋 Local version.json:         {RED}Error reading ({e}){RESET}")
+
+    # Remote check
+    remote_url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/version.json"
+    print(f"\n{BOLD}{BLUE}▶ Querying Remote Update Manifest...{RESET}")
+    print(f"   URL: {DIM}{remote_url}{RESET}")
+
+    try:
+        req = urllib.request.Request(remote_url, headers={"User-Agent": "BiGuess-Updater/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            if resp.status == 200:
+                data = json.loads(resp.read().decode("utf-8"))
+                remote_ver = data.get("latest_version", "0.0.0")
+                remote_build = data.get("build_number", 0)
+                native_changes = data.get("has_native_changes", False)
+                min_req = data.get("min_required_version", "0.0.0")
+                apk_urls = data.get("apk_urls", {})
+                release_notes = data.get("release_notes", "")
+
+                print(f"   {GREEN}✓ Fetched live version.json successfully!{RESET}")
+                print(f"\n   🌐 Remote Latest Version:   {BOLD}v{remote_ver}+{remote_build}{RESET}")
+                print(f"   🔒 Min Required Version:   {BOLD}v{min_req}{RESET}")
+                print(f"   ⚙️  Has Native Changes:     {BOLD}{native_changes}{RESET}")
+                print(f"   📝 Release Notes:           {DIM}{release_notes}{RESET}")
+                print(f"   📦 Split-ABI Targets:       {', '.join(apk_urls.keys()) if apk_urls else 'None'}")
+
+                # Evaluation
+                remote_major, remote_minor, remote_patch, remote_b = parse_semver(f"{remote_ver}+{remote_build}")
+                local_tuple = (major, minor, patch, build)
+                remote_tuple = (remote_major, remote_minor, remote_patch, remote_b)
+
+                print(f"\n{BOLD}{CYAN}📊 Comparison & Status:{RESET}")
+                if remote_tuple > local_tuple:
+                    if native_changes or (remote_major, remote_minor) > (major, minor):
+                        print(f"   {YELLOW}⚠️  Full APK update available for users (v{remote_ver}){RESET}")
+                    else:
+                        print(f"   {GREEN}⚡ Shorebird OTA patch update available for users (v{remote_ver}){RESET}")
+                elif local_tuple > remote_tuple:
+                    print(f"   {BLUE}🚀 Local version (v{ver_str}+{build}) is ahead of remote (v{remote_ver}+{remote_build}). Ready to release!{RESET}")
+                else:
+                    print(f"   {GREEN}✅ Local version exactly matches remote production manifest.{RESET}")
+
+    except Exception as e:
+        print(f"   {RED}❌ Failed to fetch remote version.json: {e}{RESET}")
+
+    # Shorebird status
+    sb_bin = find_shorebird_bin()
+    if sb_bin:
+        print(f"\n{BOLD}{BLUE}▶ Shorebird Code-Push Status:{RESET}")
+        releases = get_shorebird_active_releases(sb_bin)
+        if releases:
+            print(f"   Active Base Releases: {', '.join(releases)}")
+        else:
+            print(f"   {DIM}No registered Shorebird releases found (or offline).{RESET}")
+
+    print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="BiGuess Release Automation — Smart Shorebird Code-Push & Full Base Release.",
@@ -805,6 +893,7 @@ def main() -> int:
   python3 release.py --full-release --bump patch  # Force Full Base Release
   python3 release.py --version-only --bump minor  # Just bump version
   python3 release.py --doctor                     # Diagnose Shorebird
+  python3 release.py --check-update               # Verify remote version.json manifest
 """,
     )
 
@@ -849,6 +938,10 @@ def main() -> int:
         "--doctor", action="store_true",
         help="Run Shorebird doctor to check tooling health",
     )
+    pipe_group.add_argument(
+        "--check", "--check-update", action="store_true",
+        help="Verify remote version.json manifest & update pipeline status",
+    )
     pipe_group.add_argument("--split-apk", "--split-per-abi", action="store_true", default=True, help="Enforce Split-per-ABI APK build (always enabled by default)")
     pipe_group.add_argument("--no-shorebird", action="store_true", help="Build with standard Flutter instead of Shorebird")
     pipe_group.add_argument("--dry-run", action="store_true", help="Validate build/patch without uploading to Shorebird")
@@ -864,7 +957,9 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    if args.doctor:
+    if getattr(args, "check", False):
+        return pipeline_check_update()
+    elif args.doctor:
         return pipeline_doctor()
     elif args.patch:
         return pipeline_patch_release(args)

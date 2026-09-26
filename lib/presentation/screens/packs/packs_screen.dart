@@ -5,6 +5,8 @@ import '../../../core/constants/app_constants.dart';
 import '../../../providers/topic_pack_providers.dart';
 import '../../widgets/animations/animated_glass_app_bar_background.dart';
 import '../../widgets/animations/interactive_scale_card.dart';
+import '../../widgets/common/glass_icon_button.dart';
+import '../../dialogs/info/game_info_dialog.dart';
 import '../game/game_screen.dart';
 
 /// Second screen: Pack selection grid for a chosen topic
@@ -37,11 +39,13 @@ class PacksScreen extends ConsumerWidget {
                   radius: 1.3,
                   colors: isDark
                       ? [
-                          accent.withValues(alpha: 0.12),
+                          theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.35),
                           theme.scaffoldBackgroundColor,
                         ]
                       : [
-                          accent.withValues(alpha: 0.08),
+                          theme.colorScheme.primaryContainer
+                              .withValues(alpha: 0.25),
                           theme.scaffoldBackgroundColor,
                         ],
                 ),
@@ -146,7 +150,7 @@ class _PackCard extends StatelessWidget {
 
     return InteractiveScaleCard(
       onTap: onTap,
-      glowColor: isAvailable ? accent : Colors.grey,
+      glowColor: isAvailable ? theme.colorScheme.primary : Colors.grey,
       borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
@@ -154,27 +158,14 @@ class _PackCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isAvailable
-                ? (isDark
-                    ? [
-                        accent.withValues(alpha: 0.15),
-                        theme.colorScheme.surface.withValues(alpha: 0.92),
-                      ]
-                    : [
-                        accent.withValues(alpha: 0.08),
-                        theme.colorScheme.surface,
-                      ])
-                : [
-                    theme.colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.5),
-                    theme.colorScheme.surface.withValues(alpha: 0.8),
-                  ],
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            ],
           ),
           border: Border.all(
-            color: isAvailable
-                ? accent.withValues(alpha: isDark ? 0.35 : 0.2)
-                : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 1.5,
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+            width: 1.2,
           ),
         ),
         child: Stack(
@@ -191,16 +182,18 @@ class _PackCard extends StatelessWidget {
                     height: 52,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isAvailable
-                          ? accent.withValues(alpha: 0.15)
-                          : Colors.grey.withValues(alpha: 0.1),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.06)
+                          : Colors.black.withValues(alpha: 0.04),
                     ),
                     child: Icon(
                       isAvailable
                           ? Icons.play_arrow_rounded
                           : Icons.lock_rounded,
                       size: 26,
-                      color: isAvailable ? accent : Colors.grey,
+                      color: isAvailable
+                          ? theme.colorScheme.primary
+                          : Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -227,7 +220,7 @@ class _PackCard extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: isAvailable
-                          ? accent.withValues(alpha: 0.8)
+                          ? theme.colorScheme.primary
                           : Colors.grey.withValues(alpha: 0.6),
                     ),
                   ),
@@ -265,43 +258,42 @@ class _PacksAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      flexibleSpace: AnimatedGlassAppBarBackground(accentColor: accent),
+      flexibleSpace: const AnimatedGlassAppBarBackground(),
       centerTitle: true,
       leading: Padding(
         padding: const EdgeInsets.only(left: 10.0),
         child: Center(
-          child: IconButton(
+          child: GlassIconButton.icon(
+            iconData: Icons.arrow_back_rounded,
             tooltip: 'Back to Topics',
+            size: 38,
+            iconSize: 20,
             onPressed: () => Navigator.of(context).maybePop(),
-            style: IconButton.styleFrom(
-              backgroundColor: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.05),
-              side: BorderSide(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : Colors.black.withValues(alpha: 0.06),
-                width: 1,
-              ),
-              fixedSize: const Size(38, 38),
-            ),
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              size: 20,
-              color: theme.colorScheme.onSurface,
-            ),
           ),
         ),
       ),
       title: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: isDark ? 0.15 : 0.1),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: accent.withValues(alpha: 0.3),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.08),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(
+                alpha: isDark ? 0.15 : 0.08,
+              ),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -309,7 +301,7 @@ class _PacksAppBar extends StatelessWidget implements PreferredSizeWidget {
             Icon(
               AppConstants.getTopicIcon(topicName),
               size: 18,
-              color: accent,
+              color: theme.colorScheme.primary,
             ),
             const SizedBox(width: 8),
             Text(
@@ -324,6 +316,39 @@ class _PacksAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
       ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+          child: GlassIconButton.icon(
+            iconData: Icons.settings_rounded,
+            tooltip: 'Settings',
+            size: 38,
+            iconSize: 20,
+            onPressed: () {
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.settings,
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+          child: GlassIconButton.icon(
+            iconData: Icons.info_outline_rounded,
+            tooltip: 'Rules & Info',
+            size: 38,
+            iconSize: 20,
+            onPressed: () {
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.howToPlay,
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 }

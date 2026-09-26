@@ -9,6 +9,8 @@ import '../../widgets/animations/animated_countdown.dart';
 import '../../widgets/animations/animated_mystery_box.dart';
 import '../../widgets/animations/animated_glass_app_bar_background.dart';
 import '../../widgets/animations/animated_character_card.dart';
+import '../../widgets/common/glass_icon_button.dart';
+import '../../dialogs/info/game_info_dialog.dart';
 import 'widgets/game_empty_state.dart';
 
 /// Main gameplay duel screen for a selected topic + pack
@@ -85,15 +87,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final state = ref.watch(gameRoundProvider(_key));
-    final accent = AppConstants.topicColors[widget.topicName] ??
-        theme.colorScheme.primary;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: _GameAppBar(
         topicName: widget.topicName,
         packName: widget.packName,
-        accent: accent,
       ),
       body: Stack(
         children: [
@@ -107,11 +106,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   radius: 1.2,
                   colors: isDark
                       ? [
-                          accent.withValues(alpha: 0.12),
+                          theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.35),
                           theme.scaffoldBackgroundColor,
                         ]
                       : [
-                          accent.withValues(alpha: 0.08),
+                          theme.colorScheme.primaryContainer
+                              .withValues(alpha: 0.25),
                           theme.scaffoldBackgroundColor,
                         ],
                 ),
@@ -139,9 +140,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                                   scale: Tween<double>(
                                     begin: 0.92,
                                     end: 1.0,
-                                  )
-                                      .chain(CurveTween(curve: Curves.easeOutCubic))
-                                      .animate(animation),
+                                  ).animate(animation),
                                   child: child,
                                 ),
                               );
@@ -156,7 +155,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 500),
                   reverseDuration: const Duration(milliseconds: 300),
-                  switchInCurve: Curves.easeOutBack,
+                  switchInCurve: Curves.easeOutCubic,
                   switchOutCurve: Curves.easeInCubic,
                   transitionBuilder: (child, animation) {
                     return FadeTransition(
@@ -165,16 +164,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                         position: Tween<Offset>(
                           begin: const Offset(0, 0.4),
                           end: Offset.zero,
-                        )
-                            .chain(CurveTween(curve: Curves.easeOutBack))
-                            .animate(animation),
+                        ).animate(animation),
                         child: ScaleTransition(
                           scale: Tween<double>(
                             begin: 0.85,
                             end: 1.0,
-                          )
-                              .chain(CurveTween(curve: Curves.easeOutBack))
-                              .animate(animation),
+                          ).animate(animation),
                           child: child,
                         ),
                       ),
@@ -186,14 +181,55 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       ? Padding(
                           key: const ValueKey('refresh_action_button'),
                           padding:
-                              const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 24.0),
-                          child: AnimatedActionButton(
-                            hasStarted: true,
-                            isEnabled:
-                                !state.isLoading && !state.isCountingDown,
-                            onPressed: () => ref
-                                .read(gameRoundProvider(_key).notifier)
-                                .startCountdown(),
+                              const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedActionButton(
+                                hasStarted: true,
+                                isEnabled:
+                                    !state.isLoading && !state.isCountingDown,
+                                onPressed: () => ref
+                                    .read(gameRoundProvider(_key).notifier)
+                                    .startCountdown(),
+                              ),
+                              const SizedBox(height: 10),
+                              Padding(
+                                key: const ValueKey('image_disclaimer'),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20.0,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline_rounded,
+                                      size: 13,
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.45)
+                                          : Colors.black.withValues(alpha: 0.45),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Flexible(
+                                      child: Text(
+                                        AppConstants.imageDisclaimer,
+                                        key: const ValueKey('image_disclaimer_text'),
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w400,
+                                          color: isDark
+                                              ? Colors.white.withValues(alpha: 0.45)
+                                              : Colors.black.withValues(alpha: 0.45),
+                                          letterSpacing: 0.15,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         )
                       : const SizedBox.shrink(
@@ -225,8 +261,8 @@ class _GameCharacterDisplay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showNameHint = ref.watch(showCharacterNameHintProvider);
-    final bool hasName = characterName != null && showNameHint;
-    final double nameReservedHeight = hasName ? 68.0 : 0.0;
+    final bool hasName = characterName != null;
+    final double nameReservedHeight = hasName ? 60.0 : 0.0;
 
     final double availableHeight =
         (constraints.maxHeight - nameReservedHeight - 6.0).clamp(0.0, double.infinity);
@@ -239,6 +275,8 @@ class _GameCharacterDisplay extends ConsumerWidget {
       imageAsset: imageAsset,
       characterName: characterName,
       showNameHint: showNameHint,
+      onToggleName: () =>
+          ref.read(showCharacterNameHintProvider.notifier).toggle(),
       maxWidth: availableWidth,
       maxHeight: availableHeight,
     );
@@ -249,12 +287,10 @@ class _GameCharacterDisplay extends ConsumerWidget {
 class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String topicName;
   final String packName;
-  final Color accent;
 
   const _GameAppBar({
     required this.topicName,
     required this.packName,
-    required this.accent,
   });
 
   @override
@@ -269,83 +305,110 @@ class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      flexibleSpace: AnimatedGlassAppBarBackground(accentColor: accent),
+      flexibleSpace: const AnimatedGlassAppBarBackground(),
       centerTitle: true,
       leading: Padding(
         padding: const EdgeInsets.only(left: 10.0),
         child: Center(
-          child: IconButton(
+          child: GlassIconButton.icon(
+            iconData: Icons.arrow_back_rounded,
             tooltip: 'Back to Packs',
+            size: 38,
+            iconSize: 20,
             onPressed: () => Navigator.of(context).maybePop(),
-            style: IconButton.styleFrom(
-              backgroundColor: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.05),
-              side: BorderSide(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : Colors.black.withValues(alpha: 0.06),
-                width: 1,
-              ),
-              fixedSize: const Size(38, 38),
-            ),
-            icon: Icon(
-              Icons.arrow_back_rounded,
-              size: 20,
-              color: theme.colorScheme.onSurface,
-            ),
           ),
         ),
       ),
       title: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: accent.withValues(alpha: isDark ? 0.15 : 0.1),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: accent.withValues(alpha: 0.3),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.08),
             width: 1,
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              packName.replaceAll('_', ' '),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                letterSpacing: -0.2,
-                color: theme.colorScheme.onSurface,
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(
+                alpha: isDark ? 0.15 : 0.08,
               ),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
           ],
+        ),
+        child: Text(
+          packName.replaceAll('_', ' '),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            letterSpacing: -0.2,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 12.0),
-          child: Container(
-            padding: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.black.withValues(alpha: 0.04),
-              border: Border.all(
+          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+          child: GlassIconButton.icon(
+            iconData: Icons.settings_rounded,
+            tooltip: 'Settings',
+            size: 38,
+            iconSize: 20,
+            onPressed: () {
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.settings,
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+          child: GlassIconButton.icon(
+            iconData: Icons.info_outline_rounded,
+            tooltip: 'Rules & Info',
+            size: 38,
+            iconSize: 20,
+            onPressed: () {
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.howToPlay,
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0, right: 12.0),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: Container(
+              padding: const EdgeInsets.all(4.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.06),
-                width: 1,
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.04),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.06),
+                  width: 1,
+                ),
               ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset(
-                AppConstants.appIconPath,
-                width: 24,
-                height: 24,
-                fit: BoxFit.contain,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  AppConstants.appIconPath,
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
