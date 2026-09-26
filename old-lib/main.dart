@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
-import 'presentation/controllers/theme_controller.dart';
-import 'presentation/screens/splash/splash_screen.dart';
-
-export 'presentation/controllers/theme_controller.dart';
+import 'providers/theme_controller.dart';
+import 'presentation/screens/topics/topics_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,9 +20,7 @@ void main() async {
 }
 
 class BiGuessApp extends ConsumerWidget {
-  final Widget? home;
-
-  const BiGuessApp({super.key, this.home});
+  const BiGuessApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +32,7 @@ class BiGuessApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: home ?? const SplashScreen(),
+      home: const TopicsScreen(),
     );
   }
 }

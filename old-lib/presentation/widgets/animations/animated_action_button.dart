@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
+import 'package:gdg_guess_game/core/theme/app_colors.dart';
 
 /// 3D Glassmorphic Action Button featuring frosted blur, specular highlights,
 /// multi-layered 3D depth shadows, and interactive physical press down response

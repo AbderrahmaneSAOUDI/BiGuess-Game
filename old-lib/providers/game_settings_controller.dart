@@ -37,7 +37,7 @@ final countdownDurationProvider =
 /// Show character name hint notifier
 class ShowCharacterNameHintNotifier extends Notifier<bool> {
   @override
-  bool build() => true;
+  bool build() => false;
 
   void toggle() {
     state = !state;

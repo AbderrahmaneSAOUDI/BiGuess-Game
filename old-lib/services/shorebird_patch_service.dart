@@ -6,11 +6,6 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 /// All methods are wrapped in try-catch so the app never crashes if the
 /// Shorebird runtime is not present (e.g., during local development builds or
 /// if Shorebird hasn't been configured yet).
-///
-/// To activate:
-/// 1. Run `shorebird init` to generate `shorebird.yaml`.
-/// 2. Build release with `shorebird release android`.
-/// 3. Push patches with `shorebird patch android`.
 class ShorebirdPatchService {
   final ShorebirdUpdater _updater;
 

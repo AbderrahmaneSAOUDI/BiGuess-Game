@@ -23,10 +23,14 @@ class UpdateFullApk extends UpdateDecision {
   /// Human-readable release notes for the update.
   final String releaseNotes;
 
+  /// Remote version string, e.g. "0.32.0".
+  final String latestVersion;
+
   const UpdateFullApk({
     required this.mandatory,
     required this.apkUrl,
     required this.releaseNotes,
+    this.latestVersion = '',
   });
 }
 

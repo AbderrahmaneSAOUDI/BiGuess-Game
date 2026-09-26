@@ -47,7 +47,7 @@ class _BiGuessLogoButtonState extends State<BiGuessLogoButton>
         turns: Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
             parent: _spinController,
-            curve: Curves.easeOutBack,
+            curve: Curves.easeOutCubic,
           ),
         ),
         child: Container(
@@ -57,7 +57,8 @@ class _BiGuessLogoButtonState extends State<BiGuessLogoButton>
             borderRadius: BorderRadius.circular(widget.size * 0.25),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                color:
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),

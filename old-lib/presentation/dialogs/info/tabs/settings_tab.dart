@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../controllers/game_settings_controller.dart';
-import '../../../controllers/theme_controller.dart';
+import '../../../../providers/game_settings_controller.dart';
+import '../../../../providers/theme_controller.dart';
 import '../widgets/settings_section_card.dart';
 
 /// Settings Tab view for configuring algorithm, countdown duration, theme, and hint options
