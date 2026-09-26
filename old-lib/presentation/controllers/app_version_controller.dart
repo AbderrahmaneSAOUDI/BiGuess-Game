@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/repositories/app_info_repository_impl.dart';
-import '../../domain/repositories/i_app_info_repository.dart';
-
-final appInfoRepositoryProvider = Provider<IAppInfoRepository>((ref) {
-  return const AppInfoRepositoryImpl();
-});
+import 'package:package_info_plus/package_info_plus.dart';
+import '../../core/constants/app_constants.dart';
 
 final appVersionProvider = FutureProvider<String>((ref) async {
-  final repository = ref.watch(appInfoRepositoryProvider);
-  return repository.getAppVersion();
+  try {
+    final info = await PackageInfo.fromPlatform();
+    if (info.version.isNotEmpty) {
+      return info.version;
+    }
+  } catch (_) {
+    // Fall back to constants
+  }
+  return AppConstants.defaultVersion;
 });

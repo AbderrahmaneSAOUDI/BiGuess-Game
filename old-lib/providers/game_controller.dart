@@ -1,21 +1,23 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/models/game_state.dart';
-import 'category_controller.dart';
+import '../domain/models/game_state.dart';
+import '../domain/use_cases/select_character_use_case.dart';
 import 'game_settings_controller.dart';
+import 'topic_pack_providers.dart';
 
-/// Notifier managing the active game round state and countdown transitions
-class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState, String> {
+/// Notifier managing the active game round state and countdown transitions.
+/// Keyed by a record of (topic, pack) to support the new hierarchy.
+class GameRoundNotifier
+    extends AutoDisposeFamilyNotifier<GameRoundState, ({String topic, String pack})> {
   Timer? _countdownTimer;
 
   @override
-  GameRoundState build(String arg) {
+  GameRoundState build(({String topic, String pack}) arg) {
     ref.onDispose(() {
       _countdownTimer?.cancel();
     });
 
-    final repo = ref.watch(categoryRepositoryProvider);
-    final assets = repo.getAssetsForCategory(arg);
+    final assets = ref.watch(packAssetsProvider(arg));
 
     if (assets.isEmpty) {
       return const GameRoundState(
@@ -42,6 +44,9 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState, String
     _countdownTimer?.cancel();
     final countdownDuration = ref.read(countdownDurationProvider);
 
+    // Reset character name to hidden state when refreshing or drawing a card
+    ref.read(showCharacterNameHintProvider.notifier).set(false);
+
     state = state.copyWith(
       isCountingDown: true,
       showPicture: false,
@@ -63,7 +68,7 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState, String
 
   void _revealCharacter() {
     final algorithm = ref.read(characterAlgorithmProvider);
-    final selectUseCase = ref.read(selectCharacterUseCaseProvider);
+    final selectUseCase = SelectCharacterUseCase();
 
     final result = selectUseCase(
       allImages: state.allImages,
@@ -99,7 +104,7 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState, String
   }
 }
 
-final gameRoundProvider =
-    NotifierProvider.autoDispose.family<GameRoundNotifier, GameRoundState, String>(
+final gameRoundProvider = NotifierProvider.autoDispose
+    .family<GameRoundNotifier, GameRoundState, ({String topic, String pack})>(
   GameRoundNotifier.new,
 );

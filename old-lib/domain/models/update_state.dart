@@ -1,6 +1,8 @@
-/// State machine for the splash screen update pipeline.
+import 'update_decision.dart';
+
+/// State machine for the update pipeline.
 ///
-/// Drives the progress bar, status text, and user interaction on the splash.
+/// Drives progress bars, status indicators, and user prompts across the app.
 sealed class UpdateState {
   const UpdateState();
 }
@@ -13,6 +15,21 @@ class UpdateIdle extends UpdateState {
 /// Fetching remote `version.json` and comparing versions.
 class UpdateChecking extends UpdateState {
   const UpdateChecking();
+}
+
+/// An update is available and waiting for user action.
+class UpdateAvailable extends UpdateState {
+  final UpdateDecision decision;
+  final String currentVersion;
+  final String latestVersion;
+  final String releaseNotes;
+
+  const UpdateAvailable({
+    required this.decision,
+    required this.currentVersion,
+    required this.latestVersion,
+    required this.releaseNotes,
+  });
 }
 
 /// Streaming APK download in progress.
@@ -58,7 +75,8 @@ class UpdateRestarting extends UpdateState {
 
 /// Update flow finished successfully (or no update was needed).
 class UpdateCompleted extends UpdateState {
-  const UpdateCompleted();
+  final String message;
+  const UpdateCompleted([this.message = 'App is up to date']);
 }
 
 /// User chose to skip a non-mandatory update.
@@ -74,7 +92,7 @@ class UpdateError extends UpdateState {
   /// Whether the user can retry the failed operation.
   final bool canRetry;
 
-  /// Whether the user can skip past the error (false for mandatory updates).
+  /// Whether the user can skip past the error.
   final bool canSkip;
 
   const UpdateError({

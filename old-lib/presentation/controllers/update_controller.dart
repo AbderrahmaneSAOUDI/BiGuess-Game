@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:restart_app/restart_app.dart';
 
 import '../../domain/models/remote_version.dart';
-
 import '../../domain/models/sem_ver.dart';
 import '../../domain/models/update_decision.dart';
 import '../../domain/models/update_state.dart';
@@ -43,22 +42,18 @@ final updateControllerProvider =
 // Controller
 // ---------------------------------------------------------------------------
 
-/// Orchestrates the full update pipeline on the splash screen.
+/// Orchestrates the update pipeline across the app.
 ///
-/// Manages the sequential state transitions:
-/// `Idle → Checking → Downloading/Patching → Installing/Restarting → Completed`
-///
-/// All async exceptions are caught and surfaced as [UpdateError] states.
+/// Supports silent background checking on launch and interactive manual checks
+/// from the About/Settings tab.
 class UpdateController extends StateNotifier<UpdateState> {
   final VersionService _versionService;
   final OtaInstallerService _otaInstaller;
   final ShorebirdPatchService _shorebirdPatch;
 
-  /// Cached local version for use in retry/error logic.
   SemVer? _localVersion;
-
-  /// Cached min required version for skip eligibility.
   SemVer? _minRequired;
+  RemoteVersion? _remoteVersion;
 
   UpdateController({
     required VersionService versionService,
@@ -69,87 +64,159 @@ class UpdateController extends StateNotifier<UpdateState> {
         _shorebirdPatch = shorebirdPatch,
         super(const UpdateIdle());
 
+  SemVer? get localVersion => _localVersion;
+  SemVer? get minRequired => _minRequired;
+  RemoteVersion? get remoteVersion => _remoteVersion;
+
   // -------------------------------------------------------------------------
-  // Public API
+  // Check for updates
   // -------------------------------------------------------------------------
 
-  /// Runs the full update check and apply pipeline.
-  Future<void> runUpdateCheck() async {
+  /// Runs the update check.
+  ///
+  /// If [silent] is true, network failures or up-to-date states will complete
+  /// silently without surfacing errors to avoid interrupting gameplay.
+  Future<void> checkForUpdates({bool silent = false}) async {
     if (!mounted) return;
     state = const UpdateChecking();
 
     try {
-      // 1. Fetch local version
+      // 1. Resolve local installed version
       _localVersion = await _versionService.getLocalVersion();
       final local = _localVersion!;
 
-      // 2. Fetch remote version manifest (8s timeout)
-      late final RemoteVersion remoteVersion;
+      // 2. First check if a Shorebird patch is ready
+      final isSbAvailable = await _shorebirdPatch.isShorebirdAvailable();
+      if (isSbAvailable) {
+        final hasPatch = await _shorebirdPatch.checkForPatch();
+        if (hasPatch) {
+          if (silent) {
+            // Apply patch silently in the background
+            final applied = await _shorebirdPatch.downloadAndApplyPatch();
+            if (!mounted) return;
+            if (applied) {
+              state = const UpdateCompleted('New patch installed. Restart anytime to apply.');
+            } else {
+              state = const UpdateCompleted();
+            }
+            return;
+          } else {
+            if (!mounted) return;
+            state = UpdateAvailable(
+              decision: const UpdateShorebirdPatch(),
+              currentVersion: local.toString(),
+              latestVersion: local.toString(),
+              releaseNotes: 'Over-the-air code patch available with instant bug fixes and improvements.',
+            );
+            return;
+          }
+        }
+      }
+
+      // 3. Fetch remote version manifest from GitHub (8s timeout)
+      late final RemoteVersion remote;
       try {
-        remoteVersion = await _versionService.fetchRemoteVersion();
+        remote = await _versionService.fetchRemoteVersion();
+        _remoteVersion = remote;
       } on TimeoutException {
-        _handleNetworkFailure(local, 'Connection timed out');
+        if (!silent && mounted) {
+          state = const UpdateError(
+            message: 'Connection timed out while checking for updates.',
+          );
+        } else if (mounted) {
+          state = const UpdateCompleted();
+        }
         return;
-      } on SocketException catch (e) {
-        _handleNetworkFailure(local, 'No internet connection: ${e.message}');
+      } on SocketException {
+        if (!silent && mounted) {
+          state = const UpdateError(
+            message: 'No internet connection to check for updates.',
+          );
+        } else if (mounted) {
+          state = const UpdateCompleted();
+        }
         return;
       } catch (e) {
-        _handleNetworkFailure(local, 'Failed to check for updates');
+        if (!silent && mounted) {
+          state = UpdateError(
+            message: 'Failed to check for updates: $e',
+          );
+        } else if (mounted) {
+          state = const UpdateCompleted();
+        }
         return;
       }
 
-      _minRequired = SemVer.parse(remoteVersion.minRequiredVersion);
+      _minRequired = SemVer.parse(remote.minRequiredVersion);
 
-      // 3. Query device CPU architecture & evaluate update decision
+      // 4. Query device CPU architecture & evaluate update decision
       final deviceAbis = await _versionService.getDeviceSupportedAbis();
       final decision = _versionService.evaluateUpdate(
         local,
-        remoteVersion,
+        remote,
         deviceAbis: deviceAbis,
+        isShorebirdAvailable: isSbAvailable,
       );
+
+      if (!mounted) return;
 
       switch (decision) {
         case UpdateNone():
-          if (!mounted) return;
-          state = const UpdateCompleted();
+          state = UpdateCompleted(
+            silent ? '' : 'You are running the latest version (v${local.toString()})',
+          );
 
         case UpdateFullApk():
-          await _handleFullApkUpdate(decision);
+          state = UpdateAvailable(
+            decision: decision,
+            currentVersion: local.toString(),
+            latestVersion: remote.latestVersion,
+            releaseNotes: decision.releaseNotes.isNotEmpty
+                ? decision.releaseNotes
+                : 'New version v${remote.latestVersion} available.',
+          );
 
         case UpdateShorebirdPatch():
-          await _handleShorebirdPatch();
+          if (silent) {
+            // Silently download and apply the patch
+            final applied = await _shorebirdPatch.downloadAndApplyPatch();
+            if (applied && mounted) {
+              state = const UpdateCompleted('Patch downloaded. Restart anytime.');
+            } else if (mounted) {
+              state = const UpdateCompleted();
+            }
+          } else {
+            state = UpdateAvailable(
+              decision: decision,
+              currentVersion: local.toString(),
+              latestVersion: remote.latestVersion,
+              releaseNotes: remote.releaseNotes.isNotEmpty
+                  ? remote.releaseNotes
+                  : 'Fast OTA patch available.',
+            );
+          }
       }
     } catch (e) {
-      debugPrint('UpdateController.runUpdateCheck unexpected error: $e');
+      debugPrint('UpdateController.checkForUpdates error: $e');
       if (!mounted) return;
-      state = UpdateError(
-        message: 'An unexpected error occurred',
-        canRetry: true,
-        canSkip: _canSkipBasedOnVersion(),
-      );
+      if (silent) {
+        state = const UpdateCompleted();
+      } else {
+        state = const UpdateError(
+          message: 'An unexpected error occurred during version check.',
+        );
+      }
     }
   }
 
-  /// User chose to skip a non-mandatory update.
-  void skipUpdate() {
-    if (!mounted) return;
-    _otaInstaller.cancelDownload();
-    state = const UpdateSkipped();
-  }
-
-  /// User tapped retry after an error.
-  Future<void> retryUpdate() async {
-    await runUpdateCheck();
-  }
-
   // -------------------------------------------------------------------------
-  // Full APK update pipeline
+  // Full APK download & installation
   // -------------------------------------------------------------------------
 
-  Future<void> _handleFullApkUpdate(UpdateFullApk decision) async {
+  Future<void> downloadAndInstallApk(UpdateFullApk decision) async {
     if (!mounted) return;
 
-    // Clean stale APKs before starting
+    // Clean stale APKs first
     await _otaInstaller.cleanStaleApks();
 
     state = const UpdateDownloading(
@@ -178,101 +245,97 @@ class UpdateController extends StateNotifier<UpdateState> {
 
       await _otaInstaller.installApk(apkFile);
 
-      // The system installer takes over from here.
-      // The app will be in the background. If the user comes back without
-      // installing, they'll see the splash again on next launch.
+      if (!mounted) return;
+      state = const UpdateCompleted('Installer launched. Follow the on-screen prompt to finish.');
     } catch (e) {
       debugPrint('APK download/install error: $e');
       if (!mounted) return;
       state = UpdateError(
-        message: 'Download failed. Please try again.',
+        message: 'Download or installation failed. Please try again.',
         canRetry: true,
         canSkip: !decision.mandatory,
       );
     }
   }
 
+  /// Re-launches the installer for an already downloaded APK file without re-downloading.
+  Future<void> launchDownloadedApk() async {
+    try {
+      final file = await _otaInstaller.getDownloadedApk();
+      if (file != null && file.existsSync()) {
+        state = const UpdateInstalling();
+        await _otaInstaller.installApk(file);
+        if (!mounted) return;
+        state = const UpdateCompleted(
+          'Installer launched. Follow the on-screen prompt to finish.',
+        );
+      } else {
+        if (!mounted) return;
+        state = const UpdateError(
+          message: 'Downloaded package not found. Please try downloading again.',
+          canRetry: true,
+        );
+      }
+    } catch (e) {
+      debugPrint('Launch installer error: $e');
+      if (!mounted) return;
+      state = UpdateError(
+        message: 'Failed to launch installer: $e',
+        canRetry: true,
+      );
+    }
+  }
+
   // -------------------------------------------------------------------------
-  // Shorebird patch pipeline
+  // Shorebird patch execution
   // -------------------------------------------------------------------------
 
-  Future<void> _handleShorebirdPatch() async {
+  Future<void> applyShorebirdPatch() async {
     if (!mounted) return;
     state = const UpdatePatching();
 
     try {
-      final available = await _shorebirdPatch.isShorebirdAvailable();
-      if (!available) {
-        // Shorebird not configured — skip silently
-        if (!mounted) return;
-        state = const UpdateCompleted();
-        return;
-      }
-
-      final hasPatch = await _shorebirdPatch.checkForPatch();
-      if (!hasPatch) {
-        if (!mounted) return;
-        state = const UpdateCompleted();
-        return;
-      }
-
       final applied = await _shorebirdPatch.downloadAndApplyPatch();
       if (!applied) {
         if (!mounted) return;
-        state = const UpdateCompleted();
+        state = const UpdateError(
+          message: 'Failed to download patch. Please try again.',
+        );
         return;
       }
 
-      // Patch applied — restart the app
       if (!mounted) return;
       state = const UpdateRestarting();
-
-      // Brief delay so the user sees the "Restarting" status
       await Future<void>.delayed(const Duration(milliseconds: 800));
-
-      Restart.restartApp();
+      try {
+        await Restart.restartApp();
+      } catch (e) {
+        debugPrint('Restart error: $e');
+        if (mounted) {
+          state = const UpdateCompleted('Patch ready. Please restart the app.');
+        }
+      }
     } catch (e) {
-      debugPrint('Shorebird patch error: $e');
+      debugPrint('Shorebird patch apply error: $e');
       if (!mounted) return;
       state = const UpdateError(
-        message: 'Patch failed to apply',
-        canRetry: true,
-        canSkip: true, // Shorebird patches are never mandatory
+        message: 'Failed to apply patch.',
       );
     }
   }
 
   // -------------------------------------------------------------------------
-  // Helpers
+  // User actions
   // -------------------------------------------------------------------------
 
-  /// Handles network failure based on whether the current version meets
-  /// the minimum required version.
-  void _handleNetworkFailure(SemVer local, String message) {
+  void skipUpdate() {
     if (!mounted) return;
-
-    // We can't know min_required_version without a network response,
-    // so we gracefully proceed if we have no cached value.
-    final canSkip = _canSkipBasedOnVersion();
-
-    if (canSkip) {
-      // Version is acceptable — proceed to the game
-      state = const UpdateCompleted();
-    } else {
-      state = UpdateError(
-        message: message,
-        canRetry: true,
-        canSkip: false,
-      );
-    }
+    _otaInstaller.cancelDownload();
+    state = const UpdateSkipped();
   }
 
-  /// Whether the user can skip based on version checks.
-  ///
-  /// If we don't have min_required info (network never succeeded), we
-  /// default to allowing skip to avoid trapping users.
-  bool _canSkipBasedOnVersion() {
-    if (_localVersion == null || _minRequired == null) return true;
-    return _localVersion! >= _minRequired!;
+  void resetToIdle() {
+    if (!mounted) return;
+    state = const UpdateIdle();
   }
 }

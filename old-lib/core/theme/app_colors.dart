@@ -17,4 +17,9 @@ class AppColors {
   static const Color startGradientEnd = Color(0xFF00C853);   // Emerald Green
   static const Color refreshGradientStart = Color(0xFF2979FF); // Electric Blue
   static const Color refreshGradientEnd = Color(0xFF1565C0);   // Deep Blue
+
+  // Topic accent colors
+  static const Color animeAccent = Color(0xFFE040FB);     // Vivid Magenta
+  static const Color geographyAccent = Color(0xFF00E676); // Spring Green
+  static const Color moviesAccent = Color(0xFFFF6D00);    // Vivid Orange
 }

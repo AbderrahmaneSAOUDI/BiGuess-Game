@@ -25,6 +25,7 @@ class AssetLoader {
     }
   }
 
+  /// Extracts the display name from an asset path by taking the filename without extension
   static String? extractCharacterName(String assetPath) {
     try {
       final parts = assetPath.split('/');

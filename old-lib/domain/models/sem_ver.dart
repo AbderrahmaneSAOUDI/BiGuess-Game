@@ -28,16 +28,22 @@ class SemVer implements Comparable<SemVer> {
         final split = cleaned.split('+');
         versionPart = split[0];
         if (explicitBuildNumber == null && split.length > 1) {
-          build = int.tryParse(split[1]) ?? 0;
+          final digits = RegExp(r'^\d+').stringMatch(split[1]);
+          build = digits != null ? int.tryParse(digits) ?? 0 : 0;
         }
+      }
+
+      int parseSegment(String seg) {
+        final digits = RegExp(r'^\d+').stringMatch(seg);
+        return digits != null ? int.tryParse(digits) ?? 0 : 0;
       }
 
       final parts = versionPart.split('.');
 
       return SemVer(
-        major: parts.isNotEmpty ? int.parse(parts[0]) : 0,
-        minor: parts.length > 1 ? int.parse(parts[1]) : 0,
-        patch: parts.length > 2 ? int.parse(parts[2]) : 0,
+        major: parts.isNotEmpty ? parseSegment(parts[0]) : 0,
+        minor: parts.length > 1 ? parseSegment(parts[1]) : 0,
+        patch: parts.length > 2 ? parseSegment(parts[2]) : 0,
         buildNumber: build,
       );
     } catch (_) {

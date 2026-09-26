@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
+import 'package:gdg_guess_game/core/theme/app_colors.dart';
 
 /// Animated countdown display featuring expanding sonic shockwave rings and pulsing number
 class AnimatedCountdown extends StatefulWidget {

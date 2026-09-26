@@ -43,22 +43,32 @@ class OtaInstallerService {
   CancelToken? _cancelToken;
 
   OtaInstallerService({Dio? dio})
-      : _dio = dio ?? Dio(BaseOptions(connectTimeout: const Duration(seconds: 15)));
+      : _dio = dio ??
+            Dio(
+              BaseOptions(
+                connectTimeout: const Duration(seconds: 15),
+                receiveTimeout: const Duration(minutes: 5),
+              ),
+            );
 
   // ---------------------------------------------------------------------------
-  // Cache cleanup
+  // Cache cleanup & Inspection
   // ---------------------------------------------------------------------------
 
   /// Purges any stale `.apk` or `.apk.tmp` files from the app cache directory.
   Future<void> cleanStaleApks() async {
+    final dirs = <Directory>[];
     try {
       final cacheDir = await getExternalCacheDirectories();
-      final dirs = <Directory>[
-        if (cacheDir != null) ...cacheDir,
-        await getTemporaryDirectory(),
-      ];
+      if (cacheDir != null) dirs.addAll(cacheDir);
+    } catch (_) {}
 
-      for (final dir in dirs) {
+    try {
+      dirs.add(await getTemporaryDirectory());
+    } catch (_) {}
+
+    for (final dir in dirs) {
+      try {
         if (!dir.existsSync()) continue;
         final files = dir.listSync();
         for (final entity in files) {
@@ -72,10 +82,20 @@ class OtaInstallerService {
             }
           }
         }
+      } catch (_) {
+        // Ignore individual directory permission errors
       }
-    } catch (_) {
-      // Non-fatal — proceed even if cleanup fails.
     }
+  }
+
+  /// Returns the completed APK file from disk if it exists.
+  Future<File?> getDownloadedApk() async {
+    try {
+      final cacheDir = await getTemporaryDirectory();
+      final file = File('${cacheDir.path}/$_apkFileName');
+      if (file.existsSync()) return file;
+    } catch (_) {}
+    return null;
   }
 
   // ---------------------------------------------------------------------------
@@ -150,8 +170,16 @@ class OtaInstallerService {
       },
     );
 
-    // Atomic rename: tmp → final
-    final completed = await File(tmpPath).rename(finalPath);
+    // Atomic rename: tmp → final with copy fallback
+    File completed;
+    try {
+      completed = await File(tmpPath).rename(finalPath);
+    } catch (_) {
+      completed = await File(tmpPath).copy(finalPath);
+      try {
+        await File(tmpPath).delete();
+      } catch (_) {}
+    }
     return completed;
   }
 

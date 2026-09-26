@@ -92,9 +92,13 @@ class UpdateController extends StateNotifier<UpdateState> {
         if (hasPatch) {
           if (silent) {
             // Apply patch silently in the background
-            await _shorebirdPatch.downloadAndApplyPatch();
+            final applied = await _shorebirdPatch.downloadAndApplyPatch();
             if (!mounted) return;
-            state = const UpdateCompleted('New patch installed. Restart anytime to apply.');
+            if (applied) {
+              state = const UpdateCompleted('New patch installed. Restart anytime to apply.');
+            } else {
+              state = const UpdateCompleted();
+            }
             return;
           } else {
             if (!mounted) return;
@@ -151,6 +155,7 @@ class UpdateController extends StateNotifier<UpdateState> {
         local,
         remote,
         deviceAbis: deviceAbis,
+        isShorebirdAvailable: isSbAvailable,
       );
 
       if (!mounted) return;
@@ -239,6 +244,9 @@ class UpdateController extends StateNotifier<UpdateState> {
       state = const UpdateInstalling();
 
       await _otaInstaller.installApk(apkFile);
+
+      if (!mounted) return;
+      state = const UpdateCompleted('Installer launched. Follow the on-screen prompt to finish.');
     } catch (e) {
       debugPrint('APK download/install error: $e');
       if (!mounted) return;
@@ -246,6 +254,34 @@ class UpdateController extends StateNotifier<UpdateState> {
         message: 'Download or installation failed. Please try again.',
         canRetry: true,
         canSkip: !decision.mandatory,
+      );
+    }
+  }
+
+  /// Re-launches the installer for an already downloaded APK file without re-downloading.
+  Future<void> launchDownloadedApk() async {
+    try {
+      final file = await _otaInstaller.getDownloadedApk();
+      if (file != null && file.existsSync()) {
+        state = const UpdateInstalling();
+        await _otaInstaller.installApk(file);
+        if (!mounted) return;
+        state = const UpdateCompleted(
+          'Installer launched. Follow the on-screen prompt to finish.',
+        );
+      } else {
+        if (!mounted) return;
+        state = const UpdateError(
+          message: 'Downloaded package not found. Please try downloading again.',
+          canRetry: true,
+        );
+      }
+    } catch (e) {
+      debugPrint('Launch installer error: $e');
+      if (!mounted) return;
+      state = UpdateError(
+        message: 'Failed to launch installer: $e',
+        canRetry: true,
       );
     }
   }
@@ -271,7 +307,14 @@ class UpdateController extends StateNotifier<UpdateState> {
       if (!mounted) return;
       state = const UpdateRestarting();
       await Future<void>.delayed(const Duration(milliseconds: 800));
-      Restart.restartApp();
+      try {
+        await Restart.restartApp();
+      } catch (e) {
+        debugPrint('Restart error: $e');
+        if (mounted) {
+          state = const UpdateCompleted('Patch ready. Please restart the app.');
+        }
+      }
     } catch (e) {
       debugPrint('Shorebird patch apply error: $e');
       if (!mounted) return;

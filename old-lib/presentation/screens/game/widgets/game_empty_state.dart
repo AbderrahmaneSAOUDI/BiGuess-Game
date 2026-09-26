@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Fallback display when a selected category contains no images
+/// Fallback display when a selected pack contains no images
 class GameEmptyState extends StatelessWidget {
   const GameEmptyState({super.key});
 
@@ -26,7 +26,7 @@ class GameEmptyState extends StatelessWidget {
             Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              'Coming soon...\nNo images in this category yet.',
+              'Coming soon...\nNo images in this pack yet.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18, color: Colors.grey),
             ),

@@ -11,10 +11,10 @@ class UpdateDialog extends ConsumerWidget {
   const UpdateDialog({super.key});
 
   /// Displays the [UpdateDialog] modally.
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {bool isMandatory = false}) {
     return showDialog<void>(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: !isMandatory,
       builder: (_) => const UpdateDialog(),
     );
   }
@@ -25,84 +25,98 @@ class UpdateDialog extends ConsumerWidget {
     final updateState = ref.watch(updateControllerProvider);
     final controller = ref.read(updateControllerProvider.notifier);
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: theme.colorScheme.surface,
-      elevation: 8,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header with Icon & Title
-              Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      Icons.system_update_rounded,
-                      color: theme.colorScheme.primary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'App Updates',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _getSubtitleText(updateState),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
+    final isMandatory = updateState is UpdateAvailable &&
+        updateState.decision is UpdateFullApk &&
+        (updateState.decision as UpdateFullApk).mandatory;
 
-              // Dynamic Body based on UpdateState
-              switch (updateState) {
-                UpdateIdle() => _buildIdleState(context, controller, theme),
-                UpdateChecking() => _buildCheckingState(theme),
-                UpdateAvailable() =>
-                  _buildAvailableState(context, ref, updateState, theme),
-                UpdateDownloading() =>
-                  _buildDownloadingState(context, controller, updateState, theme),
-                UpdateInstalling() => _buildInstallingState(theme),
-                UpdatePatching() => _buildPatchingState(theme),
-                UpdateRestarting() => _buildRestartingState(theme),
-                UpdateCompleted() =>
-                  _buildCompletedState(context, controller, updateState, theme),
-                UpdateSkipped() => _buildSkippedState(context, controller, theme),
-                UpdateError() =>
-                  _buildErrorState(context, controller, updateState, theme),
-              },
-            ],
+    return PopScope(
+      canPop: !isMandatory,
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: theme.colorScheme.surface,
+        elevation: 8,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header with Icon & Title
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: isMandatory
+                            ? theme.colorScheme.errorContainer
+                            : theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        isMandatory
+                            ? Icons.warning_amber_rounded
+                            : Icons.system_update_rounded,
+                        color: isMandatory
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isMandatory ? 'Required Update' : 'App Updates',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _getSubtitleText(updateState),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!isMandatory)
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+
+                // Dynamic Body based on UpdateState
+                switch (updateState) {
+                  UpdateIdle() => _buildIdleState(context, controller, theme),
+                  UpdateChecking() => _buildCheckingState(theme),
+                  UpdateAvailable() =>
+                    _buildAvailableState(context, ref, updateState, theme, isMandatory),
+                  UpdateDownloading() =>
+                    _buildDownloadingState(context, controller, updateState, theme, isMandatory),
+                  UpdateInstalling() => _buildInstallingState(theme),
+                  UpdatePatching() => _buildPatchingState(theme),
+                  UpdateRestarting() => _buildRestartingState(theme),
+                  UpdateCompleted() =>
+                    _buildCompletedState(context, controller, updateState, theme),
+                  UpdateSkipped() => _buildSkippedState(context, controller, theme),
+                  UpdateError() =>
+                    _buildErrorState(context, controller, updateState, theme),
+                },
+              ],
+            ),
           ),
         ),
       ),
@@ -190,6 +204,7 @@ class UpdateDialog extends ConsumerWidget {
     WidgetRef ref,
     UpdateAvailable state,
     ThemeData theme,
+    bool isMandatory,
   ) {
     final isPatch = state.decision is UpdateShorebirdPatch;
 
@@ -200,10 +215,14 @@ class UpdateDialog extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+            color: isMandatory
+                ? theme.colorScheme.errorContainer.withValues(alpha: 0.3)
+                : theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: theme.colorScheme.primary.withValues(alpha: 0.2),
+              color: isMandatory
+                  ? theme.colorScheme.error.withValues(alpha: 0.4)
+                  : theme.colorScheme.primary.withValues(alpha: 0.2),
             ),
           ),
           child: Row(
@@ -214,17 +233,23 @@ class UpdateDialog extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+                  color: isMandatory
+                      ? theme.colorScheme.error
+                      : theme.colorScheme.primary,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
+                  color: isMandatory
+                      ? theme.colorScheme.error
+                      : theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  isPatch ? 'OTA Patch' : 'Split-ABI APK',
+                  isPatch
+                      ? 'OTA Patch'
+                      : (isMandatory ? 'Required APK' : 'Split-ABI APK'),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -236,6 +261,38 @@ class UpdateDialog extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 14),
+
+        // Mandatory notice
+        if (isMandatory) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.priority_high_rounded,
+                  size: 16,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'This version is required to continue playing.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
 
         // Release notes box
         if (state.releaseNotes.isNotEmpty) ...[
@@ -287,6 +344,8 @@ class UpdateDialog extends ConsumerWidget {
           ),
           label: Text(isPatch ? 'Apply Instant Patch' : 'Download & Install APK'),
           style: FilledButton.styleFrom(
+            backgroundColor: isMandatory ? theme.colorScheme.error : null,
+            foregroundColor: isMandatory ? theme.colorScheme.onError : null,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
@@ -302,6 +361,7 @@ class UpdateDialog extends ConsumerWidget {
     UpdateController controller,
     UpdateDownloading state,
     ThemeData theme,
+    bool isMandatory,
   ) {
     final percent = (state.progress * 100).toStringAsFixed(0);
 
@@ -343,16 +403,18 @@ class UpdateDialog extends ConsumerWidget {
               ),
           ],
         ),
-        const SizedBox(height: 16),
-        OutlinedButton(
-          onPressed: () => controller.skipUpdate(),
-          style: OutlinedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        if (!isMandatory) ...[
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: () => controller.skipUpdate(),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
+            child: const Text('Cancel Download'),
           ),
-          child: const Text('Cancel Download'),
-        ),
+        ],
       ],
     );
   }
@@ -427,6 +489,7 @@ class UpdateDialog extends ConsumerWidget {
     final message = state.message.isNotEmpty
         ? state.message
         : 'You are on the latest version.';
+    final isInstallerLaunched = state.message.contains('Installer launched');
 
     return Column(
       children: [
@@ -445,15 +508,34 @@ class UpdateDialog extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 18),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: FilledButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        if (isInstallerLaunched) ...[
+          FilledButton.icon(
+            onPressed: () => controller.launchDownloadedApk(),
+            icon: const Icon(Icons.install_mobile_rounded, size: 18),
+            label: const Text('Open Installer Again'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
           ),
-          child: const Text('Close'),
-        ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ] else ...[
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: FilledButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Close'),
+          ),
+        ],
       ],
     );
   }
@@ -506,13 +588,15 @@ class UpdateDialog extends ConsumerWidget {
         const SizedBox(height: 18),
         Row(
           children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close'),
+            if (state.canSkip) ...[
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
+              const SizedBox(width: 10),
+            ],
             Expanded(
               child: FilledButton(
                 onPressed: () => controller.checkForUpdates(silent: false),

@@ -1,6 +1,6 @@
 import 'dart:math';
+import '../../core/utils/asset_loader.dart';
 import '../models/character_algorithm.dart';
-import '../repositories/i_category_repository.dart';
 
 /// Result wrapper for character selection
 class CharacterSelectionResult {
@@ -28,14 +28,9 @@ class CharacterSelectionResult {
 
 /// Use case that selects the next character given an algorithm
 class SelectCharacterUseCase {
-  final ICategoryRepository _repository;
   final Random _random;
 
-  SelectCharacterUseCase({
-    required ICategoryRepository repository,
-    Random? random,
-  })  : _repository = repository,
-        _random = random ?? Random();
+  SelectCharacterUseCase({Random? random}) : _random = random ?? Random();
 
   CharacterSelectionResult call({
     required List<String> allImages,
@@ -49,7 +44,7 @@ class SelectCharacterUseCase {
     if (algorithm == CharacterAlgorithm.random) {
       final idx = _random.nextInt(allImages.length);
       final asset = allImages[idx];
-      final name = _repository.extractCharacterName(asset);
+      final name = AssetLoader.extractCharacterName(asset);
       return CharacterSelectionResult(
         assetPath: asset,
         characterName: name,
@@ -69,7 +64,7 @@ class SelectCharacterUseCase {
 
       final idx = _random.nextInt(currentPool.length);
       final asset = currentPool.removeAt(idx);
-      final name = _repository.extractCharacterName(asset);
+      final name = AssetLoader.extractCharacterName(asset);
 
       return CharacterSelectionResult(
         assetPath: asset,

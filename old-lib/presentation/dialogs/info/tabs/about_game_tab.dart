@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../domain/models/update_state.dart';
 import '../../../controllers/app_version_controller.dart';
+import '../../../controllers/update_controller.dart';
+import '../../update/update_dialog.dart';
 import '../widgets/feature_bullet.dart';
 import '../widgets/stat_badge.dart';
 
@@ -149,7 +152,7 @@ class AboutGameTab extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: StatBadge(
-                    number: '1000+',
+                    number: '300+',
                     label: 'Characters',
                     icon: Icons.people_outline_rounded,
                     color: theme.colorScheme.secondary,
@@ -166,6 +169,10 @@ class AboutGameTab extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+
+            // App Updates & Status Card
+            const _AppUpdateCard(),
             const SizedBox(height: 16),
 
             // About Game Overview
@@ -216,7 +223,7 @@ class AboutGameTab extends ConsumerWidget {
                   const FeatureBullet(
                     icon: Icons.groups_rounded,
                     title: 'Community Driven:',
-                    desc: 'Crafted for anime enthusiasts, local duel matchups, and community gaming events.',
+                    desc: 'Born from Google Developer Groups (GDG) Ghardaia community meetups and DevFest celebration events.',
                   ),
                 ],
               ),
@@ -227,3 +234,210 @@ class AboutGameTab extends ConsumerWidget {
     );
   }
 }
+
+/// Compact widget presenting current update status and check action.
+class _AppUpdateCard extends ConsumerWidget {
+  const _AppUpdateCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final updateState = ref.watch(updateControllerProvider);
+    final controller = ref.read(updateControllerProvider.notifier);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.system_update_rounded,
+                size: 20,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Auto-Updates & Status',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildStatusContent(context, ref, controller, updateState, theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusContent(
+    BuildContext context,
+    WidgetRef ref,
+    UpdateController controller,
+    UpdateState state,
+    ThemeData theme,
+  ) {
+    return switch (state) {
+      UpdateIdle() => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                'Instant OTA patches enabled',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            FilledButton.tonalIcon(
+              onPressed: () => controller.checkForUpdates(silent: false),
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('Check', style: TextStyle(fontSize: 12)),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
+      UpdateChecking() => Row(
+          children: [
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Checking for new version...',
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      UpdateAvailable(:final latestVersion) => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                '🎉 Version v$latestVersion available!',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+            FilledButton.icon(
+              onPressed: () => UpdateDialog.show(context),
+              icon: const Icon(Icons.download_rounded, size: 16),
+              label: const Text('Update', style: TextStyle(fontSize: 12)),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
+      UpdateDownloading(:final progress, :final speedText) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            LinearProgressIndicator(value: progress > 0 ? progress : null),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${(progress * 100).toStringAsFixed(0)}% downloaded',
+                  style: TextStyle(fontSize: 11, color: theme.colorScheme.primary),
+                ),
+                Text(
+                  speedText,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      UpdateCompleted(:final message) => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_rounded,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      message.isNotEmpty ? message : 'App is up to date',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              tooltip: 'Check again',
+              onPressed: () => controller.checkForUpdates(silent: false),
+            ),
+          ],
+        ),
+      _ => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                'Check for latest updates',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            FilledButton.tonal(
+              onPressed: () => UpdateDialog.show(context),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text('Manage', style: TextStyle(fontSize: 12)),
+            ),
+          ],
+        ),
+    };
+  }
+}
+

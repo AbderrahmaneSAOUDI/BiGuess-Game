@@ -35,12 +35,21 @@ class RemoteVersion {
     }
 
     final defaultApkUrl = json['apk_url'] as String? ?? '';
+    final rawBuild = json['build_number'];
+    final buildNumber = rawBuild is int
+        ? rawBuild
+        : int.tryParse(rawBuild?.toString() ?? '') ?? 0;
+
+    final rawNative = json['has_native_changes'];
+    final hasNativeChanges = rawNative is bool
+        ? rawNative
+        : (rawNative?.toString().toLowerCase() == 'true');
 
     return RemoteVersion(
       latestVersion: json['latest_version'] as String? ?? '0.0.0',
-      buildNumber: json['build_number'] as int? ?? 0,
+      buildNumber: buildNumber,
       minRequiredVersion: json['min_required_version'] as String? ?? '0.0.0',
-      hasNativeChanges: json['has_native_changes'] as bool? ?? false,
+      hasNativeChanges: hasNativeChanges,
       apkUrl: defaultApkUrl,
       apkUrls: parsedUrls,
       releaseNotes: json['release_notes'] as String? ?? '',
