@@ -5,6 +5,7 @@ Full end-to-end: version bump → version.json sync → build APK → GitHub Rel
 """
 
 import argparse
+import datetime
 import hashlib
 import json
 import os
@@ -121,18 +122,24 @@ def parse_semver(version: str) -> Tuple[int, int, int, int]:
     )
 
 
+BASE_DATE = datetime.date(2025, 5, 27)
+
+
 def bump_version(current: str, bump_type: str) -> str:
-    """Bump the version string by major, minor, or patch."""
+    """Bump the version string by major, minor, or patch with date-based minor calculation."""
     major, minor, patch, build = parse_semver(current)
+    today = datetime.date.today()
+    expected_minor = max(0, (today - BASE_DATE).days)
 
     if bump_type == "major":
         major += 1
-        minor = 0
+        minor = expected_minor
         patch = 0
     elif bump_type == "minor":
-        minor += 1
+        minor = expected_minor
         patch = 0
     elif bump_type == "patch":
+        minor = expected_minor
         patch += 1
 
     new_build = build + 1

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "shell",
+        "command": ".agents/hooks/session_start.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "shell",
+        "command": ".agents/hooks/pre_tool_use.sh"
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "shell",
+        "command": ".agents/hooks/post_tool_use.sh"
+      }
+    ],
+    "stop": [
+      {
+        "type": "shell",
+        "command": ".agents/hooks/stop_guard.sh"
+      }
+    ]
+  }
+}

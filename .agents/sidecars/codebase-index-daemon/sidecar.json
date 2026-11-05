@@ -1,0 +1,11 @@
+{
+  "name": "codebase-index-daemon",
+  "enabled": false,
+  "description": "Continuous background codebase indexer and symbol cache generator",
+  "command": "python3",
+  "args": ["indexer_daemon.py"],
+  "restart_policy": "never",
+  "env": {
+    "POLL_INTERVAL": "5"
+  }
+}

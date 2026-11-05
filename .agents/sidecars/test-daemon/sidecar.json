@@ -1,0 +1,8 @@
+{
+  "name": "test-daemon",
+  "enabled": false,
+  "description": "Background test watcher daemon for continuous verification",
+  "command": "bash",
+  "args": ["run_daemon.sh"],
+  "restart_policy": "never"
+}

@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Agent cache
+.agents/cache/
+TO_BE_DELETED/
+
+
