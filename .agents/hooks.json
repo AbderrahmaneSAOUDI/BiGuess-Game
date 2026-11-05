@@ -1,28 +1,47 @@
 {
-  "version": 1,
-  "hooks": {
-    "sessionStart": [
+  "safety-guard": {
+    "PreToolUse": [
       {
-        "type": "shell",
-        "command": ".agents/hooks/session_start.sh"
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/dangerous_command_guard.py 2>/dev/null || python3 .agents/hooks/dangerous_command_guard.py",
+            "timeout": 15
+          }
+        ]
       }
-    ],
-    "preToolUse": [
+    ]
+  },
+  "version-incrementer": {
+    "PostToolUse": [
       {
-        "type": "shell",
-        "command": ".agents/hooks/pre_tool_use.sh"
+        "matcher": "write_file|edit_file|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 hooks/version_increment.py 2>/dev/null || python3 .agents/hooks/version_increment.py",
+            "timeout": 15
+          }
+        ]
       }
-    ],
-    "postToolUse": [
+    ]
+  },
+  "session-init": {
+    "SessionStart": [
       {
-        "type": "shell",
-        "command": ".agents/hooks/post_tool_use.sh"
+        "type": "command",
+        "command": "python3 hooks/session_start.py 2>/dev/null || python3 .agents/hooks/session_start.py",
+        "timeout": 10
       }
-    ],
-    "stop": [
+    ]
+  },
+  "stop-guard": {
+    "Stop": [
       {
-        "type": "shell",
-        "command": ".agents/hooks/stop_guard.sh"
+        "type": "command",
+        "command": "python3 hooks/stop_guard.py 2>/dev/null || python3 .agents/hooks/stop_guard.py",
+        "timeout": 30
       }
     ]
   }

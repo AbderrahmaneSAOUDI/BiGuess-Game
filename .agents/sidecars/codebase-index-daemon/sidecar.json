@@ -1,6 +1,6 @@
 {
   "name": "codebase-index-daemon",
-  "enabled": false,
+  "enabled": true,
   "description": "Continuous background codebase indexer and symbol cache generator",
   "command": "python3",
   "args": ["indexer_daemon.py"],

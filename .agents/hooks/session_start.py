@@ -14,13 +14,20 @@ from pathlib import Path
 
 BASE_DATE = datetime.date(2025, 5, 27)
 
+def get_project_root() -> Path:
+    p = Path(__file__).resolve()
+    for parent in p.parents:
+        if (parent / ".git").exists() or (parent / "pubspec.yaml").exists():
+            return parent
+    return Path.cwd()
+
 def get_info() -> str:
-    root = Path.cwd()
-    branch = "unknown"
+    root = get_project_root()
+    branch = "main"
     commit = "unknown"
     try:
-        branch = subprocess.check_output(["git", "branch", "--show-current"], stderr=subprocess.DEVNULL, text=True).strip()
-        commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL, text=True).strip()
+        branch = subprocess.check_output(["git", "-C", str(root), "branch", "--show-current"], stderr=subprocess.DEVNULL, text=True).strip()
+        commit = subprocess.check_output(["git", "-C", str(root), "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL, text=True).strip()
     except Exception:
         pass
 
@@ -42,6 +49,13 @@ def get_info() -> str:
 if __name__ == "__main__":
     info = get_info()
     output = {
+        "injectSteps": [
+            {
+                "systemMessage": {
+                    "systemMessage": f"[BiGuess Environment] {info}"
+                }
+            }
+        ],
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
             "additionalContext": f"[BiGuess Environment] {info}"

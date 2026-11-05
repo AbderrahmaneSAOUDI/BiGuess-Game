@@ -4,11 +4,13 @@
 Automatically increments the patch version upon substantive code or documentation edits,
 and calculates the minor version as elapsed days since project inception (2025-05-27).
 Synchronizes the version triad: pubspec.yaml, version.json, and app_constants.dart.
+Guarantees idempotence by using HEAD commit baseline.
 """
 
 from __future__ import annotations
 import datetime
 import json
+import os
 import re
 import subprocess
 import sys
@@ -16,9 +18,32 @@ from pathlib import Path
 
 BASE_DATE = datetime.date(2025, 5, 27)
 
+def get_project_root() -> Path:
+    p = Path(__file__).resolve()
+    for parent in p.parents:
+        if (parent / ".git").exists() or (parent / "pubspec.yaml").exists():
+            return parent
+    return Path.cwd()
+
 def get_expected_minor() -> int:
     today = datetime.date.today()
     return max(0, (today - BASE_DATE).days)
+
+def get_head_version(root: Path) -> tuple[int, int, int, int]:
+    try:
+        res = subprocess.run(
+            ["git", "-C", str(root), "show", "HEAD:pubspec.yaml"],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if res.returncode == 0:
+            m = re.search(r'version:\s*(\d+)\.(\d+)\.(\d+)(?:\+(\d+))?', res.stdout)
+            if m:
+                return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4) or 1)
+    except Exception:
+        pass
+    return 1, 0, 0, 1
 
 def git_has_substantive_changes(root: Path) -> bool:
     try:
@@ -52,21 +77,24 @@ def sync_triad(root: Path) -> tuple[bool, str]:
         return False, ""
 
     expected_minor = get_expected_minor()
+    head_major, head_minor, head_patch, head_build = get_head_version(root)
+
+    new_patch = head_patch + 1
+    new_build = head_build + 1
+
+    semver_str = f"1.{expected_minor}.{new_patch}"
+    full_version = f"{semver_str}+{new_build}"
 
     try:
         content = pubspec_path.read_text(encoding="utf-8")
-        match = re.search(r'(version:\s*)(\d+)\.(\d+)\.(\d+)(?:\+(\d+))?', content)
+        current_m = re.search(r'version:\s*([^\s]+)', content)
+        if current_m and current_m.group(1).strip() == full_version:
+            # Already strictly in sync with expected target version
+            return True, semver_str
+
+        match = re.search(r'(version:\s*).+', content)
         if not match:
             return False, ""
-
-        major = "1"
-        old_patch = int(match.group(4))
-        old_build = int(match.group(5) or "1")
-        new_patch = old_patch + 1
-        new_build = old_build + 1
-
-        semver_str = f"{major}.{expected_minor}.{new_patch}"
-        full_version = f"{semver_str}+{new_build}"
 
         new_val = f"{match.group(1)}{full_version}"
         pubspec_path.write_text(content[:match.start()] + new_val + content[match.end():], encoding="utf-8")
@@ -109,7 +137,7 @@ def main() -> int:
         except Exception:
             event = {}
 
-    root = Path.cwd()
+    root = get_project_root()
     if git_has_substantive_changes(root):
         sync_triad(root)
 

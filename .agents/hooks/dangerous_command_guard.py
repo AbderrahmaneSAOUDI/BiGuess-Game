@@ -24,13 +24,16 @@ DANGEROUS_PATTERNS = [
 ]
 
 def deny(reason: str) -> None:
-    print(json.dumps({
+    output = {
+        "decision": "deny",
+        "reason": reason,
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
             "permissionDecisionReason": reason
         }
-    }))
+    }
+    print(json.dumps(output))
     sys.exit(0)
 
 def main() -> int:
@@ -41,9 +44,9 @@ def main() -> int:
         except Exception:
             event = {}
 
-    tool_call = event.get("tool_call") or {}
+    tool_call = event.get("toolCall") or event.get("tool_call") or {}
     tool_name = tool_call.get("name", "")
-    args = tool_call.get("arguments", {})
+    args = tool_call.get("args") or tool_call.get("arguments") or {}
 
     if tool_name in ("run_command", "execute_command", "terminal", "bash"):
         cmd = args.get("CommandLine") or args.get("command") or ""
@@ -51,7 +54,7 @@ def main() -> int:
             if pattern.search(cmd):
                 deny(reason)
 
-    print(json.dumps({}))
+    print(json.dumps({"decision": "allow"}))
     return 0
 
 if __name__ == "__main__":

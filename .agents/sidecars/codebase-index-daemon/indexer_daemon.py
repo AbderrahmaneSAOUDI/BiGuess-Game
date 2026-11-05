@@ -15,8 +15,15 @@ import sys
 import time
 from pathlib import Path
 
+def get_project_root() -> Path:
+    p = Path(__file__).resolve()
+    for parent in p.parents:
+        if (parent / ".git").exists() or (parent / "pubspec.yaml").exists():
+            return parent
+    return p.parents[2]
+
 CURRENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CURRENT_DIR.parents[2]
+PROJECT_ROOT = get_project_root()
 CACHE_DIR = PROJECT_ROOT / ".agents" / "cache"
 INDEX_FILE = CACHE_DIR / "codebase_index.json"
 SUMMARY_FILE = CACHE_DIR / "codebase_summary.md"

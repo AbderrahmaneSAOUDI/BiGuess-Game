@@ -72,8 +72,15 @@ def auto_generate_message(root: Path) -> str:
         return "chore: update dependencies and configuration"
     return "feat: apply substantive project enhancements"
 
+def get_project_root() -> Path:
+    p = Path(__file__).resolve()
+    for parent in p.parents:
+        if (parent / ".git").exists() or (parent / "pubspec.yaml").exists():
+            return parent
+    return Path.cwd()
+
 def main() -> int:
-    root = Path.cwd()
+    root = get_project_root()
 
     code, stdout, _ = run_cmd(["git", "status", "--porcelain"], cwd=root)
     if not stdout:
