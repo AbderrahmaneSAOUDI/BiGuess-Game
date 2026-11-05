@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "biguess-api",
+  "main": "src/index.js",
+  "compatibility_date": "2024-04-01",
+  "d1_databases": [
+    {
+      "binding": "biguess_db",
+      "database_name": "biguess-db",
+      "database_id": "2b192cea-fd0c-4393-8449-15e4accd323e"
+    }
+  ]
+}
