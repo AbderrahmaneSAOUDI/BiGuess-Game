@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "topic": {
+    "id": "e7c2d22f-d890-50d4-8097-f70335e2ba7e",
+    "name": "Shapes"
+  },
+  "pack": {
+    "id": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+    "name": "Geometric Shapes",
+    "description": "Internally authored, confirmed-cleared fixture pack for automated testing and CI verification.",
+    "rights_status": "cleared",
+    "permission_to_publish": true,
+    "public_test_publishable": true,
+    "license": "CC0-1.0 / MIT",
+    "attribution": "BiGuess Engineering Team",
+    "source": "internally_authored_fixture"
+  },
+  "cards": [
+    {
+      "id": "2d194c6f-a82f-5bfe-85c8-106ea9bb1629",
+      "pack_id": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+      "name": "Circle",
+      "image": "Circle.webp",
+      "difficulty": 1,
+      "rights_status": "cleared",
+      "permission_to_publish": true,
+      "public_test_publishable": true,
+      "source": "internally_authored_fixture",
+      "attribution": "BiGuess Engineering Team",
+      "license": "CC0-1.0 / MIT"
+    },
+    {
+      "id": "1be544bb-469a-5e3d-82d6-0c6ca7b49463",
+      "pack_id": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+      "name": "Square",
+      "image": "Square.webp",
+      "difficulty": 1,
+      "rights_status": "cleared",
+      "permission_to_publish": true,
+      "public_test_publishable": true,
+      "source": "internally_authored_fixture",
+      "attribution": "BiGuess Engineering Team",
+      "license": "CC0-1.0 / MIT"
+    },
+    {
+      "id": "b0f7e41b-4171-555e-bc8e-49be88a2a197",
+      "pack_id": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+      "name": "Triangle",
+      "image": "Triangle.webp",
+      "difficulty": 2,
+      "rights_status": "cleared",
+      "permission_to_publish": true,
+      "public_test_publishable": true,
+      "source": "internally_authored_fixture",
+      "attribution": "BiGuess Engineering Team",
+      "license": "CC0-1.0 / MIT"
+    },
+    {
+      "id": "2bc9837a-4299-5f25-b461-1c5fae80a520",
+      "pack_id": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+      "name": "Star",
+      "image": "Star.webp",
+      "difficulty": 3,
+      "rights_status": "cleared",
+      "permission_to_publish": true,
+      "public_test_publishable": true,
+      "source": "internally_authored_fixture",
+      "attribution": "BiGuess Engineering Team",
+      "license": "CC0-1.0 / MIT"
+    }
+  ]
+}

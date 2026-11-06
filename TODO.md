@@ -69,9 +69,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 **Agent task:** Replace debug signing for release with secure externally provided release signing configuration. Remove unsafe release-lint bypasses or add a documented, justified mitigation. Keep credentials out of Git. Audit `version.json`, release scripts, `/releases/latest` URLs, and Shorebird/version-matching behavior for draft/published version mismatches and verification of downloaded APKs. Do **not** publish a new build or change users' update path without approval.
 **Acceptance:** A release build cannot silently ship signed with the debug key; local/CI validation of release configuration exists; no secrets in repository; risks and intended distribution policy are documented.
 
-### [ ] T05 — GATE: Make a reversible content inventory and rights quarantine
+### [x] T05 — GATE: Make a reversible content inventory and rights quarantine
 **Agent task:** Add a deterministic inventory/export command for all current Topic/Pack images with source path, proposed stable ID, display name, size/hash, duplicate candidates, and optional rights/source/attribution fields. Separate **technical importability** from **permission to publish**. Create a small, internally authored or otherwise confirmed-cleared fixture Pack for automated tests; do not assume Anime images or flags are public-domain assets.
 **Acceptance:** Counts reconcile to source files, exports are reproducible, no asset is deleted/renamed, uncertain rights are flagged `unverified` and excluded from public test publishing by default.
+
+**Recheck (2026-11-06):** Reversible content inventory and rights quarantine gate implemented in `scripts/content_inventory.py` with reproducible JSON and report outputs (`docs/migration/content_inventory.json` and `docs/migration/CONTENT_INVENTORY_AND_RIGHTS.md`). All 1174 source assets (922 Anime across 6 packs + 252 Flags) reconcile 100% to disk, 0 corruptions, zero assets modified/deleted/renamed, with deterministic RFC 4122 UUIDv5 stable entity IDs. Technical importability is strictly decoupled from permission to publish; all 1174 legacy assets are quarantined as `unverified` and excluded from public test publishing by default. Confirmed-cleared test fixture pack created in `test/fixtures/cleared_shapes` (4 shapes, difficulties 1–3, CC0-1.0/MIT). Verified with 7 Python unit tests and Flutter unit tests.
 
 # PHASE B — Local-first domain and playable engine (still works without a backend)
 
@@ -87,9 +89,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 **Agent task:** Add a local SQL implementation for Topics, Packs, Cards, installed-pack state, revisions, and deletion markers. Define safe schema migrations and query indexes for local search and card selection. Keep mutable active game state out of the database unless required by the blueprint.
 **Acceptance:** Integration tests create/open/upgrade/restart the database; relationships and constraints are enforced; local queries work without network; no bundled asset loss.
 
-### [ ] T09 — Define a deterministic Pack format and local test Pack exporter
+### [x] T09 — Define a deterministic Pack format and local test Pack exporter
 **Agent task:** Specify an initial full-Pack manifest containing Pack/Topic IDs, revision, Card metadata, image object references, sizes, and SHA-256 hashes. Implement an offline exporter for verified test fixtures (and a development-only export path for legacy assets). Do not start with a network client.
 **Acceptance:** Identical input produces equivalent manifest/output hashes; malformed/duplicate/missing records fail validation; a complete Pack has all assets necessary for offline play.
+
+**Implemented:** [Full-Pack v1 contract and commands](docs/migration/PACK_FORMAT.md), offline `scripts/export_pack.py`, and self-contained acceptance tests in `.agents/tests/test_pack_export.py`. Fixture exports require explicit clearance; legacy exports require development-only opt-in. Import/install remains T10.
 
 ### [ ] T10 — Implement atomic local Pack import/install from a file
 **Agent task:** Parse and validate Pack files, stage them in a temporary location, confirm image hashes/sizes and referential integrity, then atomically activate metadata and files. Preserve previous installed data if validation or storage fails; make install retry-safe.

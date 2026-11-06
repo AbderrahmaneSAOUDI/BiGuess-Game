@@ -337,6 +337,35 @@ def task_shorebird_patch() -> None:
     run_script("release.py", args)
 
 
+def task_content_inventory() -> None:
+    """Run content inventory and rights quarantine check."""
+    clear_screen()
+    print_banner()
+    print(f"{BOLD}{CYAN}             📦  BiGuess Content Inventory & Rights Gate               {RESET}\n")
+    print(f"  {CYAN}[1]{RESET} Run complete inventory check and reconciliation")
+    print(f"  {CYAN}[2]{RESET} Check export reproducibility (byte-for-byte)")
+    print(f"  {CYAN}[3]{RESET} Export JSON and Markdown reports (with fixtures)")
+    print(f"  {CYAN}[4]{RESET} Test public test export quarantine")
+    print(f"  {CYAN}[0]{RESET} Back to Main Menu\n")
+
+    choice = prompt_input("Select an option", "1")
+    if choice == "1":
+        run_script("content_inventory.py", ["--check"])
+    elif choice == "2":
+        run_script("content_inventory.py", ["--check-reproducible"])
+    elif choice == "3":
+        run_script("content_inventory.py", [
+            "--output", "docs/migration/content_inventory.json",
+            "--markdown", "docs/migration/CONTENT_INVENTORY_AND_RIGHTS.md",
+            "--include-fixtures",
+            "--check",
+        ])
+    elif choice == "4":
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            run_script("content_inventory.py", ["--include-fixtures", "--export-public-test", td])
+
+
 def task_release_pipeline() -> None:
     """Task 8: Full Release Pipeline."""
     print(f"\n{BOLD}{BLUE}▶ Release Pipeline{RESET}")
@@ -544,6 +573,9 @@ TASK_MAP = {
     "version": task_version_management,
     "ver": task_version_management,
     "bump": task_version_management,
+    "11": task_content_inventory,
+    "inventory": task_content_inventory,
+    "quarantine": task_content_inventory,
 }
 
 
@@ -573,7 +605,7 @@ def main() -> None:
             print(f"{BOLD}Usage:{RESET}")
             print("  ./scripts/run.sh [task_name]")
             print("\nAvailable tasks:")
-            print("  topics, convert, manifest, audit, normalize, stats, build, clean, release, version")
+            print("  topics, convert, manifest, audit, normalize, stats, inventory, build, clean, release, version")
             print("Or run without arguments for the full interactive menu.")
             return
         run_single_task(arg)
@@ -594,6 +626,7 @@ def main() -> None:
         print(f"  {CYAN}[8]{RESET} 🧹  Clean Cache & Temporary Files")
         print(f"  {MAGENTA}[9]{RESET} 📦  Release Pipeline (build → publish → push)")
         print(f"  {MAGENTA}[10]{RESET} 🏷️   Version Management (bump, sync, view)")
+        print(f"  {CYAN}[11]{RESET} 📦  Content Inventory & Rights Quarantine Gate")
         print(f"  {CYAN}[0]{RESET} 🚪  Exit\n")
 
         choice = prompt_input("Enter selection", "1", is_main_menu=True)

@@ -32,6 +32,7 @@ else
             audit|check|\
             normalize|clean-names|\
             stats|analytics|\
+            inventory|quarantine|\
             build|\
             clean|\
             release|publish|\
@@ -47,7 +48,7 @@ else
             *)
                 echo "Unknown command: $TASK"
                 echo "Available shortcuts:"
-                echo "  topics, convert, manifest, audit, normalize, stats, build, clean, release, patch, doctor, check-update, version"
+                echo "  topics, convert, manifest, audit, normalize, stats, inventory, build, clean, release, patch, doctor, check-update, version"
                 echo "Or run without arguments for interactive menu: ./scripts/run.sh"
                 exit 1
                 ;;
@@ -72,6 +73,9 @@ else
                 ;;
             stats|analytics)
                 python3 "$SCRIPT_DIR/character_stats.py" "$@"
+                ;;
+            inventory|quarantine)
+                python3 "$SCRIPT_DIR/content_inventory.py" "$@"
                 ;;
             build)
                 python3 "$SCRIPT_DIR/build_app.py" "$@"

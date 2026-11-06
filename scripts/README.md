@@ -174,6 +174,25 @@ python3 scripts/build_app.py apk --clean
 
 ---
 
+### 8. `content_inventory.py` - Content Inventory & Rights Quarantine Engine
+Scans Topic and Pack assets, calculates SHA-256 hashes, generates deterministic UUIDv5 stable entity IDs, detects duplicate candidates, verifies technical importability, enforces rights quarantine (separating technical importability from permission to publish), and reconciles disk files against baseline inventory.
+
+```bash
+# Verify reconciliation and image integrity
+python3 scripts/content_inventory.py --check
+
+# Test byte-for-byte export reproducibility
+python3 scripts/content_inventory.py --check-reproducible
+
+# Export JSON inventory and Markdown reconciliation report
+python3 scripts/content_inventory.py --output docs/migration/content_inventory.json --markdown docs/migration/CONTENT_INVENTORY_AND_RIGHTS.md --include-fixtures
+
+# Verify rights quarantine by exporting only cleared assets for public test publishing
+python3 scripts/content_inventory.py --include-fixtures --export-public-test /tmp/public_test_pack
+```
+
+---
+
 ## 📦 Requirements
 
 - **Python**: Python 3.8+
