@@ -23,8 +23,6 @@ MAGENTA = "\033[95m"
 BOLD = "\033[1m"
 DIM = "\033[2m"
 RESET = "\033[0m"
-if not sys.stdout.isatty() or os.environ.get("NO_COLOR"):
-    GREEN = YELLOW = RED = BLUE = CYAN = MAGENTA = BOLD = DIM = RESET = ""
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPTS_DIR.parent
@@ -55,8 +53,10 @@ def clear_screen() -> None:
 
 def print_banner() -> None:
     """Print BiGuess header banner."""
-    print(f"{BOLD}{CYAN}BiGuess developer tools{RESET}")
-    print("Check the app, manage content, or prepare a build.\n")
+    print(f"{BOLD}{CYAN}╔══════════════════════════════════════════════════════════════╗{RESET}")
+    print(f"{BOLD}{CYAN}║                 🎮  BIGUESS GAME TOOLBOX                     ║{RESET}")
+    print(f"{BOLD}{CYAN}║             Developer Utilities & Asset Automation           ║{RESET}")
+    print(f"{BOLD}{CYAN}╚══════════════════════════════════════════════════════════════╝{RESET}\n")
 
 
 def read_line_with_esc(prompt_text: str) -> str:
@@ -659,12 +659,19 @@ TOOL_GROUPS = [
 
 
 def print_tool_tree(show_files: bool = False) -> None:
+    icons = {
+        "baseline": "✅", "audit": "🔍", "inventory": "📦", "offline": "📴",
+        "topics": "📂", "manifest": "📋", "convert": "🖼️", "normalize": "✏️",
+        "stats": "📊", "export": "📤", "build": "🚀", "version": "🏷️",
+        "clean": "🧹", "release": "📦",
+    }
     for group, entries in TOOL_GROUPS:
-        print(f"\n{BOLD}{group}{RESET}")
+        print(f"\n{BOLD}{BLUE}▶ {group}{RESET}")
         for number, shortcut, description, script in entries:
-            suffix = f" ({script})" if show_files else ""
-            print(f"  [{number:>2}] {shortcut:<10} {description}{suffix}")
-    print("\n  [ 0] Exit\n")
+            color = MAGENTA if shortcut in ("topics", "release", "version") else CYAN
+            suffix = f" {DIM}({script}){RESET}" if show_files else ""
+            print(f"  {color}[{number:>2}]{RESET} {icons[shortcut]}  {shortcut:<10} {description}{suffix}")
+    print(f"\n  {CYAN}[ 0]{RESET} 🚪  Exit\n")
 
 
 def run_single_task(task_key: str) -> int:
@@ -713,7 +720,7 @@ def main() -> int:
         choice = prompt_input("Enter selection", "1", is_main_menu=True)
 
         if choice == "0" or choice.lower() in ("q", "exit", "back", "cancel"):
-            print("Goodbye.")
+            print(f"\n{GREEN}👋 Goodbye! Happy coding.{RESET}\n")
             break
 
         task_func = TASK_MAP.get(choice.lower())
