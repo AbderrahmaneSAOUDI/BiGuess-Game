@@ -1,0 +1,82 @@
+test_command_extraction_understands_current_and_legacy_shapes (test_hooks.HookTests.test_command_extraction_understands_current_and_legacy_shapes) ... ok
+test_legacy_safe_command_retains_allow_and_native_takes_precedence (test_hooks.HookTests.test_legacy_safe_command_retains_allow_and_native_takes_precedence) ... ok
+test_missing_and_malformed_events_are_json_noops (test_hooks.HookTests.test_missing_and_malformed_events_are_json_noops) ... ok
+test_nested_cwd_and_cd_cannot_delete_source_roots (test_hooks.HookTests.test_nested_cwd_and_cd_cannot_delete_source_roots) ... ok
+test_obvious_destructive_operations_are_denied (test_hooks.HookTests.test_obvious_destructive_operations_are_denied) ... ok
+test_one_line_event_does_not_wait_for_stdin_eof (test_hooks.HookTests.test_one_line_event_does_not_wait_for_stdin_eof) ... ok
+test_ordinary_commands_and_quoted_text_remain_allowed (test_hooks.HookTests.test_ordinary_commands_and_quoted_text_remain_allowed) ... ok
+test_session_and_stop_only_report_context_without_source_mutation (test_hooks.HookTests.test_session_and_stop_only_report_context_without_source_mutation) ... ok
+test_version_check_accepts_synced_triad_comments_and_both_dart_quotes (test_hooks.HookTests.test_version_check_accepts_synced_triad_comments_and_both_dart_quotes) ... ok
+test_version_check_rejects_ambiguous_or_malformed_versions (test_hooks.HookTests.test_version_check_rejects_ambiguous_or_malformed_versions) ... ok
+test_version_check_rejects_malformed_manifests_and_build_types (test_hooks.HookTests.test_version_check_rejects_malformed_manifests_and_build_types) ... ok
+test_version_check_rejects_missing_or_duplicate_constants (test_hooks.HookTests.test_version_check_rejects_missing_or_duplicate_constants) ... ok
+test_version_check_reports_each_drift_without_modifying_files (test_hooks.HookTests.test_version_check_reports_each_drift_without_modifying_files) ... ok
+test_active_tree_includes_agent_and_backend_but_excludes_archives (test_sidecars.SidecarTests.test_active_tree_includes_agent_and_backend_but_excludes_archives) ... ok
+test_once_works_from_other_directory_and_cache_does_not_feed_itself (test_sidecars.SidecarTests.test_once_works_from_other_directory_and_cache_does_not_feed_itself) ... ok
+test_oversized_file_is_reported_without_indexing_content (test_sidecars.SidecarTests.test_oversized_file_is_reported_without_indexing_content) ... ok
+test_process_locks_prevent_duplicate_sidecars (test_sidecars.SidecarTests.test_process_locks_prevent_duplicate_sidecars) ... ok
+test_snapshot_detects_add_modify_delete_for_both_sidecars (test_sidecars.SidecarTests.test_snapshot_detects_add_modify_delete_for_both_sidecars) ... ok
+test_symbols_include_dart_modifiers_and_multiline_providers (test_sidecars.SidecarTests.test_symbols_include_dart_modifiers_and_multiline_providers) ... ok
+test_symlinked_sources_are_not_read (test_sidecars.SidecarTests.test_symlinked_sources_are_not_read) ... ok
+test_test_runner_forwards_targets_cwd_and_failure (test_sidecars.SidecarTests.test_test_runner_forwards_targets_cwd_and_failure) ... ok
+test_test_runner_timeout_stops_child (test_sidecars.SidecarTests.test_test_runner_timeout_stops_child) ... ok
+test_algiers_date_and_deterministic_override (test_version_git.VersionGitTests.test_algiers_date_and_deterministic_override) ... ok
+test_clean_selected_scope_is_a_true_noop (test_version_git.VersionGitTests.test_clean_selected_scope_is_a_true_noop) ... ok
+test_concurrent_triad_edit_before_mutation_is_preserved (test_version_git.VersionGitTests.test_concurrent_triad_edit_before_mutation_is_preserved) ... ok
+test_containing_directory_authorizes_constants_content (test_version_git.VersionGitTests.test_containing_directory_authorizes_constants_content) ... ok
+test_dry_run_writes_nothing (test_version_git.VersionGitTests.test_dry_run_writes_nothing) ... ok
+test_explicit_all_includes_full_triad_worktree_content (test_version_git.VersionGitTests.test_explicit_all_includes_full_triad_worktree_content) ... ok
+test_explicit_triad_file_includes_authorized_dependency_changes (test_version_git.VersionGitTests.test_explicit_triad_file_includes_authorized_dependency_changes) ... ok
+test_explicit_version_only_change_can_be_committed (test_version_git.VersionGitTests.test_explicit_version_only_change_can_be_committed) ... ok
+test_external_commit_after_baseline_capture_is_detected (test_version_git.VersionGitTests.test_external_commit_after_baseline_capture_is_detected) ... ok
+test_final_symlink_outside_repo_can_be_staged_but_parent_escape_is_refused (test_version_git.VersionGitTests.test_final_symlink_outside_repo_can_be_staged_but_parent_escape_is_refused) ... ok
+test_helper_applies_same_plan_without_replanning (test_version_git.VersionGitTests.test_helper_applies_same_plan_without_replanning) ... ok
+test_invalid_triad_causes_no_partial_writes (test_version_git.VersionGitTests.test_invalid_triad_causes_no_partial_writes) ... ok
+test_leading_zero_versions_are_rejected (test_version_git.VersionGitTests.test_leading_zero_versions_are_rejected) ... ok
+test_literal_metacharacters_never_expand_task_scope (test_version_git.VersionGitTests.test_literal_metacharacters_never_expand_task_scope) ... ok
+test_malformed_json_version_type_is_a_validation_failure (test_version_git.VersionGitTests.test_malformed_json_version_type_is_a_validation_failure) ... ok
+test_preserves_higher_prepared_version_build_and_metadata (test_version_git.VersionGitTests.test_preserves_higher_prepared_version_build_and_metadata) ... ok
+test_scope_required_and_escape_refused (test_version_git.VersionGitTests.test_scope_required_and_escape_refused) ... ok
+test_scoped_commit_preserves_other_staged_work_and_shared_file_edits (test_version_git.VersionGitTests.test_scoped_commit_preserves_other_staged_work_and_shared_file_edits) ... ok
+test_selected_staged_paths_refused_before_any_write (test_version_git.VersionGitTests.test_selected_staged_paths_refused_before_any_write) ... ok
+test_selected_symlink_commits_link_without_selecting_target (test_version_git.VersionGitTests.test_selected_symlink_commits_link_without_selecting_target) ... ok
+test_sync_is_idempotent_and_repairs_stale_constants (test_version_git.VersionGitTests.test_sync_is_idempotent_and_repairs_stale_constants) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 6.410s
+
+OK
+{"dry_run": false, "noop": true, "paths": [".agents"], "version": "1.1.4", "reason": "No task-owned changes"}
+[master 08fa0a4] 1.2.5 - feat(settings): update constant
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+{
+  "dry_run": true,
+  "paths": [
+    ".agents"
+  ],
+  "version_fields": [
+    "pubspec.yaml",
+    "version.json",
+    "lib/core/constants/app_constants.dart"
+  ],
+  "version": "1.2.5",
+  "commit": "1.2.5 - chore: preview",
+  "push": true
+}
+[master 2adcf1c] 1.2.5 - chore: update selected project
+ 4 files changed, 8 insertions(+), 8 deletions(-)
+[master a1e4ccc] 1.2.5 - chore(deps): update dependency
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+[master 6403f35] 1.2.8 - chore: bump version
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+[master df8c420] 1.2.5 - chore: approve plan
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+[master c2118e8] 1.2.5 - chore: add literal names
+ 5 files changed, 6 insertions(+), 4 deletions(-)
+ create mode 100644 task*.md
+ create mode 100644 task[1].md
+[master 2764c49] 1.2.5 - chore(agents): update guidance
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+[master 0392105] 1.2.5 - chore: add link
+ 4 files changed, 5 insertions(+), 4 deletions(-)
+ create mode 120000 link.md

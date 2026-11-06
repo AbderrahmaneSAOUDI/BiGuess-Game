@@ -1,0 +1,42 @@
+[✓] Flutter (Channel stable, 3.47.9, on Fedora Linux 46 (Workstation Edition Prerelease) 7.3.0-0.rc7.261014g4056b3c9d3c9.60.fc46.x86_64, locale en_US.UTF-8) [95ms]
+    • Flutter version 3.47.9 on channel stable at /home/saoudi26/flutter
+    • Upstream repository https://github.com/flutter/flutter.git
+    • Framework revision c197ca5199 (8 days ago), 2026-10-29 10:10:20 -0400
+    • Engine revision 89c39edfdf
+    • Dart version 3.13.7
+    • DevTools version 2.60.0
+    • Feature flags: enable-web, enable-linux-desktop, enable-macos-desktop, enable-windows-desktop, enable-android, enable-ios, cli-animations, enable-native-assets, enable-record-use, enable-swift-package-manager, omit-legacy-version-file, enable-lldb-debugging, enable-uiscene-migration
+
+[☠] Android toolchain - develop for Android devices (the doctor check crashed)
+    ✗ Due to an error, the doctor check did not complete. If the error message below is not helpful, please let us know about this issue at https://github.com/flutter/flutter/issues.
+    ✗ Exception: Android toolchain - develop for Android devices exceeded maximum allowed duration of 0:04:30.000000
+    • 
+
+[✓] Chrome - develop for the web [24ms]
+    • Chrome at google-chrome
+
+[✓] Linux toolchain - develop for Linux desktop [1,270ms]
+    • clang version 23.1.3 (Fedora 23.1.3-1.fc46)
+    • cmake version 4.3.0
+    • ninja version 1.13.2
+    • pkg-config version 2.5.1
+    • OpenGL core renderer: Mesa Intel(R) UHD Graphics 630 (CFL GT2)
+    • OpenGL core version: 4.6 (Core Profile) Mesa 26.2.4
+    • OpenGL core shading language version: 4.60
+    • OpenGL ES renderer: Mesa Intel(R) UHD Graphics 630 (CFL GT2)
+    • OpenGL ES version: OpenGL ES 3.2 Mesa 26.2.4
+    • OpenGL ES shading language version: OpenGL ES GLSL ES 3.20
+    • GL_EXT_framebuffer_blit: yes
+    • GL_EXT_texture_format_BGRA8888: yes
+
+[✓] Connected device (3 available) [425ms]
+    • Redmi Note 8 Pro (mobile) • 79ofdilbz995kbir • android-arm64  • Android 11 (API 30)
+    • Linux (desktop)           • linux            • linux-x64      • Fedora Linux 46 (Workstation Edition Prerelease) 7.3.0-0.rc7.261014g4056b3c9d3c9.60.fc46.x86_64
+    • Chrome (web)              • chrome           • web-javascript • Google Chrome 155.0.8059.84
+
+[☠] Network resources (the doctor check crashed)
+    ✗ Due to an error, the doctor check did not complete. If the error message below is not helpful, please let us know about this issue at https://github.com/flutter/flutter/issues.
+    ✗ Exception: Network resources exceeded maximum allowed duration of 0:04:30.000000
+    • 
+
+! Doctor found issues in 2 categories.

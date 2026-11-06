@@ -1,0 +1,11 @@
+853f50687084228399062122f926753e6e955824
+ M .github/workflows/ci.yml
+ M scripts/baseline_check.sh
+?? docs/migration/evidence/
+2026-11-06T09:28:56Z
+Flutter 3.47.9 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision c197ca5199 (8 days ago) • 2026-10-29 10:10:20 -0400
+Engine • hash 9e025265bef30b838c0c1b68cad19decf97048f2 (revision 89c39edfdf) (9 days ago) • 2026-10-27 19:51:20.000Z
+Tools • Dart 3.13.7 • DevTools 2.60.0
+Python 3.15.0
+Pillow 12.3.0

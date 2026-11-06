@@ -1,0 +1,19 @@
+
+[1m[96m══════════════════════════════════════════════════════════════[0m
+[1m[96m         📊  BiGuess Character Analytics & Stats               [0m
+[1m[96m══════════════════════════════════════════════════════════════[0m
+
+[1mCategory                 |  Count |  Avg Size |  Min / Max Name Length[0m
+──────────────────────────────────────────────────────────────────────
+[1mAnime / Attack on Titan [0m |    131 |    7.7 KB | 3 ('Daz') / 20 ('Darius Bae...')
+[1mAnime / Black Clover    [0m |     67 |    8.5 KB | 4 ('Asta') / 26 ('Lemiel Sil...')
+[1mAnime / Demon Slayer    [0m |     43 |    9.3 KB | 3 ('Rui') / 47 ('Kiyo Terau...')
+[1mAnime / Hunter X Hunter [0m |    135 |    6.6 KB | 3 ('Gel') / 18 ('Leorio Par...')
+[1mAnime / Naruto          [0m |     80 |   13.6 KB | 2 ('Ao') / 28 ('Hashirama ...')
+[1mAnime / One Piece       [0m |    466 |   10.7 KB | 3 ('Gin') / 23 ('Trafalgar ...')
+[1mGeography / Flags       [0m |    252 |   11.0 KB | 4 ('Chad') / 36 ('United Sta...')
+──────────────────────────────────────────────────────────────────────
+[1mTOTAL                    |   1174 |   10.0 KB | 11.41 MB total[0m
+
+[1m[96m══════════════════════════════════════════════════════════════[0m
+
