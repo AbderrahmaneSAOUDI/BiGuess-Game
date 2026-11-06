@@ -12,7 +12,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from version_increment import TRIAD, get_project_root, plan_triad, pubspec_version, rewrite_triad, sync_triad
+from version_increment import TRIAD, apply_triad_plan, get_project_root, plan_triad, pubspec_version, rewrite_triad
 
 
 def run(root: Path, *args: str, env: dict[str, str] | None = None, input: str | None = None) -> str:
@@ -20,6 +20,7 @@ def run(root: Path, *args: str, env: dict[str, str] | None = None, input: str | 
     effective.pop("GIT_INDEX_FILE", None)
     if env:
         effective.update(env)
+    effective["GIT_LITERAL_PATHSPECS"] = "1"
     return subprocess.run(["git", "-C", str(root), *args], input=input, env=effective,
                           capture_output=True, text=True, timeout=120, check=True).stdout
 
@@ -30,10 +31,13 @@ def checked_paths(root: Path, paths: list[str]) -> list[str]:
         candidate = Path(name)
         if name.startswith(":") or ".." in candidate.parts:
             raise ValueError(f"Unsafe path: {name}")
-        resolved = (root / candidate).resolve()
-        if not resolved.is_relative_to(root):
+        lexical = root / candidate
+        if not lexical.is_relative_to(root):
             raise ValueError(f"Path outside repository: {name}")
-        result.append(resolved.relative_to(root).as_posix())
+        # Preserve the final name: Git stages a symlink itself, not its target.
+        if lexical != root and not lexical.parent.resolve().is_relative_to(root):
+            raise ValueError(f"Parent path escapes repository through a symlink: {name}")
+        result.append(lexical.relative_to(root).as_posix())
     return result
 
 
@@ -46,18 +50,24 @@ def commit_selected(root: Path, summary: str, paths: list[str], *, all_paths: bo
     branch = run(root, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
     if not branch:
         raise ValueError("Cannot commit on detached HEAD")
+    original_head = run(root, "rev-parse", "HEAD").strip()
     # Selected paths and the version fields must start unstaged. Other staged work is retained.
     staged = run(root, "diff", "--cached", "--name-only", "-z", "--", *selected, *TRIAD)
     if staged:
         raise ValueError("Selected paths or version files already have staged changes; preserve/reconcile them first")
-    changed = run(root, "diff", "--name-only", "--no-renames", "HEAD", "-z", "--", *selected)
+    changed = run(root, "diff", "--name-only", "--no-renames", original_head, "-z", "--", *selected)
     untracked = run(root, "ls-files", "--others", "--exclude-standard", "-z", "--", *selected)
     if not changed and not untracked:
         semver = ".".join(map(str, pubspec_version((root / TRIAD[0]).read_text())[:3]))
         print(json.dumps({"dry_run": dry_run, "noop": True, "paths": selected,
                           "version": semver, "reason": "No task-owned changes"}))
         return semver
-    version, planned = plan_triad(root, today)
+    sources = {name: (root / name).read_text(encoding="utf-8") for name in TRIAD}
+    version, planned = plan_triad(root, today, baseline_ref=original_head)
+    if run(root, "rev-parse", "HEAD").strip() != original_head:
+        raise ValueError("HEAD changed while planning the commit; retry from the new baseline")
+    if any((root / name).read_text(encoding="utf-8") != sources[name] for name in TRIAD):
+        raise ValueError("Version files changed while planning the commit; retry")
     semver = ".".join(map(str, version[:3]))
     summary = re.sub(r"^\d+\.\d+\.\d+\s*[-:]\s*", "", summary.strip())
     if not summary or "\n" in summary:
@@ -67,8 +77,7 @@ def commit_selected(root: Path, summary: str, paths: list[str], *, all_paths: bo
         print(json.dumps({"dry_run": True, "paths": selected, "version_fields": list(TRIAD),
                           "version": semver, "commit": message, "push": push}, indent=2))
         return semver
-    original_head = run(root, "rev-parse", "HEAD").strip()
-    original_triad = {name: run(root, "show", f"HEAD:{name}") for name in TRIAD}
+    original_triad = {name: run(root, "show", f"{original_head}:{name}") for name in TRIAD}
     version_blobs = rewrite_triad(original_triad, version)
     for name in TRIAD:
         if any(path == "." or name == path or name.startswith(path.rstrip("/") + "/")
@@ -78,12 +87,12 @@ def commit_selected(root: Path, summary: str, paths: list[str], *, all_paths: bo
             version_blobs[name] = planned[name]
     with tempfile.TemporaryDirectory(prefix="biguess-index-") as temporary:
         environment = {"GIT_INDEX_FILE": str(Path(temporary) / "index")}
-        run(root, "read-tree", "HEAD", env=environment)
+        run(root, "read-tree", original_head, env=environment)
         run(root, "add", "-A", "--", *selected, env=environment)
         # Install either explicit task content or implicit version-only entries.
         for name in TRIAD:
             blob = run(root, "hash-object", "-w", "--stdin", input=version_blobs[name]).strip()
-            mode = run(root, "ls-tree", "HEAD", "--", name).split()[0]
+            mode = run(root, "ls-tree", original_head, "--", name).split()[0]
             run(root, "update-index", "--add", "--cacheinfo", f"{mode},{blob},{name}", env=environment)
         if run(root, "rev-parse", "HEAD").strip() != original_head:
             raise ValueError("HEAD changed while preparing the commit; retry from the new baseline")
@@ -91,7 +100,9 @@ def commit_selected(root: Path, summary: str, paths: list[str], *, all_paths: bo
         if run(root, "diff", "--cached", "--name-only", "-z", "--", *selected, *TRIAD):
             raise ValueError("Selected staging changed while preparing the commit")
         # Sync worktree version fields only after all plans/index entries validate.
-        sync_triad(root, today)
+        apply_triad_plan(root, planned, sources)
+        if run(root, "rev-parse", "HEAD").strip() != original_head:
+            raise ValueError("HEAD changed before committing; version files were synchronized but no commit was made")
         output = run(root, "commit", "-m", message, env=environment)
         print(output.strip())
     # Adopt the new commit for selected entries only; unrelated staged blobs remain intact.

@@ -46,8 +46,8 @@ def pubspec_version(text: str) -> tuple[int, int, int, int]:
     return parse_version(matches[0].group(2))
 
 
-def get_head_version(root: Path) -> tuple[int, int, int, int]:
-    return pubspec_version(git(root, "show", "HEAD:pubspec.yaml"))
+def get_head_version(root: Path, baseline_ref: str = "HEAD") -> tuple[int, int, int, int]:
+    return pubspec_version(git(root, "show", f"{baseline_ref}:pubspec.yaml"))
 
 
 def get_expected_minor(today: dt.date | None = None) -> int:
@@ -87,10 +87,10 @@ def rewrite_triad(texts: dict[str, str], version: tuple[int, int, int, int]) -> 
     return result
 
 
-def plan_triad(root: Path, today: dt.date | None = None) -> tuple[tuple[int, int, int, int], dict[str, str]]:
+def plan_triad(root: Path, today: dt.date | None = None, *, baseline_ref: str = "HEAD") -> tuple[tuple[int, int, int, int], dict[str, str]]:
     texts = {name: (root / name).read_text(encoding="utf-8") for name in TRIAD}
     current = pubspec_version(texts[TRIAD[0]])
-    head = get_head_version(root)
+    head = get_head_version(root, baseline_ref)
     candidate = (head[0], max(head[1], get_expected_minor(today)), head[2] + 1)
     # Keep an explicitly prepared higher version/build; reruns remain HEAD+1.
     semantic = max(candidate, current[:3])
@@ -98,8 +98,13 @@ def plan_triad(root: Path, today: dt.date | None = None) -> tuple[tuple[int, int
     return target, rewrite_triad(texts, target)
 
 
-def sync_triad(root: Path, today: dt.date | None = None) -> tuple[bool, str]:
-    version, planned = plan_triad(root, today)
+def apply_triad_plan(root: Path, planned: dict[str, str], expected_sources: dict[str, str]) -> None:
+    """Write the approved plan only if all source files still match its snapshot."""
+    def check_sources() -> None:
+        if any((root / name).read_text(encoding="utf-8") != expected_sources[name] for name in TRIAD):
+            raise ValueError("Version files changed while preparing the update; retry")
+
+    check_sources()
     pending: list[tuple[Path, Path]] = []
     try:
         # Validate and prepare every replacement before touching any source file.
@@ -113,11 +118,21 @@ def sync_triad(root: Path, today: dt.date | None = None) -> tuple[bool, str]:
             with os.fdopen(fd, "w", encoding="utf-8") as stream:
                 stream.write(content)
             temporary_path.chmod(destination.stat().st_mode & 0o777)
+        check_sources()
         for temporary, destination in pending:
             temporary.replace(destination)
     finally:
         for temporary, _ in pending:
             temporary.unlink(missing_ok=True)
+
+
+def sync_triad(root: Path, today: dt.date | None = None) -> tuple[bool, str]:
+    original_head = git(root, "rev-parse", "HEAD").strip()
+    sources = {name: (root / name).read_text(encoding="utf-8") for name in TRIAD}
+    version, planned = plan_triad(root, today, baseline_ref=original_head)
+    if git(root, "rev-parse", "HEAD").strip() != original_head:
+        raise ValueError("HEAD changed while preparing the version update; retry")
+    apply_triad_plan(root, planned, sources)
     return True, ".".join(map(str, version[:3]))
 
 
