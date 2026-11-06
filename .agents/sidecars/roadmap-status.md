@@ -26,3 +26,14 @@
 - ⬜ Additional custom topic packs (Gaming, Movies)
 - ⬜ Sound effects & tactile haptic feedback toggles
 - ⬜ Accessibility & high-contrast mode polish
+
+---
+
+## Architecture Alignment Roadmap (`TODO.md`)
+
+### 🔄 Phase A: Freeze, verify, and make migration safe — IN PROGRESS
+- [x] **T01 — GATE: Freeze the behavioral baseline** (`docs/migration/BASELINE.md`)
+- [x] **T02 — GATE: Resolve implementation contracts and blueprint ambiguities** (`docs/migration/DECISIONS.md`)
+- [ ] **T03 — Add continuous integration and fast verification** *(Next)*
+- [ ] **T04 — GATE: Repair Android release safety without shipping**
+- [ ] **T05 — GATE: Make a reversible content inventory and rights quarantine**

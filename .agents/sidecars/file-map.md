@@ -14,6 +14,12 @@
 │   ├── fonts/                        # Google Sans font family
 │   ├── images/                       # Character cards (Anime, Geography)
 │   └── logos/                        # BiGuess brand logos and icons
+├── backend/                          # Backend API & Cloudflare D1/Workers
+│   └── biguess-api/                  # Worker service, migrations, and wrangler config
+├── docs/                             # Project documentation
+│   └── migration/                    # Migration baseline and authoritative decisions
+│       ├── BASELINE.md               # Frozen behavioral baseline & test matrix (T01)
+│       └── DECISIONS.md              # Authoritative decisions & contracts (T02)
 ├── lib/
 │   ├── core/
 │   │   ├── constants/app_constants.dart # Dynamic theming, topic configs, defaultVersion
