@@ -583,33 +583,24 @@ def task_version_management() -> None:
 # =============================================================================
 
 TASK_MAP = {
-    "1": task_manage_topics,
     "topics": task_manage_topics,
     "topic": task_manage_topics,
     "packs": task_manage_topics,
     "pack": task_manage_topics,
     "crud": task_manage_topics,
-    "2": task_convert_images,
     "convert": task_convert_images,
     "optimize": task_convert_images,
     "webp": task_convert_images,
-    "3": task_generate_manifest,
     "manifest": task_generate_manifest,
     "sync": task_generate_manifest,
-    "4": task_audit_assets,
     "audit": task_audit_assets,
     "check": task_audit_assets,
-    "5": task_normalize_filenames,
     "normalize": task_normalize_filenames,
     "clean-names": task_normalize_filenames,
-    "6": task_character_stats,
     "stats": task_character_stats,
     "analytics": task_character_stats,
-    "7": task_build_app,
     "build": task_build_app,
-    "8": task_clean_project,
     "clean": task_clean_project,
-    "9": task_release_pipeline,
     "release": task_release_pipeline,
     "publish": task_release_pipeline,
     "patch": task_shorebird_patch,
@@ -618,44 +609,46 @@ TASK_MAP = {
     "check-update": lambda: run_script("release.py", ["--check-update"]),
     "verify-update": lambda: run_script("release.py", ["--check-update"]),
     "status": lambda: run_script("release.py", ["--check-update"]),
-    "10": task_version_management,
     "version": task_version_management,
     "ver": task_version_management,
     "bump": task_version_management,
-    "11": task_content_inventory,
     "inventory": task_content_inventory,
     "quarantine": task_content_inventory,
-    "12": task_baseline,
     "baseline": task_baseline,
-    "13": task_export_pack,
     "export": task_export_pack,
-    "14": task_offline_gate,
     "offline": task_offline_gate,
 }
 
 
 TOOL_GROUPS = [
     ("Check the app", [
-        ("12", "baseline", "Run all checks and save logs", "baseline_check.sh"),
-        ("4", "audit", "Find missing or damaged images", "audit_assets.py"),
-        ("11", "inventory", "Count content and check publication rights", "content_inventory.py"),
-        ("14", "offline", "Test offline play across an app restart", "check_offline_gameplay.py"),
+        ("1", "baseline", "Run all checks and save logs", "baseline_check.sh"),
+        ("2", "audit", "Find missing or damaged images", "audit_assets.py"),
+        ("3", "inventory", "Count content and check publication rights", "content_inventory.py"),
+        ("4", "offline", "Test offline play across an app restart", "check_offline_gameplay.py"),
     ]),
     ("Manage content", [
-        ("1", "topics", "Add, rename, or remove Topics and Packs", "manage_topics.py"),
-        ("3", "manifest", "Update the bundled image list", "generate_manifest.py"),
-        ("2", "convert", "Resize and compress images", "convert_and_optimize.py"),
-        ("5", "normalize", "Preview or clean image filenames", "normalize_filenames.py"),
-        ("6", "stats", "Browse names, counts, and possible duplicates", "character_stats.py"),
-        ("13", "export", "Create an offline test Pack", "export_pack.py"),
+        ("5", "topics", "Add, rename, or remove Topics and Packs", "manage_topics.py"),
+        ("6", "manifest", "Update the bundled image list", "generate_manifest.py"),
+        ("7", "convert", "Resize and compress images", "convert_and_optimize.py"),
+        ("8", "normalize", "Preview or clean image filenames", "normalize_filenames.py"),
+        ("9", "stats", "Browse names, counts, and possible duplicates", "character_stats.py"),
+        ("10", "export", "Create an offline test Pack", "export_pack.py"),
     ]),
     ("Build and maintain", [
-        ("7", "build", "Build APKs, an App Bundle, or the web app", "build_app.py"),
-        ("10", "version", "View or synchronize version files", "release.py --version-only"),
-        ("8", "clean", "Remove generated caches and temporary files", "menu.py clean"),
-        ("9", "release", "Publish a base release or OTA patch", "release.py"),
+        ("11", "build", "Build APKs, an App Bundle, or the web app", "build_app.py"),
+        ("12", "version", "View or synchronize version files", "release.py --version-only"),
+        ("13", "clean", "Remove generated caches and temporary files", "menu.py clean"),
+        ("14", "release", "Publish a base release or OTA patch", "release.py"),
     ]),
 ]
+
+# Numeric choices follow the displayed groups; named shortcuts stay stable.
+TASK_MAP.update({
+    number: TASK_MAP[shortcut]
+    for _, entries in TOOL_GROUPS
+    for number, shortcut, _, _ in entries
+})
 
 
 def print_tool_tree(show_files: bool = False) -> None:

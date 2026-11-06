@@ -8,7 +8,7 @@ Start here:
 ./scripts/run.sh --help   # Show commands
 ```
 
-The menu groups tools into **Check the app**, **Manage content**, and **Build and maintain**. Enter a number or tool name. Use `0`, Escape, or `back` to return. Every existing script path and shortcut remains available.
+The menu groups tools into **Check the app**, **Manage content**, and **Build and maintain**. Enter a number or tool name. Use `0`, Escape, or `back` to return. Menu numbers follow display order: **1–4** for checks, **5–10** for content, and **11–14** for build and maintenance. Script paths and named shortcuts stay the same.
 
 To run a command directly, add its arguments after the tool name. For example, `./scripts/run.sh manifest --check` checks the image list without opening a menu. Commands report a failed check with a nonzero exit code.
 

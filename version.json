@@ -1,6 +1,6 @@
 {
-  "latest_version": "1.528.85",
-  "build_number": 30,
+  "latest_version": "1.528.86",
+  "build_number": 31,
   "min_required_version": "0.30.0",
   "has_native_changes": true,
   "apk_urls": {
