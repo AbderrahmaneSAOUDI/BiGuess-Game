@@ -1,15 +1,25 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/models/game_state.dart';
+import '../domain/models/game_session.dart';
 import '../domain/use_cases/select_character_use_case.dart';
 import 'game_settings_controller.dart';
 import 'topic_pack_providers.dart';
 
 /// Notifier managing the active game round state and countdown transitions.
 /// Keyed by a record of (topic, pack) to support the new hierarchy.
-class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
-    ({String topic, String pack})> {
+class GameRoundNotifier
+    extends
+        AutoDisposeFamilyNotifier<
+          GameRoundState,
+          ({String topic, String pack})
+        > {
   Timer? _countdownTimer;
+  final GameContentSnapshot? configuredGame;
+  int? _frozenCountdownDuration;
+  CharacterAlgorithm? _frozenAlgorithm;
+
+  GameRoundNotifier({this.configuredGame});
 
   @override
   GameRoundState build(({String topic, String pack}) arg) {
@@ -17,13 +27,19 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
       _countdownTimer?.cancel();
     });
 
-    final assets = ref.watch(packAssetsProvider(arg));
+    final game = configuredGame;
+    final assets = game == null
+        ? ref.watch(packAssetsProvider(arg))
+        : List<String>.unmodifiable(
+            game.cards.map((card) => card.imageReference),
+          );
+    if (game != null) {
+      _frozenCountdownDuration = ref.read(countdownDurationProvider);
+      _frozenAlgorithm = ref.read(characterAlgorithmProvider);
+    }
 
     if (assets.isEmpty) {
-      return const GameRoundState(
-        isLoading: false,
-        noImagesFound: true,
-      );
+      return const GameRoundState(isLoading: false, noImagesFound: true);
     }
 
     return GameRoundState(
@@ -31,18 +47,20 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
       noImagesFound: false,
       allImages: assets,
       remainingImages: List<String>.from(assets),
+      configuration: game?.configuration,
     );
   }
 
   void startCountdown() {
-    if (state.isCountingDown) return;
+    if (state.isCountingDown || state.hasReachedRoundLimit) return;
     if (state.noImagesFound || state.allImages.isEmpty) {
       state = state.copyWith(showPicture: false);
       return;
     }
 
     _countdownTimer?.cancel();
-    final countdownDuration = ref.read(countdownDurationProvider);
+    final countdownDuration =
+        _frozenCountdownDuration ?? ref.read<int>(countdownDurationProvider);
 
     // Reset character name to hidden state when refreshing or drawing a card
     ref.read(showCharacterNameHintProvider.notifier).set(false);
@@ -67,7 +85,9 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
   }
 
   void _revealCharacter() {
-    final algorithm = ref.read(characterAlgorithmProvider);
+    final algorithm =
+        _frozenAlgorithm ??
+        ref.read<CharacterAlgorithm>(characterAlgorithmProvider);
     final selectUseCase = SelectCharacterUseCase();
 
     final result = selectUseCase(
@@ -83,6 +103,7 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
         currentImageAsset: result.assetPath,
         correctAnswer: result.characterName,
         remainingImages: result.updatedRemainingImages,
+        roundsPlayed: state.roundsPlayed + 1,
       );
     } else {
       state = state.copyWith(
@@ -94,6 +115,8 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
   }
 
   void reset() {
+    // Configured games must exit to Packs to configure another game.
+    if (configuredGame != null) return;
     _countdownTimer?.cancel();
     state = GameRoundState(
       isLoading: false,
@@ -106,5 +129,5 @@ class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
 
 final gameRoundProvider = NotifierProvider.autoDispose
     .family<GameRoundNotifier, GameRoundState, ({String topic, String pack})>(
-  GameRoundNotifier.new,
-);
+      GameRoundNotifier.new,
+    );

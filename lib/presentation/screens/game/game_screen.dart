@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/models/game_state.dart';
 import '../../../providers/game_controller.dart';
@@ -104,13 +105,15 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   radius: 1.2,
                   colors: isDark
                       ? [
-                          theme.colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.35),
+                          theme.colorScheme.surfaceContainerHighest.withValues(
+                            alpha: 0.35,
+                          ),
                           theme.scaffoldBackgroundColor,
                         ]
                       : [
-                          theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.25),
+                          theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.25,
+                          ),
                           theme.scaffoldBackgroundColor,
                         ],
                 ),
@@ -173,24 +176,35 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       ),
                     );
                   },
-                  child: (state.showPicture &&
+                  child:
+                      (state.showPicture &&
                           state.currentImageAsset != null &&
                           !state.noImagesFound)
                       ? Padding(
                           key: const ValueKey('refresh_action_button'),
-                          padding:
-                              const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+                          padding: const EdgeInsets.fromLTRB(
+                            16.0,
+                            8.0,
+                            16.0,
+                            16.0,
+                          ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              AnimatedActionButton(
-                                hasStarted: true,
-                                isEnabled:
-                                    !state.isLoading && !state.isCountingDown,
-                                onPressed: () => ref
-                                    .read(gameRoundProvider(_key).notifier)
-                                    .startCountdown(),
-                              ),
+                              if (state.hasReachedRoundLimit)
+                                FilledButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Return to Packs'),
+                                )
+                              else
+                                AnimatedActionButton(
+                                  hasStarted: true,
+                                  isEnabled:
+                                      !state.isLoading && !state.isCountingDown,
+                                  onPressed: () => ref
+                                      .read(gameRoundProvider(_key).notifier)
+                                      .startCountdown(),
+                                ),
                               const SizedBox(height: 10),
                               Padding(
                                 key: const ValueKey('image_disclaimer'),
@@ -206,24 +220,28 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                                       size: 13,
                                       color: isDark
                                           ? Colors.white.withValues(alpha: 0.45)
-                                          : Colors.black
-                                              .withValues(alpha: 0.45),
+                                          : Colors.black.withValues(
+                                              alpha: 0.45,
+                                            ),
                                     ),
                                     const SizedBox(width: 5),
                                     Flexible(
                                       child: Text(
                                         AppConstants.imageDisclaimer,
                                         key: const ValueKey(
-                                            'image_disclaimer_text'),
+                                          'image_disclaimer_text',
+                                        ),
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.w400,
                                           color: isDark
-                                              ? Colors.white
-                                                  .withValues(alpha: 0.45)
-                                              : Colors.black
-                                                  .withValues(alpha: 0.45),
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.45,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.45,
+                                                ),
                                           letterSpacing: 0.15,
                                         ),
                                       ),
@@ -267,10 +285,13 @@ class _GameCharacterDisplay extends ConsumerWidget {
     final double nameReservedHeight = hasName ? 60.0 : 0.0;
 
     final double availableHeight =
-        (constraints.maxHeight - nameReservedHeight - 6.0)
-            .clamp(0.0, double.infinity);
-    final double effectiveContainerWidth =
-        constraints.maxWidth > 0 ? constraints.maxWidth : 360.0;
+        (constraints.maxHeight - nameReservedHeight - 6.0).clamp(
+          0.0,
+          double.infinity,
+        );
+    final double effectiveContainerWidth = constraints.maxWidth > 0
+        ? constraints.maxWidth
+        : 360.0;
     final double availableWidth = effectiveContainerWidth * 0.80;
 
     return AnimatedCharacterCard(
@@ -291,10 +312,7 @@ class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String topicName;
   final String packName;
 
-  const _GameAppBar({
-    required this.topicName,
-    required this.packName,
-  });
+  const _GameAppBar({required this.topicName, required this.packName});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -364,10 +382,7 @@ class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 38,
             iconSize: 20,
             onPressed: () {
-              GameInfoDialog.show(
-                context,
-                initialTab: GameInfoTab.settings,
-              );
+              GameInfoDialog.show(context, initialTab: GameInfoTab.settings);
             },
           ),
         ),
@@ -379,10 +394,7 @@ class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 38,
             iconSize: 20,
             onPressed: () {
-              GameInfoDialog.show(
-                context,
-                initialTab: GameInfoTab.howToPlay,
-              );
+              GameInfoDialog.show(context, initialTab: GameInfoTab.howToPlay);
             },
           ),
         ),

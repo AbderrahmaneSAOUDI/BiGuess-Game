@@ -1,3 +1,5 @@
+import 'game_session_configuration.dart';
+
 /// Immutable snapshot of the current game round state
 class GameRoundState {
   final bool isLoading;
@@ -10,6 +12,11 @@ class GameRoundState {
   final bool noImagesFound;
   final List<String> allImages;
   final List<String> remainingImages;
+  final GameSessionConfiguration? configuration;
+  final int roundsPlayed;
+
+  bool get hasReachedRoundLimit =>
+      configuration != null && roundsPlayed >= configuration!.rounds;
 
   const GameRoundState({
     this.isLoading = true,
@@ -22,6 +29,8 @@ class GameRoundState {
     this.noImagesFound = false,
     this.allImages = const [],
     this.remainingImages = const [],
+    this.configuration,
+    this.roundsPlayed = 0,
   });
 
   GameRoundState copyWith({
@@ -35,6 +44,7 @@ class GameRoundState {
     bool? noImagesFound,
     List<String>? allImages,
     List<String>? remainingImages,
+    int? roundsPlayed,
     bool clearCurrentAsset = false,
     bool clearCorrectAnswer = false,
   }) {
@@ -46,12 +56,15 @@ class GameRoundState {
       currentImageAsset: clearCurrentAsset
           ? null
           : (currentImageAsset ?? this.currentImageAsset),
-      correctAnswer:
-          clearCorrectAnswer ? null : (correctAnswer ?? this.correctAnswer),
+      correctAnswer: clearCorrectAnswer
+          ? null
+          : (correctAnswer ?? this.correctAnswer),
       hasStarted: hasStarted ?? this.hasStarted,
       noImagesFound: noImagesFound ?? this.noImagesFound,
       allImages: allImages ?? this.allImages,
       remainingImages: remainingImages ?? this.remainingImages,
+      configuration: configuration,
+      roundsPlayed: roundsPlayed ?? this.roundsPlayed,
     );
   }
 }

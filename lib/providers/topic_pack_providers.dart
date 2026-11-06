@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/datasources/topic_pack_data_source.dart';
 import '../data/repositories/legacy_manifest_content_repository.dart';
 import '../domain/models/card.dart';
+import '../domain/models/game_setup.dart';
 import '../domain/models/pack.dart';
 import '../domain/repositories/content_repository.dart';
 
@@ -41,6 +42,28 @@ final packCardsProvider =
         }
       }
       return const [];
+    });
+
+/// Setup must use verified local content rather than cached catalog Cards.
+final gameSetupContentProvider =
+    Provider.family<GameSetupContent?, ({String topic, String pack})>((
+      ref,
+      key,
+    ) {
+      final repository = ref.watch(contentRepositoryProvider);
+      for (final topic in repository.getTopics()) {
+        if (topic.name != key.topic || topic.deleted) continue;
+        for (final pack in repository.getPacksForTopic(topic.id)) {
+          if (pack.name == key.pack && !pack.deleted) {
+            return GameSetupContent(
+              topic: topic,
+              pack: pack,
+              installedCards: repository.getInstalledCardsForPack(pack.id),
+            );
+          }
+        }
+      }
+      return null;
     });
 
 /// All available topic names

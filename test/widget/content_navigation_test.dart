@@ -5,6 +5,8 @@ import 'package:gdg_guess_game/domain/repositories/content_repository.dart';
 import 'package:gdg_guess_game/main.dart';
 import 'package:gdg_guess_game/presentation/controllers/update_controller.dart';
 import 'package:gdg_guess_game/presentation/screens/game/game_screen.dart';
+import 'package:gdg_guess_game/presentation/screens/game/game_configuration_screen.dart';
+import 'package:gdg_guess_game/domain/models/difficulty.dart';
 import 'package:gdg_guess_game/presentation/screens/packs/packs_screen.dart';
 import 'package:gdg_guess_game/presentation/widgets/animations/animated_character_card.dart';
 import 'package:gdg_guess_game/providers/game_settings_controller.dart';
@@ -88,6 +90,10 @@ void main() {
         expect(find.byType(PacksScreen), findsOneWidget);
         for (final pack in entry.value) {
           await navigateToText(tester, pack);
+          expect(find.byType(GameConfigurationScreen), findsOneWidget);
+          await tester.tap(find.text('Start Game'));
+          await tester.pump();
+          await tester.pump(const Duration(seconds: 1));
           expect(find.byType(GameScreen), findsOneWidget);
           expect(find.byKey(const ValueKey('mystery')), findsOneWidget);
           expect(find.text(pack), findsOneWidget);
@@ -121,6 +127,14 @@ void main() {
       expect(find.byType(PacksScreen), findsOneWidget);
       expect(find.byType(GameScreen), findsNothing);
       await navigateToText(tester, 'Paper Shapes');
+      // This replacement repository has Medium/Hard Cards and no Easy Cards.
+      await tester.tap(find.byType(DropdownButtonFormField<Difficulty>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Hard').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start Game'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.byKey(const ValueKey('mystery')));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));

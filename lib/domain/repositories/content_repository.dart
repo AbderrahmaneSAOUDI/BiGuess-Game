@@ -12,4 +12,9 @@ abstract interface class ContentRepository {
   List<Pack> getPacksForTopic(String topicId);
 
   List<Card> getCardsForPack(String packId);
+
+  /// Null means unavailable locally; an empty list is an installed empty Pack.
+  /// Bundled Packs count as local content. Cached catalog Cards alone do not.
+  /// Returns the installed revision, which may differ from cached metadata.
+  List<Card>? getInstalledCardsForPack(String packId);
 }

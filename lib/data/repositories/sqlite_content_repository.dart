@@ -135,6 +135,21 @@ final class SqliteContentRepository implements ContentRepository {
   List<Card> getCardsForPack(String packId) =>
       _cards('SELECT * FROM cards WHERE pack_id = ? ORDER BY rowid', [packId]);
 
+  @override
+  List<Card>? getInstalledCardsForPack(String packId) {
+    final installed = _database.select(
+      '''SELECT i.pack_id FROM installed_packs i
+      JOIN packs p ON p.id = i.pack_id JOIN topics t ON t.id = p.topic_id
+      WHERE i.pack_id = ? AND p.deleted = 0 AND t.deleted = 0''',
+      [packId],
+    );
+    if (installed.isEmpty) return null;
+    return _cards(
+      'SELECT * FROM installed_cards WHERE pack_id = ? ORDER BY rowid',
+      [packId],
+    );
+  }
+
   // Indexed literal prefix search. SQLite NOCASE folds ASCII only; Unicode
   // spelling is preserved and matches exactly outside that range.
   List<Topic> searchTopics(String prefix) => _topics(

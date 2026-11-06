@@ -40,4 +40,8 @@ class TestContentRepository implements ContentRepository {
   @override
   List<Card> getCardsForPack(String packId) =>
       List.unmodifiable(_cards.where((card) => card.packId == packId));
+
+  @override
+  List<Card>? getInstalledCardsForPack(String packId) =>
+      _packs.any((pack) => pack.id == packId) ? getCardsForPack(packId) : null;
 }

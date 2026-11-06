@@ -39,13 +39,17 @@ final class LegacyManifestContentRepository implements ContentRepository {
         );
         packs.add(pack);
         cardsByPackId[pack.id] = List<Card>.unmodifiable(
-          dataSource.getAssetsForPack(topicName, packName).map((asset) => Card(
-                id: 'legacy:card:$packKey:${Uri.encodeComponent(asset)}',
-                packId: pack.id,
-                name: AssetLoader.extractCharacterName(asset) ?? '',
-                imageReference: asset,
-                difficulty: Difficulty.easy,
-              )),
+          dataSource
+              .getAssetsForPack(topicName, packName)
+              .map(
+                (asset) => Card(
+                  id: 'legacy:card:$packKey:${Uri.encodeComponent(asset)}',
+                  packId: pack.id,
+                  name: AssetLoader.extractCharacterName(asset) ?? '',
+                  imageReference: asset,
+                  difficulty: Difficulty.easy,
+                ),
+              ),
         );
       }
       packsByTopicId[topic.id] = List<Pack>.unmodifiable(packs);
@@ -74,4 +78,7 @@ final class LegacyManifestContentRepository implements ContentRepository {
   @override
   List<Card> getCardsForPack(String packId) =>
       _cardsByPackId[packId] ?? const [];
+
+  @override
+  List<Card>? getInstalledCardsForPack(String packId) => _cardsByPackId[packId];
 }

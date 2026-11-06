@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
 import '../../../core/constants/app_constants.dart';
 import '../../../providers/topic_pack_providers.dart';
 import '../../widgets/animations/animated_glass_app_bar_background.dart';
 import '../../widgets/animations/interactive_scale_card.dart';
 import '../../widgets/common/glass_icon_button.dart';
 import '../../dialogs/info/game_info_dialog.dart';
-import '../game/game_screen.dart';
+import '../game/game_configuration_screen.dart';
 
 /// Second screen: Pack selection grid for a chosen topic
 class PacksScreen extends ConsumerWidget {
@@ -38,13 +39,15 @@ class PacksScreen extends ConsumerWidget {
                   radius: 1.3,
                   colors: isDark
                       ? [
-                          theme.colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.35),
+                          theme.colorScheme.surfaceContainerHighest.withValues(
+                            alpha: 0.35,
+                          ),
                           theme.scaffoldBackgroundColor,
                         ]
                       : [
-                          theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.25),
+                          theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.25,
+                          ),
                           theme.scaffoldBackgroundColor,
                         ],
                 ),
@@ -83,7 +86,7 @@ class PacksScreen extends ConsumerWidget {
                         assetCount: assetCount,
                         isAvailable: isAvailable,
                         onTap: isAvailable
-                            ? () => _navigateToGame(context, topicName, pack)
+                            ? () => _navigateToSetup(context, topicName, pack)
                             : null,
                       ),
                     ),
@@ -97,12 +100,12 @@ class PacksScreen extends ConsumerWidget {
     );
   }
 
-  void _navigateToGame(BuildContext context, String topic, String pack) {
+  void _navigateToSetup(BuildContext context, String topic, String pack) {
     Navigator.push(
       context,
       PageRouteBuilder<void>(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            GameScreen(topicName: topic, packName: pack),
+            GameConfigurationScreen(topicName: topic, packName: pack),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: CurvedAnimation(
@@ -111,10 +114,7 @@ class PacksScreen extends ConsumerWidget {
             ),
             child: ScaleTransition(
               scale: Tween<double>(begin: 0.95, end: 1.0).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
               ),
               child: child,
             ),
@@ -190,8 +190,9 @@ class _PackCard extends StatelessWidget {
                           ? Icons.play_arrow_rounded
                           : Icons.lock_rounded,
                       size: 26,
-                      color:
-                          isAvailable ? theme.colorScheme.primary : Colors.grey,
+                      color: isAvailable
+                          ? theme.colorScheme.primary
+                          : Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -323,10 +324,7 @@ class _PacksAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 38,
             iconSize: 20,
             onPressed: () {
-              GameInfoDialog.show(
-                context,
-                initialTab: GameInfoTab.settings,
-              );
+              GameInfoDialog.show(context, initialTab: GameInfoTab.settings);
             },
           ),
         ),
@@ -338,10 +336,7 @@ class _PacksAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 38,
             iconSize: 20,
             onPressed: () {
-              GameInfoDialog.show(
-                context,
-                initialTab: GameInfoTab.howToPlay,
-              );
+              GameInfoDialog.show(context, initialTab: GameInfoTab.howToPlay);
             },
           ),
         ),
