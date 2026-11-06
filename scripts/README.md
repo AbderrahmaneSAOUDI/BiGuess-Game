@@ -106,32 +106,21 @@ A fixture Pack and every Card must explicitly declare publication clearance, sou
 
 ## Build and maintain
 
-Choose **11 — run**, or open its launch options directly:
+Choose **11 — run**, or open the device picker directly:
 
 ```bash
 ./scripts/run.sh run
 ```
 
-Choose Debug (default, with hot reload), Profile, or Release. **For local Android
-performance testing without production signing keys, choose Profile (2).**
-Android Release (3) checks signing configuration before collecting launch options;
-if the check fails, it returns to the mode menu without starting a build. Configure
-your own key using `android/key.properties.example` or the documented environment
-variables. Signing help is available as option 6; option 5 runs Release on other
-platforms. No key is generated and Android release-signing requirements stay enforced.
-You can list devices,
-enter a device ID/name, change the entry-point file, add `KEY=value` Dart defines,
-and supply extra Flutter flags. Leave optional fields blank to use Flutter's
-defaults. Quote defines with spaces, for example `LABEL="My test build"`.
-Flutter stays attached to the terminal for its interactive reload/quit controls.
+The picker lists available devices by name, platform, and ID. Select a device
+number to start `flutter run -d <device-id>` with Flutter's default settings.
+Use `0` or Escape to go back. Flutter stays attached to the terminal for hot reload
+and quit controls.
 
-Pass arguments directly to skip the prompts:
+You can also specify a device directly:
 
 ```bash
-./scripts/run.sh run --debug -d DEVICE_ID
-./scripts/run.sh run --profile -d DEVICE_ID --dart-define=isProTestEnabled=true
-./scripts/run.sh run --release -d DEVICE_ID  # Android requires configured release signing
-./scripts/run.sh run --help  # All options supported by your installed Flutter SDK
+./scripts/run.sh run -d DEVICE_ID
 ```
 
 ```bash

@@ -336,82 +336,53 @@ def task_character_stats() -> None:
         run_script("character_stats.py", [])
 
 
-def print_android_signing_help() -> None:
-    print(f"\n{YELLOW}Android Release requires your release signing key.{RESET}")
-    print("For local performance testing, choose Profile (option 2).")
-    print("For a signed release, configure android/key.properties using")
-    print("android/key.properties.example, or set these environment variables:")
-    print("  ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD,")
-    print("  ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD")
-    print("See docs/migration/RELEASE_SAFETY_AND_DISTRIBUTION.md.\n")
-
-
-def android_release_signing_ready() -> bool:
-    """Ask Gradle to check configuration; never create keys or print secrets."""
-    command = [str(REPO_ROOT / "android/gradlew"), ":app:validateReleaseSigning",
-               "-PrequireReleaseSigning=true", "-q"]
-    print("Checking Android release-signing configuration...")
-    try:
-        result = subprocess.run(command, cwd=str(REPO_ROOT / "android"),
-                                capture_output=True, text=True, timeout=90)
-    except (OSError, subprocess.TimeoutExpired):
-        print(f"{RED}Could not run the signing check. Check the Android SDK and Java setup.{RESET}")
-        return False
-    if result.returncode:
-        print(f"{YELLOW}Android release signing is not ready; no build was started.{RESET}")
-        print("Check the configuration and keystore path. For Gradle details, run:")
-        print("  cd android && ./gradlew :app:validateReleaseSigning -PrequireReleaseSigning=true")
-        return False
-    return True
-
-
 def task_run_app() -> None:
-    """Choose launch settings and keep Flutter's interactive console attached."""
-    print(f"\n{BOLD}{BLUE}▶ Run BiGuess{RESET}")
-    while True:
-        print(f"  {CYAN}[1]{RESET} Debug — development with hot reload")
-        print(f"  {CYAN}[2]{RESET} Profile — local performance testing; no Android release key needed")
-        print(f"  {CYAN}[3]{RESET} Android Release — requires configured release signing")
-        print(f"  {CYAN}[4]{RESET} List connected devices and emulators")
-        print(f"  {CYAN}[5]{RESET} Release for other platforms (web, iOS, desktop)")
-        print(f"  {CYAN}[6]{RESET} Android release-signing setup help")
-        print(f"  {CYAN}[0]{RESET} Back\n")
-        choice = prompt_input("Run mode", "1")
-        if choice == "4":
-            run_command(["flutter", "devices"])
-            continue
-        if choice == "6":
-            print_android_signing_help()
-            continue
-        mode = {"1": "debug", "2": "profile", "3": "release", "5": "release"}.get(choice)
-        if mode is None:
-            print("Choose a run option from 1 to 6.")
-            return
-        if choice == "3" and not android_release_signing_ready():
-            print_android_signing_help()
-            continue
-        break
-
-    device = prompt_input("Device ID or name (blank lets Flutter choose)")
-    target = prompt_input("Entry-point file", "lib/main.dart")
-    defines = prompt_input('Dart defines (KEY=value, space-separated; quote values with spaces)')
-    extra = prompt_input("Extra Flutter options (for example --verbose or --web-port 8080)")
+    """Pick a discovered device and run Flutter with its default settings."""
+    print(f"\n{BOLD}{BLUE}▶ Choose a device to run BiGuess{RESET}")
     try:
-        define_args = shlex.split(defines)
-        extra_args = shlex.split(extra)
-    except ValueError as error:
-        print(f"{RED}Invalid quoting: {error}{RESET}")
+        result = subprocess.run(
+            ["flutter", "devices", "--machine"], cwd=str(REPO_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except FileNotFoundError:
+        print(f"{RED}Flutter was not found. Add the Flutter SDK to PATH.{RESET}")
+        raise ScriptFailed(127)
+    except subprocess.TimeoutExpired:
+        print(f"{RED}Device discovery timed out. Check your connection and try again.{RESET}")
+        raise ScriptFailed(1)
+    if result.returncode:
+        print(result.stderr or result.stdout, file=sys.stderr)
+        raise ScriptFailed(result.returncode)
+    try:
+        found = json_mod.loads(result.stdout)
+        if not isinstance(found, list):
+            raise ValueError("Expected a device list")
+    except (ValueError, TypeError):
+        print(f"{RED}Flutter returned an unreadable device list. Try again.{RESET}")
+        raise ScriptFailed(1)
+    devices = [
+        device for device in found
+        if isinstance(device, dict)
+        and isinstance(device.get("id"), str) and device["id"].strip()
+        and device.get("isSupported") is not False
+    ]
+    if not devices:
+        print("No devices found. Connect a device or start an emulator, then try again.")
         return
-    if any("=" not in value or not value.split("=", 1)[0].strip() for value in define_args):
-        print(f"{RED}Each Dart define must use KEY=value.{RESET}")
-        return
-    command = ["flutter", "run", f"--{mode}", "--target", target]
-    if device:
-        command.extend(["--device-id", device])
-    command.extend(f"--dart-define={value}" for value in define_args)
-    command.extend(extra_args)
-    print(f"\n{DIM}$ {shlex.join(command)}{RESET}")
-    print("Flutter keeps control of this terminal. Use its displayed keys to reload or quit.\n")
+    names = [str(device.get("name") or device["id"]) for device in devices]
+    name_width = max(_display_width(name) for name in names)
+    for index, (device, name) in enumerate(zip(devices, names), 1):
+        padding = " " * (name_width - _display_width(name) + 2)
+        platform = device.get("targetPlatform", "unknown")
+        print(f"  {CYAN}[{index:>2}]{RESET} {name}{padding}{DIM}({platform}, {device['id']}){RESET}")
+    print(f"  {CYAN}[ 0]{RESET} Back\n")
+    while True:
+        choice = prompt_input("Choose device", "1")
+        if choice.isascii() and choice.isdigit() and 1 <= int(choice) <= len(devices):
+            break
+        print(f"Choose a device number from 1 to {len(devices)}.")
+    command = ["flutter", "run", "-d", devices[int(choice) - 1]["id"]]
+    print(f"\n{DIM}$ {shlex.join(command)}{RESET}\n")
     run_command(command)
 
 
@@ -741,7 +712,7 @@ TOOL_GROUPS = [
         ("10", "export", "Create an offline test Pack", "export_pack.py"),
     ]),
     ("Build and maintain", [
-        ("11", "run", "Run the app on a device or emulator", "flutter run"),
+        ("11", "run", "Choose a device and run the app", "flutter run"),
         ("12", "build", "Build APKs, an App Bundle, or the web app", "build_app.py"),
         ("13", "version", "View or synchronize version files", "release.py --version-only"),
         ("14", "clean", "Remove generated caches and temporary files", "menu.py clean"),

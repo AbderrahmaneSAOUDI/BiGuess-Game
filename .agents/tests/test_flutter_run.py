@@ -27,106 +27,76 @@ class FlutterRunTests(unittest.TestCase):
         self.addCleanup(self.stdout.__exit__, None, None, None)
         self.addCleanup(self.stderr.__exit__, None, None, None)
 
-    def test_blank_inputs_use_debug_and_default_entrypoint(self):
-        with patch.object(menu, 'read_line_with_esc', side_effect=['', '', '', '', '']), \
+    devices = [
+        {'id': 'phone-id', 'name': 'My phone', 'targetPlatform': 'android-arm64', 'isSupported': True},
+        {'id': 'browser-id', 'name': 'Chrome', 'targetPlatform': 'web-javascript', 'isSupported': True},
+    ]
+
+    def discovery(self, devices=None, code=0):
+        return subprocess.CompletedProcess([], code, json.dumps(self.devices if devices is None else devices), '')
+
+    def test_chosen_device_is_the_only_launch_option(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()) as discover, \
+                patch.object(menu, 'read_line_with_esc', return_value='2') as prompt, \
                 patch.object(menu, 'run_command') as run:
             menu.task_run_app()
-        run.assert_called_once_with(['flutter', 'run', '--debug', '--target', 'lib/main.dart'])
+        discover.assert_called_once_with(['flutter', 'devices', '--machine'], cwd=str(ROOT),
+                                         capture_output=True, text=True, timeout=30)
+        prompt.assert_called_once()
+        run.assert_called_once_with(['flutter', 'run', '-d', 'browser-id'])
+        self.assertIn('My phone', self.output.getvalue())
+        self.assertIn('Chrome', self.output.getvalue())
+        self.assertIn('browser-id', self.output.getvalue())
+        self.assertNotIn('Run mode', self.output.getvalue())
 
-    def test_custom_device_target_defines_and_flags_remain_separate_arguments(self):
-        answers = ['2', 'my device', 'lib/custom.dart', 'LABEL="My test build" FLAG=true',
-                   '--flavor staging --web-port 8080 --verbose']
-        with patch.object(menu, 'read_line_with_esc', side_effect=answers), \
+    def test_default_device_and_invalid_selection_reprompt(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['99', 'invalid', '']), \
                 patch.object(menu, 'run_command') as run:
             menu.task_run_app()
-        run.assert_called_once_with([
-            'flutter', 'run', '--profile', '--target', 'lib/custom.dart',
-            '--device-id', 'my device', '--dart-define=LABEL=My test build',
-            '--dart-define=FLAG=true', '--flavor', 'staging', '--web-port', '8080', '--verbose',
-        ])
+        run.assert_called_once_with(['flutter', 'run', '-d', 'phone-id'])
 
-    def test_list_devices_returns_to_mode_selection_and_release_can_run(self):
-        with patch.object(menu, 'read_line_with_esc', side_effect=['4', '3', '', '', '', '']), \
-                patch.object(menu, 'android_release_signing_ready', return_value=True), \
+    def test_cancel_never_launches(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', return_value='0'), \
                 patch.object(menu, 'run_command') as run:
-            menu.task_run_app()
-        self.assertEqual(run.call_args_list[0].args[0], ['flutter', 'devices'])
-        self.assertEqual(run.call_args_list[1].args[0],
-                         ['flutter', 'run', '--release', '--target', 'lib/main.dart'])
+            self.assertEqual(menu.run_single_task('run'), 0)
+        run.assert_not_called()
 
-    def test_cancel_invalid_mode_or_bad_options_never_launch(self):
-        for answers in (['0'], ['invalid'], ['1', '', '', 'NOT_A_DEFINE', ''],
-                        ['1', '', '', 'KEY="unclosed', ''],
-                        ['1', '', '', '', '--flavor "unclosed']):
-            with self.subTest(answers=answers), \
-                    patch.object(menu, 'read_line_with_esc', side_effect=answers), \
+    def test_empty_or_unusable_devices_do_not_prompt_or_launch(self):
+        for devices in ([], [{'id': 'unsupported', 'isSupported': False}],
+                        [None, {}, {'id': 1}, {'id': '  '}]):
+            with self.subTest(devices=devices), \
+                    patch.object(menu.subprocess, 'run', return_value=self.discovery(devices)), \
+                    patch.object(menu, 'read_line_with_esc') as prompt, \
                     patch.object(menu, 'run_command') as run:
-                self.assertEqual(menu.run_single_task('run'), 0)
+                menu.task_run_app()
+            prompt.assert_not_called()
+            run.assert_not_called()
+            self.assertIn('No devices found', self.output.getvalue())
+
+    def test_discovery_failures_are_reported_without_launching(self):
+        for failure, code in ((subprocess.CompletedProcess([], 7, '', 'Connection failed'), 7),
+                              (FileNotFoundError(), 127),
+                              (subprocess.TimeoutExpired('flutter', 30), 1),
+                              (subprocess.CompletedProcess([], 0, 'not JSON', ''), 1),
+                              (subprocess.CompletedProcess([], 0, '{}', ''), 1)):
+            with self.subTest(code=code), patch.object(menu.subprocess, 'run') as discover, \
+                    patch.object(menu, 'read_line_with_esc') as prompt, \
+                    patch.object(menu, 'run_command') as run:
+                if isinstance(failure, Exception):
+                    discover.side_effect = failure
+                else:
+                    discover.return_value = failure
+                self.assertEqual(menu.run_single_task('run'), code)
+                prompt.assert_not_called()
                 run.assert_not_called()
 
-    def test_failure_and_missing_flutter_propagate_without_capture_or_shell(self):
-        for failure, expected in ((subprocess.CompletedProcess([], 7), 7),
-                                  (FileNotFoundError(), 127)):
-            with self.subTest(expected=expected), \
-                    patch.object(menu, 'read_line_with_esc', side_effect=['4']), \
-                    patch.object(menu.subprocess, 'run') as run:
-                if isinstance(failure, Exception):
-                    run.side_effect = failure
-                else:
-                    run.return_value = failure
-                self.assertEqual(menu.run_single_task('run'), expected)
-                run.assert_called_once_with(['flutter', 'devices'], cwd=str(ROOT))
-
-    def test_missing_android_signing_returns_to_modes_and_profile_remains_available(self):
-        with patch.object(menu, 'read_line_with_esc', side_effect=['3', '2', '', '', '', '']), \
-                patch.object(menu, 'android_release_signing_ready', return_value=False), \
-                patch.object(menu, 'run_command') as run:
-            menu.task_run_app()
-        run.assert_called_once_with(['flutter', 'run', '--profile', '--target', 'lib/main.dart'])
-        self.assertIn('Android Release requires your release signing key', self.output.getvalue())
-
-    def test_failed_signing_check_can_be_cancelled_without_launching(self):
-        with patch.object(menu, 'read_line_with_esc', side_effect=['3', '0']), \
-                patch.object(menu, 'android_release_signing_ready', return_value=False), \
-                patch.object(menu, 'run_command') as run:
-            self.assertEqual(menu.run_single_task('run'), 0)
-        run.assert_not_called()
-
-    def test_non_android_release_does_not_require_android_keys(self):
-        with patch.object(menu, 'read_line_with_esc', side_effect=['5', 'chrome', '', '', '']), \
-                patch.object(menu, 'android_release_signing_ready') as signing, \
-                patch.object(menu, 'run_command') as run:
-            menu.task_run_app()
-        signing.assert_not_called()
-        self.assertIn('--release', run.call_args.args[0])
-        self.assertIn('chrome', run.call_args.args[0])
-
-    def test_signing_help_does_not_run_gradle_or_build(self):
-        with patch.object(menu, 'read_line_with_esc', side_effect=['6', '0']), \
-                patch.object(menu, 'android_release_signing_ready') as signing, \
-                patch.object(menu, 'run_command') as run:
-            self.assertEqual(menu.run_single_task('run'), 0)
-        signing.assert_not_called()
-        run.assert_not_called()
-        self.assertIn('ANDROID_KEYSTORE_PATH', self.output.getvalue())
-
-    def test_signing_probe_uses_gradle_without_printing_its_output(self):
-        for code, ready in ((0, True), (1, False)):
-            with self.subTest(code=code), patch.object(menu.subprocess, 'run',
-                    return_value=subprocess.CompletedProcess([], code, stdout='private-value',
-                                                            stderr='private-value')) as run:
-                self.assertEqual(menu.android_release_signing_ready(), ready)
-                command = run.call_args.args[0]
-                self.assertIn(':app:validateReleaseSigning', command)
-                self.assertIn('-PrequireReleaseSigning=true', command)
-                self.assertEqual(run.call_args.kwargs['timeout'], 90)
-        self.assertNotIn('private-value', self.output.getvalue())
-
-    def test_signing_probe_errors_do_not_launch_a_build(self):
-        for error in (FileNotFoundError(), subprocess.TimeoutExpired('gradle', 90)):
-            with self.subTest(error=type(error).__name__), \
-                    patch.object(menu.subprocess, 'run', side_effect=error):
-                self.assertFalse(menu.android_release_signing_ready())
+    def test_launch_failure_preserves_flutter_exit_status(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', return_value='1'), \
+                patch.object(menu, 'run_command', side_effect=menu.ScriptFailed(7)):
+            self.assertEqual(menu.run_single_task('run'), 7)
 
     def test_menu_numbers_stay_sequential_and_run_aliases_match(self):
         entries = [entry for _, group in menu.TOOL_GROUPS for entry in group]
