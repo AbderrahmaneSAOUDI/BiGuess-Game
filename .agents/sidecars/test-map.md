@@ -12,7 +12,7 @@ Run commands from the repository root. Read assertions before reusing tests; nam
 | Full Flutter gate | `flutter test` and `flutter analyze` | Suite and static analysis. Analyzer excludes historical/platform directories; passing checks do not verify release configuration. |
 | Manifest consistency | `python3 scripts/generate_manifest.py --check` | Compares generated manifest to disk without rewriting. Does not also validate pubspec synchronization. |
 | Asset integrity | `python3 scripts/audit_assets.py` | Missing/orphaned/naming/size checks; image corruption checks require Pillow. Inspect output/dependencies before claiming full image validation. |
-| Extended baseline | `bash scripts/baseline_check.sh` | Analysis, tests, asset audit/stats, doctor; stops at first failure. Does not build/install a release APK. |
+| Extended baseline | `bash scripts/baseline_check.sh` | Logs dependency/format/analyzer/test, asset/version/tooling checks plus stats, doctor and debug APK build; continues after failures and returns nonzero if any command fails. `--fast` omits stats/doctor/debug build. Does not install or publish artifacts. |
 | Agent automation | `.agents/README.md` | Hook/sidecar commands and focused checks; separate these from app behavior verification. |
 
 For a gameplay regression, prove behavior at its owner: seeded selection tests for random/deck behavior, provider tests for timer/reset/disposal, widget tests for layout/navigation. Override `packAssetsProvider((topic: ..., pack: ...))` with bundled test images and dispose `ProviderContainer`; keep auto-disposed providers alive while observing asynchronous transitions. Use bounded `pump(Duration(...))` for repeating animations instead of assuming `pumpAndSettle` terminates.

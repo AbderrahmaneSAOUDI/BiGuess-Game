@@ -47,8 +47,8 @@ The version checker is read-only. It replaces the previous
 recompute native-change status/URLs. CI must check versions without repairing them.
 
 Configure branch protection to require **Fast Verification & Quality Gates**.
-This audit did not verify or change server-side branch protection; a workflow file
-alone cannot enforce merge policy. Follow `AGENTS.md` for the scoped version/Git
+Reading server-side branch protection returned HTTP 403 (integration lacks access);
+it was not changed. A workflow file alone cannot enforce merge policy. Follow `AGENTS.md` for the scoped version/Git
 lifecycle after passing checks.
 
 ## Executed evidence
@@ -80,12 +80,13 @@ build ran, and the script returned 1; fast mode returned 0 and omitted the debug
 build. [Summary](evidence/2026-11-06-t01-t03/script_summary.json). These mock checks
 verify script orchestration only; actual Flutter execution is logged separately.
 
-The GitHub connector returned no PR-triggered runs for audited SHA `853f506`.
-Its wrapper only queries PR events, so that cannot establish push-run status.
-A read-only `gh run list` fallback failed with a TLS handshake timeout. Remaining
-T03 acceptance: obtain hosted PR and `main` run URLs/results and, if required by
-merge policy, verify the required status check in branch protection. Do not mark
-hosted acceptance complete based only on these local runs.
+A read-only GitHub repository Actions API query returned **`total_count: 0`**
+([response](evidence/2026-11-06-t01-t03/github_runs.json)): no retained hosted runs
+were available at audit time. The commit-specific PR query was also empty; a
+`gh run list` fallback failed with a TLS handshake timeout. Remaining T03 acceptance:
+obtain hosted PR and `main` run URLs/results and, if required by merge policy,
+verify the required status check in branch protection. Do not mark hosted acceptance
+complete based only on these local runs.
 
 ## Local reproduction
 

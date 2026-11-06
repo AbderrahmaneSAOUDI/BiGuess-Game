@@ -3,9 +3,8 @@
 Reinspected on **2026-11-06**, starting at `main` commit
 `853f50687084228399062122f926753e6e955824`. The app/platform sources were unchanged
 through this audit; CI/script/document corrections are separate from product behavior.
-During verification another session committed the CI/script and initial evidence as
-`bb8b6e1`. This report supersedes the earlier baseline's incorrect defaults and
-unverified diagnosis of its debug-build failure.
+This report supersedes the earlier baseline's incorrect defaults and unverified
+diagnosis of its debug-build failure.
 
 The existing annotated rollback tag **`baseline-t01`** resolves to
 `50fd964231df5ebedbe7b3aae1d22fbd9d45e4ca` (verified with

@@ -59,9 +59,11 @@ While this roadmap organizes execution serially for a single-agent workflow, thi
 Identify and document any remaining operational/platform choices (e.g. minimum Android/iOS versions, random-Pack default count).
 **Acceptance:** Shared contracts document the authoritative blueprint rules with exact section references; remaining platform/operational questions are clearly surfaced with default proposals.
 
-### [x] T03 — Add continuous integration and fast verification
+### [ ] T03 — Add continuous integration and fast verification
 **Agent task:** Add a GitHub Actions CI workflow for Flutter dependency resolution, formatting check, static analysis, unit/widget tests, and manifest/tooling checks. Pin/document toolchain versions and use reasonable caching. Do not invoke production releases or publish artifacts.
 **Acceptance:** CI runs on PR and `main`, catches a deliberate failing test/analyzer error, and documents which checks are required before merge.
+
+**Recheck (2026-11-06):** T01/T02 verified with corrected [baseline](docs/migration/BASELINE.md), [contracts](docs/migration/DECISIONS.md), and retained command logs. T03 local gates and deliberate failure detection pass; hosted PR/main runs remain unverified. See [CI evidence and remaining acceptance](docs/migration/CI_VERIFICATION.md).
 
 ### [ ] T04 — GATE: Repair Android release safety without shipping
 **Agent task:** Replace debug signing for release with secure externally provided release signing configuration. Remove unsafe release-lint bypasses or add a documented, justified mitigation. Keep credentials out of Git. Audit `version.json`, release scripts, `/releases/latest` URLs, and Shorebird/version-matching behavior for draft/published version mismatches and verification of downloaded APKs. Do **not** publish a new build or change users' update path without approval.
