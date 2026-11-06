@@ -178,3 +178,58 @@ References: [D1 migrations](https://developers.cloudflare.com/d1/reference/migra
 [local D1](https://developers.cloudflare.com/d1/best-practices/local-development/),
 [environment bindings](https://developers.cloudflare.com/workers/wrangler/configuration/),
 [R2 Worker bindings](https://developers.cloudflare.com/r2/api/workers/workers-api-usage/).
+
+### Studio authentication (T23)
+
+All `/studio` and frozen `/content/v1/studio` requests authenticate before public routing.
+`/content/v1/studio/...` uses the same boundary as `/studio/v1/...`. Send a Firebase **ID token**
+from Google sign-in as `Authorization: Bearer <token>`; Google OAuth access tokens,
+Google ID tokens and Firebase custom tokens are not accepted. Verification uses
+RS256, Google's fixed Secure Token public JWKS endpoint, the configured Firebase
+project issuer/audience, expiry/issued/authentication times, verified email and
+`firebase.sign_in_provider = google.com`. See [Firebase token verification](https://firebase.google.com/docs/auth/admin/verify-id-tokens).
+No service-account private key or Firebase Admin credential is needed by this Worker.
+
+Configure these **server-side** bindings for each environment:
+
+- `FIREBASE_PROJECT_ID`: the trusted Firebase project ID, never taken from a token.
+- `STUDIO_USERS`: a Worker secret containing JSON entries with `uid`, `email`, and
+  `role` (`owner_admin` or `collector`). Both Firebase UID and verified email must
+  match exactly one entry (email comparison is case-insensitive).
+
+For local development use ignored `.dev.vars.local`; for staging use
+`npx wrangler secret put STUDIO_USERS --env staging` and configure the project ID
+in the environment. Never put real allowlists, credentials or bearer tokens in
+source control, Flutter defines, frontend bundles or logs. An empty allowlist
+admits nobody. Missing/invalid configuration or key-service failure fails closed.
+Removing an allowlist entry revokes Studio access on subsequent requests; roles
+are read from this server data every time. Token claims, headers, query parameters
+and request bodies cannot grant roles. Moderator/community roles are unsupported.
+Firebase account revocation/disablement is not queried on each request; signed ID
+tokens remain usable until expiry unless the operator removes the allowlist entry.
+
+`GET /studio/v1/session` returns only the authenticated `{ uid, email, role }` with
+`Cache-Control: no-store`. Invalid/missing tokens return 401 with a Bearer challenge;
+non-allowlisted users and denied operations return 403. Public `/content` endpoints
+remain anonymous; Mobile gameplay requires no player account.
+
+| Operation | Owner Admin | Collector |
+| --- | --- | --- |
+| Read Topics/Packs/Cards and own session | Yes | Yes |
+| Create/edit/hide Packs and Cards | Yes | Yes |
+| Manage Topics, initial publishing, Studio users/roles | Yes | No |
+| Delete (soft or permanent) or restore any resource | Yes | No |
+
+The explicit route map in `src/studio-auth.ts` protects `/studio/v1/{topics,packs,cards,users}`:
+collection POST is create, item PATCH is edit, item DELETE is soft-delete, and item
+POST suffixes are `hide`, `publish`, `soft-delete`, `permanent-delete`, `restore`.
+Unknown methods/routes (including batches) fail closed. Authorized content/user
+operations currently return 501: **T24 owns actual reads/mutations**, field validation,
+revision checks, audit and tombstones. This boundary grants no arbitrary PATCH
+fields: T24 must reject protected deletion, restoration, publication and role
+fields on Collector edits, and authorize each batch operation before any write.
+Hide permission must never be implemented as deletion.
+
+`npm test` exercises the real bundled Worker with locally signed RSA tokens and
+intercepted Google JWKS discovery. There is no production test-key/auth-bypass
+binding, and the tests require neither real credentials nor network access to Google.

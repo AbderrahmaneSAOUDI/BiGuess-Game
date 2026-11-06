@@ -1,2 +1,6 @@
-# No secrets are needed locally. Copy to .dev.vars.local if future bindings need them.
+# Copy to ignored .dev.vars.local for local Studio authentication.
 # Never put actual credentials here, in wrangler.json, or in Flutter defines.
+
+# Optional Studio boundary; empty allowlist denies all users.
+FIREBASE_PROJECT_ID=your-firebase-project-id
+STUDIO_USERS=[]

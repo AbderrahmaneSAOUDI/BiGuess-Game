@@ -1,4 +1,5 @@
 import type { Env } from './env';
+import { authenticate, authorize, studioOperation, StudioError } from './studio-auth';
 import { catalog } from './catalog';
 import { download } from './download';
 
@@ -14,9 +15,43 @@ const json = (value: unknown, status = 200) => Response.json(value, {
   headers: { 'Cache-Control': 'no-store' },
 });
 
+// Studio shares the frozen content error envelope, without exposing JWTs,
+// allowlist entries, or upstream key-discovery failures.
+function studioError(status: number, code: string): Response {
+  return json({ protocolVersion: 1, error: {
+    code: code === 'auth_unavailable' || code === 'not_implemented' ? 'internal_error' : code,
+    message: code === 'not_implemented' ? 'Studio operation is not implemented.'
+      : code === 'auth_unavailable' ? 'Studio authentication is unavailable.'
+      : code === 'unauthenticated' ? 'A valid Firebase Google ID token is required.'
+      : code === 'forbidden' ? 'Studio access is forbidden.' : 'Endpoint not found.',
+    requestId: crypto.randomUUID(), retryable: status === 503, currentRevision: null,
+  } }, status);
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path = new URL(request.url).pathname;
+    // Protect the frozen /content/v1/studio namespace before public routing.
+    const studioPath = path === '/content/v1/studio' || path.startsWith('/content/v1/studio/')
+      ? path.replace('/content/v1/studio', '/studio/v1') : path;
+    if (studioPath === '/studio' || studioPath.startsWith('/studio/')) {
+      try {
+        const principal = await authenticate(request, env);
+        const operation = studioOperation(request.method, studioPath);
+        if (!operation) return studioError(404, 'not_found');
+        authorize(principal, operation.resource, operation.action);
+        if (operation.resource === 'session') return json(principal);
+        // T23 installs the boundary; content reads/writes belong to T24.
+        return studioError(501, 'not_implemented');
+      } catch (error) {
+        if (error instanceof StudioError) {
+          const response = studioError(error.status, error.code);
+          if (error.status === 401) response.headers.set('WWW-Authenticate', 'Bearer');
+          return response;
+        }
+        return studioError(503, 'auth_unavailable');
+      }
+    }
     if (path.startsWith('/content/v1/packs/')) return download(request, env);
     if (path === '/content' || path.startsWith('/content/')) return catalog(request, env);
     if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
