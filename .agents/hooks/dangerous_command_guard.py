@@ -91,11 +91,21 @@ def main() -> int:
     event = read_event()
     root = project_root()
     cwd = event.get("cwd")
-    reason = dangerous_reason(command_from_event(event), root, Path(cwd) if isinstance(cwd, str) else root)
-    if reason:
-        output = {"decision": "deny", "reason": reason}
+    command = command_from_event(event)
+    reason = dangerous_reason(command, root, Path(cwd) if isinstance(cwd, str) else root)
+    native = any(key in event for key in ("hook_event_name", "tool_name", "tool_input"))
+    legacy = bool(command) and any(key in event for key in ("toolCall", "tool_call", "command"))
+    if native:
+        # Native hooks never override the host's ordinary permissions on allow.
+        output = {"hookSpecificOutput": {
+            "hookEventName": "PreToolUse", "permissionDecision": "deny",
+            "permissionDecisionReason": reason,
+        }} if reason else {}
+    elif legacy:
+        # Preserve the older direct-launch protocol used by existing hosts.
+        output = {"decision": "deny", "reason": reason} if reason else {"decision": "allow"}
     else:
-        output = {"decision": "allow"}
+        output = {}
     print(json.dumps(output))
     return 0
 

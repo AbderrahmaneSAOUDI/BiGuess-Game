@@ -40,7 +40,7 @@ These Markdown sidecars are maintained knowledge. The JSON/Markdown index under 
 | PostToolUse (file edits) | `hooks/project_check.py` | Read-only version-triad diagnostics |
 | Stop | `hooks/stop_guard.py` | Advisory drift/dirty-tree context; no continuation loop |
 
-Scripts read JSON on stdin and emit JSON on stdout, use bounded subprocesses, and resolve paths from their own location. A safe shell operation returns no permission override. The guard is a best-effort check, not a shell parser or security sandbox. It cannot prove arbitrary shell scripts safe.
+Scripts read one JSON event line on stdin and emit JSON on stdout, use bounded subprocesses, and resolve paths from their own location. For Codex, a safe shell operation returns no permission override. The guard retains the explicit allow/deny envelope for legacy `toolCall` integrations; native events use Codex's hook-specific decision shape. The guard is a best-effort check, not a shell parser or security sandbox. It cannot prove arbitrary shell scripts safe.
 
 Hooks never run Flutter tests, bump versions, commit/push, deploy, or spawn watchers. After validation, completion explicitly runs `version_increment.py` and the scoped Git helper as required by AGENTS.md. This keeps parallel file edits from racing to bump shared version files. Compatibility shell launchers remain available for hosts that call the scripts directly.
 

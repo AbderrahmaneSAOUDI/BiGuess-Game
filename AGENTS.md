@@ -6,7 +6,7 @@ BiGuess is a Flutter/Dart face-to-face guessing game using Riverpod 2.x, Materia
 
 1. Inspect `git status --short`; preserve existing staged and unstaged work. Multiple sessions may share this checkout.
 2. Read [.agents/README.md](.agents/README.md) for skill routing and automation. Read the relevant linked rules before editing their area; these Markdown rules are project instructions even when the host does not discover them automatically.
-3. Consult the [source map](.agents/sidecars/file-map.md), [architecture](.agents/sidecars/architecture.md), and [test map](.agents/sidecars/test-map.md). Use `rg` for direct searches; the generated index is an optional navigation cache, never the source of truth.
+3. Consult the [source map](.agents/sidecars/file-map.md), [architecture](.agents/sidecars/architecture.md), and [test map](.agents/sidecars/test-map.md). Follow the [navigation](.agents/rules/codebase-indexing.md) and [execution](.agents/rules/speed-and-efficiency.md) rules. Use `rg` for direct searches; the generated index is an optional navigation cache, never the source of truth.
 4. For migration work read [approved decisions](docs/migration/DECISIONS.md) and the relevant [blueprint](BIGUESS_PRODUCT_BLUEPRINT.md) section. The blueprint and historical dossiers include future designs, not just implemented features.
 
 ## Current ownership
@@ -20,7 +20,7 @@ BiGuess is a Flutter/Dart face-to-face guessing game using Riverpod 2.x, Materia
 | `lib/presentation/` | Topic → pack → game navigation, reveal widgets, info/update dialogs, update controller |
 | `lib/services/` | Version/APK/Shorebird adapters; separate optional CloudDatabaseService |
 | `lib/core/` | AppConstants, themes, asset labels, URL helpers |
-| `assets/` | WebP anime cards, PNG geography flags, logos, fonts, profile images |
+| `assets/` | Bundled character and flag images, logos, fonts, profile images |
 | `backend/biguess-api/` | Cloudflare Worker/D1 game-record scaffold, not the planned content API |
 | `scripts/`, `test/`, `.github/` | Asset/release tools, Flutter verification, CI |
 | `.agents/`, `.codex/hooks.json` | Shared guidance, tools, optional sidecars, Codex hook entrypoint |

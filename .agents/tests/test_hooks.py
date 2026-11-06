@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import select
 import shutil
 import subprocess
 import sys
@@ -79,21 +80,64 @@ class HookTests(unittest.TestCase):
 
     def test_command_extraction_understands_current_and_legacy_shapes(self):
         command = 'git reset --hard'
-        events = [
+        native_events = [
             {'tool_name': 'Bash', 'tool_input': {'command': command}},
             {'tool_name': 'exec_command', 'tool_input': {'cmd': command}},
             {'tool_input': json.dumps({'cmd': command})},
+            {'hook_event_name': 'PreToolUse', 'command': command},
+        ]
+        legacy_events = [
             {'toolCall': {'args': {'CommandLine': command}}},
             {'tool_call': {'arguments': json.dumps({'command': command})}},
             {'command': command},
         ]
-        for event in events:
+        for event in native_events + legacy_events:
             with self.subTest(event=event):
                 self.assertEqual(guard.command_from_event(event), command)
                 code, output = self.invoke('dangerous_command_guard.py', event)
                 self.assertEqual(code, 0)
-                self.assertEqual(output['hookSpecificOutput']['permissionDecision'], 'deny')
-                self.assertEqual(output['hookSpecificOutput']['hookEventName'], 'PreToolUse')
+                if event in native_events:
+                    self.assertEqual(output['hookSpecificOutput']['permissionDecision'], 'deny')
+                    self.assertEqual(output['hookSpecificOutput']['hookEventName'], 'PreToolUse')
+                    self.assertNotIn('decision', output)
+                else:
+                    self.assertEqual(output['decision'], 'deny')
+                    self.assertTrue(output['reason'])
+                    self.assertNotIn('hookSpecificOutput', output)
+
+    def test_legacy_safe_command_retains_allow_and_native_takes_precedence(self):
+        for event in ({'toolCall': {'args': {'command': 'flutter test'}}},
+                      {'tool_call': {'arguments': {'cmd': 'git diff'}}},
+                      {'command': "echo 'git reset --hard'"}):
+            with self.subTest(event=event):
+                self.assertEqual(self.invoke('dangerous_command_guard.py', event),
+                                 (0, {'decision': 'allow'}))
+        event = {'tool_name': 'Bash', 'toolCall': {'args': {'command': 'git reset --hard'}}}
+        code, output = self.invoke('dangerous_command_guard.py', event)
+        self.assertEqual(code, 0)
+        self.assertEqual(output['hookSpecificOutput']['permissionDecision'], 'deny')
+        self.assertNotIn('decision', output)
+
+    def test_one_line_event_does_not_wait_for_stdin_eof(self):
+        process = subprocess.Popen(
+            [sys.executable, str(self.root / '.agents/hooks/dangerous_command_guard.py')],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, env=dict(os.environ, PYTHONDONTWRITEBYTECODE='1'),
+        )
+        try:
+            process.stdin.write(json.dumps({'tool_input': {'cmd': 'git diff'}}) + '\n')
+            process.stdin.flush()
+            ready, _, _ = select.select([process.stdout], [], [], 3)
+            self.assertTrue(ready, 'Hook waited for EOF after receiving its JSON event line')
+            self.assertEqual(json.loads(process.stdout.readline()), {})
+            self.assertEqual(process.wait(timeout=3), 0)
+        finally:
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=5)
+            process.stdin.close()
+            process.stdout.close()
+            process.stderr.close()
 
     def test_ordinary_commands_and_quoted_text_remain_allowed(self):
         for command in (
