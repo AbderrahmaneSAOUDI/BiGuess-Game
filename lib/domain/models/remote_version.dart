@@ -10,6 +10,8 @@ class RemoteVersion {
   final String apkUrl;
   final Map<String, String> apkUrls;
   final String releaseNotes;
+  final String? sha256;
+  final Map<String, String> sha256Hashes;
 
   const RemoteVersion({
     required this.latestVersion,
@@ -19,6 +21,8 @@ class RemoteVersion {
     required this.apkUrl,
     this.apkUrls = const {},
     required this.releaseNotes,
+    this.sha256,
+    this.sha256Hashes = const {},
   });
 
   factory RemoteVersion.fromJson(Map<String, dynamic> json) {
@@ -45,6 +49,19 @@ class RemoteVersion {
         ? rawNative
         : (rawNative?.toString().toLowerCase() == 'true');
 
+    final rawShaHashes = json['sha256_hashes'] ?? json['apk_hashes'];
+    final Map<String, String> parsedHashes = {};
+    if (rawShaHashes is Map) {
+      for (final entry in rawShaHashes.entries) {
+        if (entry.key != null && entry.value != null) {
+          parsedHashes[entry.key.toString().toLowerCase()] =
+              entry.value.toString();
+        }
+      }
+    }
+    final defaultSha256 =
+        json['sha256'] as String? ?? (json['apk_sha256'] as String?);
+
     return RemoteVersion(
       latestVersion: json['latest_version'] as String? ?? '0.0.0',
       buildNumber: buildNumber,
@@ -53,7 +70,27 @@ class RemoteVersion {
       apkUrl: defaultApkUrl,
       apkUrls: parsedUrls,
       releaseNotes: json['release_notes'] as String? ?? '',
+      sha256: defaultSha256,
+      sha256Hashes: parsedHashes,
     );
+  }
+
+  /// Resolves the expected SHA-256 hash for the device's CPU architecture.
+  String? resolveSha256(List<String> deviceAbis) {
+    if (sha256Hashes.isNotEmpty) {
+      for (final abi in deviceAbis) {
+        final cleanAbi = abi.trim().toLowerCase();
+        if (sha256Hashes.containsKey(cleanAbi) &&
+            sha256Hashes[cleanAbi]!.isNotEmpty) {
+          return sha256Hashes[cleanAbi];
+        }
+      }
+      if (sha256Hashes.containsKey('universal') &&
+          sha256Hashes['universal']!.isNotEmpty) {
+        return sha256Hashes['universal'];
+      }
+    }
+    return sha256;
   }
 
   /// Resolves the most specific APK download URL for the device's CPU architecture.
@@ -86,6 +123,8 @@ class RemoteVersion {
         'has_native_changes': hasNativeChanges,
         if (apkUrls.isNotEmpty) 'apk_urls': apkUrls,
         'apk_url': apkUrl,
+        if (sha256 != null && sha256!.isNotEmpty) 'sha256': sha256,
+        if (sha256Hashes.isNotEmpty) 'sha256_hashes': sha256Hashes,
         'release_notes': releaseNotes,
       };
 

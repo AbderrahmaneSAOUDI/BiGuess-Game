@@ -1,0 +1,27 @@
+# ==============================================================================
+# BiGuess Game — Android Release Signing Configuration Template
+# ==============================================================================
+# Copy this file to 'android/key.properties' and populate with your production credentials.
+#
+# SECURITY REQUIREMENTS:
+# - NEVER commit 'android/key.properties' or your keystore file to Git.
+# - Both 'android/key.properties' and '*.keystore' / '*.jks' are ignored in .gitignore.
+# - In CI/CD environments (GitHub Actions, etc.), release signing can alternatively
+#   be provided using environment variables instead of a physical properties file:
+#     - ANDROID_KEYSTORE_PATH (or KEYSTORE_PATH)
+#     - ANDROID_KEYSTORE_PASSWORD (or KEYSTORE_PASSWORD)
+#     - ANDROID_KEY_ALIAS (or KEY_ALIAS)
+#     - ANDROID_KEY_PASSWORD (or KEY_PASSWORD)
+# ==============================================================================
+
+# Relative path from 'android/' directory or absolute path to the keystore file:
+storeFile=../keystores/release.keystore
+
+# Password for the keystore:
+storePassword=CHANGE_ME_KEYSTORE_PASSWORD
+
+# Alias name of the signing key inside the keystore:
+keyAlias=CHANGE_ME_KEY_ALIAS
+
+# Password for the signing key:
+keyPassword=CHANGE_ME_KEY_PASSWORD

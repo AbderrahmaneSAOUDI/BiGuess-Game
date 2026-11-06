@@ -107,6 +107,36 @@ void main() {
         'https://example.com/fallback.apk',
       );
     });
+
+    test('resolves targeted ABI SHA-256 checksum correctly', () {
+      const remote = RemoteVersion(
+        latestVersion: '0.32.0',
+        buildNumber: 8,
+        minRequiredVersion: '0.30.0',
+        hasNativeChanges: true,
+        apkUrl: 'https://example.com/fallback.apk',
+        sha256: 'fallback-sha',
+        sha256Hashes: {
+          'arm64-v8a': 'arm64-sha-hash',
+          'armeabi-v7a': 'armv7-sha-hash',
+          'x86_64': 'x86_64-sha-hash',
+        },
+        releaseNotes: 'New features',
+      );
+
+      expect(
+        remote.resolveSha256(['arm64-v8a', 'armeabi-v7a']),
+        'arm64-sha-hash',
+      );
+      expect(
+        remote.resolveSha256(['x86_64']),
+        'x86_64-sha-hash',
+      );
+      expect(
+        remote.resolveSha256(['mips']),
+        'fallback-sha',
+      );
+    });
   });
 
   group('VersionService evaluateUpdate decisions', () {

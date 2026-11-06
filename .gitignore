@@ -49,4 +49,12 @@ app.*.map.json
 .agents/cache/
 TO_BE_DELETED/
 
+# Keystores and release signing credentials
+key.properties
+android/key.properties
+*.keystore
+**/*.keystore
+*.jks
+**/*.jks
+
 

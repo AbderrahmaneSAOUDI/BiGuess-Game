@@ -65,7 +65,7 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 **Recheck (2026-11-06):** T01/T02 verified with corrected [baseline](docs/migration/BASELINE.md), [contracts](docs/migration/DECISIONS.md), and retained command logs. T03 local gates and deliberate failure detection pass; hosted PR/main runs remain unverified. See [CI evidence and remaining acceptance](docs/migration/CI_VERIFICATION.md).
 
-### [ ] T04 — GATE: Repair Android release safety without shipping
+### [x] T04 — GATE: Repair Android release safety without shipping
 **Agent task:** Replace debug signing for release with secure externally provided release signing configuration. Remove unsafe release-lint bypasses or add a documented, justified mitigation. Keep credentials out of Git. Audit `version.json`, release scripts, `/releases/latest` URLs, and Shorebird/version-matching behavior for draft/published version mismatches and verification of downloaded APKs. Do **not** publish a new build or change users' update path without approval.
 **Acceptance:** A release build cannot silently ship signed with the debug key; local/CI validation of release configuration exists; no secrets in repository; risks and intended distribution policy are documented.
 

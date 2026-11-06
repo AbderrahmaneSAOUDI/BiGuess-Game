@@ -26,11 +26,15 @@ class UpdateFullApk extends UpdateDecision {
   /// Remote version string, e.g. "0.32.0".
   final String latestVersion;
 
+  /// Optional expected SHA-256 hash of the target APK binary for integrity verification.
+  final String? sha256;
+
   const UpdateFullApk({
     required this.mandatory,
     required this.apkUrl,
     required this.releaseNotes,
     this.latestVersion = '',
+    this.sha256,
   });
 }
 

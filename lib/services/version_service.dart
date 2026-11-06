@@ -119,12 +119,14 @@ class VersionService {
         needsFullApkDueToNoShorebird) {
       final isMandatory = local < minRequired;
       final targetApkUrl = remote.resolveApkUrl(deviceAbis);
+      final targetSha256 = remote.resolveSha256(deviceAbis);
 
       return UpdateFullApk(
         mandatory: isMandatory,
         apkUrl: targetApkUrl,
         releaseNotes: remote.releaseNotes,
         latestVersion: remote.latestVersion,
+        sha256: targetSha256,
       );
     }
 
