@@ -154,11 +154,9 @@ class OtaInstallerService {
 
         // Calculate ETA
         final remaining = total > 0 ? total - received : 0;
-        final etaSeconds =
-            avgSpeed > 0 ? (remaining / avgSpeed).ceil() : 0;
+        final etaSeconds = avgSpeed > 0 ? (remaining / avgSpeed).ceil() : 0;
 
-        final fraction =
-            total > 0 ? (received / total).clamp(0.0, 1.0) : 0.0;
+        final fraction = total > 0 ? (received / total).clamp(0.0, 1.0) : 0.0;
 
         onProgress?.call(DownloadProgress(
           received: received,

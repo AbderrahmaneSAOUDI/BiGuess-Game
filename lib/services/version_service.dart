@@ -33,7 +33,8 @@ class VersionService {
     final client = HttpClient();
     try {
       client.connectionTimeout = _timeout;
-      final uri = Uri.parse('$_versionJsonUrl?t=${DateTime.now().millisecondsSinceEpoch}');
+      final uri = Uri.parse(
+          '$_versionJsonUrl?t=${DateTime.now().millisecondsSinceEpoch}');
       final request = await client.getUrl(uri);
       request.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store');
       request.headers.set(HttpHeaders.pragmaHeader, 'no-cache');
@@ -110,9 +111,12 @@ class VersionService {
     // OR if remote is newer but Shorebird is NOT available on this device/binary.
     final hasNewerMajorOrMinor = remoteSemVer.isNewerMajorOrMinorThan(local);
     final hasNewerNativeBuild = remote.hasNativeChanges && local < remoteSemVer;
-    final needsFullApkDueToNoShorebird = !isShorebirdAvailable && remoteSemVer > local;
+    final needsFullApkDueToNoShorebird =
+        !isShorebirdAvailable && remoteSemVer > local;
 
-    if (hasNewerMajorOrMinor || hasNewerNativeBuild || needsFullApkDueToNoShorebird) {
+    if (hasNewerMajorOrMinor ||
+        hasNewerNativeBuild ||
+        needsFullApkDueToNoShorebird) {
       final isMandatory = local < minRequired;
       final targetApkUrl = remote.resolveApkUrl(deviceAbis);
 
@@ -126,7 +130,9 @@ class VersionService {
 
     // 2. Shorebird patch path:
     // If Shorebird is available, no native changes, and remote is newer, delegate to Shorebird OTA code-push.
-    if (isShorebirdAvailable && !remote.hasNativeChanges && remoteSemVer > local) {
+    if (isShorebirdAvailable &&
+        !remote.hasNativeChanges &&
+        remoteSemVer > local) {
       return const UpdateShorebirdPatch();
     }
 

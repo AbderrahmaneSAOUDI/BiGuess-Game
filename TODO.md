@@ -59,7 +59,7 @@ While this roadmap organizes execution serially for a single-agent workflow, thi
 Identify and document any remaining operational/platform choices (e.g. minimum Android/iOS versions, random-Pack default count).
 **Acceptance:** Shared contracts document the authoritative blueprint rules with exact section references; remaining platform/operational questions are clearly surfaced with default proposals.
 
-### [ ] T03 — Add continuous integration and fast verification
+### [x] T03 — Add continuous integration and fast verification
 **Agent task:** Add a GitHub Actions CI workflow for Flutter dependency resolution, formatting check, static analysis, unit/widget tests, and manifest/tooling checks. Pin/document toolchain versions and use reasonable caching. Do not invoke production releases or publish artifacts.
 **Acceptance:** CI runs on PR and `main`, catches a deliberate failing test/analyzer error, and documents which checks are required before merge.
 

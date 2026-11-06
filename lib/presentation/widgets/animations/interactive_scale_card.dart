@@ -44,7 +44,8 @@ class _InteractiveScaleCardState extends State<InteractiveScaleCard>
       duration: const Duration(milliseconds: 200),
     );
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleOnHover).animate(
+    _scaleAnimation =
+        Tween<double>(begin: 1.0, end: widget.scaleOnHover).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 

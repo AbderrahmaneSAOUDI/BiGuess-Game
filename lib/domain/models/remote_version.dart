@@ -65,8 +65,7 @@ class RemoteVersion {
     if (apkUrls.isNotEmpty) {
       for (final abi in deviceAbis) {
         final cleanAbi = abi.trim().toLowerCase();
-        if (apkUrls.containsKey(cleanAbi) &&
-            apkUrls[cleanAbi]!.isNotEmpty) {
+        if (apkUrls.containsKey(cleanAbi) && apkUrls[cleanAbi]!.isNotEmpty) {
           return apkUrls[cleanAbi]!;
         }
       }

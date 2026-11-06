@@ -95,7 +95,8 @@ class UpdateController extends StateNotifier<UpdateState> {
             final applied = await _shorebirdPatch.downloadAndApplyPatch();
             if (!mounted) return;
             if (applied) {
-              state = const UpdateCompleted('New patch installed. Restart anytime to apply.');
+              state = const UpdateCompleted(
+                  'New patch installed. Restart anytime to apply.');
             } else {
               state = const UpdateCompleted();
             }
@@ -106,7 +107,8 @@ class UpdateController extends StateNotifier<UpdateState> {
               decision: const UpdateShorebirdPatch(),
               currentVersion: local.toString(),
               latestVersion: local.toString(),
-              releaseNotes: 'Over-the-air code patch available with instant bug fixes and improvements.',
+              releaseNotes:
+                  'Over-the-air code patch available with instant bug fixes and improvements.',
             );
             return;
           }
@@ -163,7 +165,9 @@ class UpdateController extends StateNotifier<UpdateState> {
       switch (decision) {
         case UpdateNone():
           state = UpdateCompleted(
-            silent ? '' : 'You are running the latest version (v${local.toString()})',
+            silent
+                ? ''
+                : 'You are running the latest version (v${local.toString()})',
           );
 
         case UpdateFullApk():
@@ -181,7 +185,8 @@ class UpdateController extends StateNotifier<UpdateState> {
             // Silently download and apply the patch
             final applied = await _shorebirdPatch.downloadAndApplyPatch();
             if (applied && mounted) {
-              state = const UpdateCompleted('Patch downloaded. Restart anytime.');
+              state =
+                  const UpdateCompleted('Patch downloaded. Restart anytime.');
             } else if (mounted) {
               state = const UpdateCompleted();
             }
@@ -246,7 +251,8 @@ class UpdateController extends StateNotifier<UpdateState> {
       await _otaInstaller.installApk(apkFile);
 
       if (!mounted) return;
-      state = const UpdateCompleted('Installer launched. Follow the on-screen prompt to finish.');
+      state = const UpdateCompleted(
+          'Installer launched. Follow the on-screen prompt to finish.');
     } catch (e) {
       debugPrint('APK download/install error: $e');
       if (!mounted) return;
@@ -272,7 +278,8 @@ class UpdateController extends StateNotifier<UpdateState> {
       } else {
         if (!mounted) return;
         state = const UpdateError(
-          message: 'Downloaded package not found. Please try downloading again.',
+          message:
+              'Downloaded package not found. Please try downloading again.',
           canRetry: true,
         );
       }

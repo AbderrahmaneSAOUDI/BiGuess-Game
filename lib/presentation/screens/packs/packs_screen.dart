@@ -22,8 +22,7 @@ class PacksScreen extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final accent = AppConstants.getTopicColor(topicName);
 
-    final topPadding =
-        MediaQuery.paddingOf(context).top + kToolbarHeight + 24;
+    final topPadding = MediaQuery.paddingOf(context).top + kToolbarHeight + 24;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -191,9 +190,8 @@ class _PackCard extends StatelessWidget {
                           ? Icons.play_arrow_rounded
                           : Icons.lock_rounded,
                       size: 26,
-                      color: isAvailable
-                          ? theme.colorScheme.primary
-                          : Colors.grey,
+                      color:
+                          isAvailable ? theme.colorScheme.primary : Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 12),

@@ -23,11 +23,14 @@ class GameRecord {
     final id = rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '');
 
     final rawTurns = json['total_turns'] ?? json['totalTurns'];
-    final totalTurns = rawTurns is int ? rawTurns : int.tryParse(rawTurns?.toString() ?? '') ?? 0;
+    final totalTurns = rawTurns is int
+        ? rawTurns
+        : int.tryParse(rawTurns?.toString() ?? '') ?? 0;
 
     final rawDuration = json['duration_seconds'] ?? json['durationSeconds'];
-    final durationSeconds =
-        rawDuration is int ? rawDuration : int.tryParse(rawDuration?.toString() ?? '') ?? 0;
+    final durationSeconds = rawDuration is int
+        ? rawDuration
+        : int.tryParse(rawDuration?.toString() ?? '') ?? 0;
 
     DateTime? createdAt;
     if (json['created_at'] != null) {

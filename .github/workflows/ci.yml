@@ -1,0 +1,128 @@
+name: CI & Fast Verification
+
+# ==============================================================================
+# BiGuess Game — Continuous Integration & Fast Quality Gates
+#
+# Runs fast verification for all pull requests targeting `main` and pushes to `main`.
+# Verifies dependency resolution, code formatting, static analysis, unit/widget
+# tests, manifest synchronization, asset integrity, and version triad consistency.
+#
+# NOTE: This workflow does NOT trigger production releases, build release APKs,
+# or publish artifacts. Release publishing is handled via dedicated release tags.
+# ==============================================================================
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Cancel in-progress runs on the same branch or PR to conserve CI resources
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Fast Verification & Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ------------------------------------------------------------------------
+      # Toolchain: Python for manifest generation and asset integrity audit
+      # Pinned to Python 3.11 for consistency
+      # ------------------------------------------------------------------------
+      - name: Set up Python Tooling (3.11)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python Audit Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow
+
+      # ------------------------------------------------------------------------
+      # Toolchain: Flutter & Dart SDK
+      # Uses subosito/flutter-action@v2 with stable channel and built-in caching.
+      # To pin to a specific exact Flutter release in the future, set:
+      #   flutter-version: '3.47.9' (or target release)
+      # ------------------------------------------------------------------------
+      - name: Set up Flutter Toolchain (channel stable)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+
+      # ------------------------------------------------------------------------
+      # Caching: Pub cache
+      # Caches ~/.pub-cache keyed by OS and pubspec.lock hash
+      # ------------------------------------------------------------------------
+      - name: Cache Pub Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Output Toolchain Versions
+        run: |
+          echo "=== Installed Toolchains ==="
+          flutter --version
+          dart --version
+          python3 --version
+
+      # ------------------------------------------------------------------------
+      # Quality Gate 1: Dependency Resolution
+      # ------------------------------------------------------------------------
+      - name: Gate 1 - Resolve Flutter Dependencies
+        run: flutter pub get
+
+      # ------------------------------------------------------------------------
+      # Quality Gate 2: Code Formatting
+      # ------------------------------------------------------------------------
+      - name: Gate 2 - Dart Code Formatting Check
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      # ------------------------------------------------------------------------
+      # Quality Gate 3: Static Analysis & Lints
+      # ------------------------------------------------------------------------
+      - name: Gate 3 - Static Analysis (Fatal Infos)
+        run: flutter analyze --fatal-infos
+
+      # ------------------------------------------------------------------------
+      # Quality Gate 4: Automated Test Suite (Unit & Widget)
+      # ------------------------------------------------------------------------
+      - name: Gate 4 - Automated Test Suite
+        run: flutter test
+
+      # ------------------------------------------------------------------------
+      # Quality Gate 5: Topic & Pack Manifest Synchronization
+      # ------------------------------------------------------------------------
+      - name: Gate 5 - Topic/Pack Manifest Synchronization Check
+        run: python3 scripts/generate_manifest.py --check
+
+      # ------------------------------------------------------------------------
+      # Quality Gate 6: Asset Integrity & Health Audit
+      # ------------------------------------------------------------------------
+      - name: Gate 6 - Asset Integrity & Health Audit
+        run: python3 scripts/audit_assets.py
+
+      # ------------------------------------------------------------------------
+      # Quality Gate 7: Version Triad Synchronization Check
+      # ------------------------------------------------------------------------
+      - name: Gate 7 - Version Triad Synchronization Check
+        run: |
+          python3 scripts/release.py --version-only
+          git diff --exit-code pubspec.yaml version.json lib/core/constants/app_constants.dart

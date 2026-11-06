@@ -1,39 +1,16 @@
-# BiGuess Roadmap & Project Status
+# Roadmap navigation
 
-## Current Phase: Phase 4 (Polishing & Experience Refinement)
+`TODO.md` owns ticket ordering, checkboxes, acceptance criteria, and human gates. This file is an index, not a second backlog. Re-read the selected ticket before acting; audit SHAs, versions, inventories, and environment claims in that document are dated evidence.
 
-### ✅ Phase 1: Core Mechanics & Offline Engine — COMPLETE
-- 2-player character deduction flow
-- Randomized card selection algorithm
-- Offline asset loader & WebP rendering pipeline
-- Turn timers and secret character reveal
+| Scope | Where to read |
+| --- | --- |
+| Current application | [architecture.md](architecture.md), [file-map.md](file-map.md), source in `lib/` |
+| Approved target contracts | `docs/migration/DECISIONS.md`; relevant `BIGUESS_PRODUCT_BLUEPRINT.md` sections |
+| Baseline and migration decisions | `TODO.md` Phase A (T01–T05); `docs/migration/BASELINE.md` is historical verification |
+| Local domain, installed packs, sessions | `TODO.md` Phase B (T06–T18) |
+| Content backend contracts and infrastructure | `TODO.md` Phase C (T19–T25) |
+| Separate trusted-contributor Studio | `TODO.md` Phase D (T26–T38) |
+| Mobile catalog/download/sync integration | `TODO.md` Phase E (T39–T45) |
+| Migration, release and playtest gates | `TODO.md` Phase F (T46–T49) |
 
-### ✅ Phase 2: Topics & Expansions — COMPLETE
-- 18+ legendary Anime franchises cataloged (920+ character cards)
-- Geography Flag packs (250+ country flags)
-- Pack selector with dynamic grid and topic filtering
-- Animated card interactions and countdown components
-
-### ✅ Phase 3: Hybrid OTA Update System — COMPLETE
-- Shorebird instant hot-patching for Dart/asset fixes
-- In-App ABI-split APK installer (`dio`, `open_filex`, `restart_app`)
-- Mandatory update enforcement modal for outdated versions
-- Release automation tooling (`scripts/release.py`)
-
-### 🔄 Phase 4: Polish & Expansion — IN PROGRESS
-- ✅ Operational agents setup (`.agents/rules`, `hooks`, `sidecars`, `skills`)
-- ✅ Date-based semantic versioning (inception: 2025-05-27)
-- ⬜ Additional custom topic packs (Gaming, Movies)
-- ⬜ Sound effects & tactile haptic feedback toggles
-- ⬜ Accessibility & high-contrast mode polish
-
----
-
-## Architecture Alignment Roadmap (`TODO.md`)
-
-### 🔄 Phase A: Freeze, verify, and make migration safe — IN PROGRESS
-- [x] **T01 — GATE: Freeze the behavioral baseline** (`docs/migration/BASELINE.md`)
-- [x] **T02 — GATE: Resolve implementation contracts and blueprint ambiguities** (`docs/migration/DECISIONS.md`)
-- [ ] **T03 — Add continuous integration and fast verification** *(Next)*
-- [ ] **T04 — GATE: Repair Android release safety without shipping**
-- [ ] **T05 — GATE: Make a reversible content inventory and rights quarantine**
+Do not infer completion from scaffolding: the existing record API is not the planned content API; bundled assets are not installed downloadable Packs; version metadata is not a released binary. Do not start the next ticket merely because a document describes it. Apply the user's requested scope and explicit gate acceptance.

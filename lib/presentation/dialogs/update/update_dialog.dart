@@ -102,16 +102,17 @@ class UpdateDialog extends ConsumerWidget {
                 switch (updateState) {
                   UpdateIdle() => _buildIdleState(context, controller, theme),
                   UpdateChecking() => _buildCheckingState(theme),
-                  UpdateAvailable() =>
-                    _buildAvailableState(context, ref, updateState, theme, isMandatory),
-                  UpdateDownloading() =>
-                    _buildDownloadingState(context, controller, updateState, theme, isMandatory),
+                  UpdateAvailable() => _buildAvailableState(
+                      context, ref, updateState, theme, isMandatory),
+                  UpdateDownloading() => _buildDownloadingState(
+                      context, controller, updateState, theme, isMandatory),
                   UpdateInstalling() => _buildInstallingState(theme),
                   UpdatePatching() => _buildPatchingState(theme),
                   UpdateRestarting() => _buildRestartingState(theme),
-                  UpdateCompleted() =>
-                    _buildCompletedState(context, controller, updateState, theme),
-                  UpdateSkipped() => _buildSkippedState(context, controller, theme),
+                  UpdateCompleted() => _buildCompletedState(
+                      context, controller, updateState, theme),
+                  UpdateSkipped() =>
+                    _buildSkippedState(context, controller, theme),
                   UpdateError() =>
                     _buildErrorState(context, controller, updateState, theme),
                 },
@@ -127,7 +128,8 @@ class UpdateDialog extends ConsumerWidget {
     return switch (state) {
       UpdateIdle() => 'Check for the latest features & fixes',
       UpdateChecking() => 'Connecting to update servers...',
-      UpdateAvailable(:final latestVersion) => 'Version v$latestVersion is ready',
+      UpdateAvailable(:final latestVersion) =>
+        'Version v$latestVersion is ready',
       UpdateDownloading() => 'Downloading update package...',
       UpdateInstalling() => 'Launching package installer...',
       UpdatePatching() => 'Downloading over-the-air patch...',
@@ -299,7 +301,8 @@ class UpdateDialog extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              color: theme.colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -342,7 +345,8 @@ class UpdateDialog extends ConsumerWidget {
             isPatch ? Icons.bolt_rounded : Icons.download_rounded,
             size: 18,
           ),
-          label: Text(isPatch ? 'Apply Instant Patch' : 'Download & Install APK'),
+          label:
+              Text(isPatch ? 'Apply Instant Patch' : 'Download & Install APK'),
           style: FilledButton.styleFrom(
             backgroundColor: isMandatory ? theme.colorScheme.error : null,
             foregroundColor: isMandatory ? theme.colorScheme.onError : null,

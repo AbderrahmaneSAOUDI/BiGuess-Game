@@ -108,8 +108,10 @@ class _AnimatedMysteryBoxState extends State<AnimatedMysteryBox>
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
                               colors: [
-                                theme.colorScheme.primary.withValues(alpha: 0.25),
-                                theme.colorScheme.primary.withValues(alpha: 0.0),
+                                theme.colorScheme.primary
+                                    .withValues(alpha: 0.25),
+                                theme.colorScheme.primary
+                                    .withValues(alpha: 0.0),
                               ],
                             ),
                           ),
@@ -130,7 +132,8 @@ class _AnimatedMysteryBoxState extends State<AnimatedMysteryBox>
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(

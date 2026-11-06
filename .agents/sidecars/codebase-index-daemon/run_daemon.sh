@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-python3 .agents/sidecars/codebase-index-daemon/indexer_daemon.py
+set -euo pipefail
+sidecar_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+exec python3 "$sidecar_dir/indexer_daemon.py" "$@"

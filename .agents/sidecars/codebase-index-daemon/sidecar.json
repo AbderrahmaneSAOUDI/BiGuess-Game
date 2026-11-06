@@ -1,11 +1,9 @@
 {
   "name": "codebase-index-daemon",
-  "enabled": true,
-  "description": "Continuous background codebase indexer and symbol cache generator",
-  "command": "python3",
-  "args": ["indexer_daemon.py"],
-  "restart_policy": "never",
-  "env": {
-    "POLL_INTERVAL": "5"
-  }
+  "enabled": false,
+  "description": "Opt-in foreground active-source indexer; use --once for bounded refresh",
+  "command": "bash",
+  "args": [".agents/sidecars/codebase-index-daemon/run_daemon.sh", "--watch"],
+  "working_directory": "repository-root",
+  "restart_policy": "never"
 }

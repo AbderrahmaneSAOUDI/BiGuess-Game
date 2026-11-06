@@ -1,8 +1,9 @@
 {
   "name": "test-daemon",
-  "enabled": true,
-  "description": "Background test watcher daemon for continuous verification",
+  "enabled": false,
+  "description": "Opt-in serial Flutter test watcher; use targeted test paths and stop with Ctrl-C",
   "command": "bash",
-  "args": ["run_daemon.sh"],
+  "args": [".agents/sidecars/test-daemon/run_daemon.sh", "--watch"],
+  "working_directory": "repository-root",
   "restart_policy": "never"
 }

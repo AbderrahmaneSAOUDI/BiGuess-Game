@@ -54,7 +54,8 @@ class CloudDatabaseService {
       }
       return const [];
     } on DioException catch (e) {
-      throw Exception('Failed to load records from Cloudflare D1: ${e.message}');
+      throw Exception(
+          'Failed to load records from Cloudflare D1: ${e.message}');
     }
   }
 

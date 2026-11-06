@@ -75,9 +75,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         key: const ValueKey('mystery'),
         onTap: state.isLoading || state.isCountingDown
             ? null
-            : () => ref
-                .read(gameRoundProvider(_key).notifier)
-                .startCountdown(),
+            : () => ref.read(gameRoundProvider(_key).notifier).startCountdown(),
       );
     }
   }
@@ -208,20 +206,24 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                                       size: 13,
                                       color: isDark
                                           ? Colors.white.withValues(alpha: 0.45)
-                                          : Colors.black.withValues(alpha: 0.45),
+                                          : Colors.black
+                                              .withValues(alpha: 0.45),
                                     ),
                                     const SizedBox(width: 5),
                                     Flexible(
                                       child: Text(
                                         AppConstants.imageDisclaimer,
-                                        key: const ValueKey('image_disclaimer_text'),
+                                        key: const ValueKey(
+                                            'image_disclaimer_text'),
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.w400,
                                           color: isDark
-                                              ? Colors.white.withValues(alpha: 0.45)
-                                              : Colors.black.withValues(alpha: 0.45),
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.45)
+                                              : Colors.black
+                                                  .withValues(alpha: 0.45),
                                           letterSpacing: 0.15,
                                         ),
                                       ),
@@ -265,7 +267,8 @@ class _GameCharacterDisplay extends ConsumerWidget {
     final double nameReservedHeight = hasName ? 60.0 : 0.0;
 
     final double availableHeight =
-        (constraints.maxHeight - nameReservedHeight - 6.0).clamp(0.0, double.infinity);
+        (constraints.maxHeight - nameReservedHeight - 6.0)
+            .clamp(0.0, double.infinity);
     final double effectiveContainerWidth =
         constraints.maxWidth > 0 ? constraints.maxWidth : 360.0;
     final double availableWidth = effectiveContainerWidth * 0.80;

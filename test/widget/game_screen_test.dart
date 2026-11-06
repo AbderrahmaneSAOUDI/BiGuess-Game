@@ -9,7 +9,8 @@ import 'package:gdg_guess_game/providers/game_settings_controller.dart';
 import 'package:gdg_guess_game/providers/topic_pack_providers.dart';
 
 void main() {
-  testWidgets('AnimatedCharacterCard mounts and renders without layout errors', (tester) async {
+  testWidgets('AnimatedCharacterCard mounts and renders without layout errors',
+      (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -38,7 +39,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('AnimatedCountdown renders and animates properly', (tester) async {
+  testWidgets('AnimatedCountdown renders and animates properly',
+      (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -56,7 +58,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('GameScreen renders with overridden pack assets and starts countdown', (tester) async {
+  testWidgets(
+      'GameScreen renders with overridden pack assets and starts countdown',
+      (tester) async {
     const key = (topic: 'Anime', pack: 'TestPack');
 
     await tester.pumpWidget(
@@ -90,7 +94,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('AnimatedCharacterCard all-in-one toggle button toggles visibility without moving card', (tester) async {
+  testWidgets(
+      'AnimatedCharacterCard all-in-one toggle button toggles visibility without moving card',
+      (tester) async {
     bool toggled = false;
 
     await tester.pumpWidget(
@@ -121,7 +127,9 @@ void main() {
     expect(toggled, isTrue);
   });
 
-  testWidgets('AnimatedCharacterCard renders Show Name button when hint is hidden', (tester) async {
+  testWidgets(
+      'AnimatedCharacterCard renders Show Name button when hint is hidden',
+      (tester) async {
     bool toggled = false;
 
     await tester.pumpWidget(
@@ -153,7 +161,9 @@ void main() {
     expect(toggled, isTrue);
   });
 
-  testWidgets('AnimatedCharacterCard card does not move when toggling showNameHint', (tester) async {
+  testWidgets(
+      'AnimatedCharacterCard card does not move when toggling showNameHint',
+      (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -166,8 +176,9 @@ void main() {
                     imageAsset: 'assets/logos/biguess-icon.webp',
                     characterName: 'Killua',
                     showNameHint: showHint,
-                    onToggleName: () =>
-                        ref.read(showCharacterNameHintProvider.notifier).toggle(),
+                    onToggleName: () => ref
+                        .read(showCharacterNameHintProvider.notifier)
+                        .toggle(),
                     maxWidth: 300,
                     maxHeight: 400,
                   );
