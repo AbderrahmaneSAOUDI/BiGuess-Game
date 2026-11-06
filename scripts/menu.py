@@ -336,8 +336,28 @@ def task_character_stats() -> None:
         run_script("character_stats.py", [])
 
 
+def android_release_signing_ready() -> bool:
+    """Validate configured Android signing without building or exposing values."""
+    try:
+        result = subprocess.run(
+            [str(REPO_ROOT / "android/gradlew"), ":app:validateReleaseSigning",
+             "-PrequireReleaseSigning=true", "-q"],
+            cwd=str(REPO_ROOT / "android"), capture_output=True, text=True, timeout=90,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        print("Could not check Android signing. Check your Java/Android SDK setup.")
+        return False
+    if result.returncode:
+        print(f"{YELLOW}Android Release requires configured release signing.{RESET}")
+        print("Configure android/key.properties using android/key.properties.example,")
+        print("or use the signing environment variables in the release safety guide.")
+        print("Choose Profile for local testing without a release key.")
+        return False
+    return True
+
+
 def task_run_app() -> None:
-    """Pick a discovered device and run Flutter with its default settings."""
+    """Choose a device and build mode, keeping the launch flow short."""
     print(f"\n{BOLD}{BLUE}▶ Choose a device to run BiGuess{RESET}")
     try:
         result = subprocess.run(
@@ -381,9 +401,37 @@ def task_run_app() -> None:
         if choice.isascii() and choice.isdigit() and 1 <= int(choice) <= len(devices):
             break
         print(f"Choose a device number from 1 to {len(devices)}.")
-    command = ["flutter", "run", "-d", devices[int(choice) - 1]["id"]]
+    device = devices[int(choice) - 1]
+    android = str(device.get("targetPlatform", "")).startswith("android")
+    print(f"\n{BOLD}{BLUE}▶ Choose app build type{RESET}")
+    print(f"  {CYAN}[1]{RESET} Debug   — development with hot reload")
+    print(f"  {CYAN}[2]{RESET} Profile — recommended for local play and performance testing")
+    print(f"  {CYAN}[3]{RESET} Release — optimized build; Android requires release signing")
+    print(f"  {CYAN}[0]{RESET} Back\n")
+    while True:
+        build_choice = prompt_input("Build type", "2")
+        mode = {"1": "debug", "2": "profile", "3": "release"}.get(build_choice)
+        if mode is None:
+            print("Choose a build type from 1 to 3.")
+            continue
+        if android and mode == "release" and not android_release_signing_ready():
+            continue
+        break
+    standalone = android and mode != "debug"
+    command = ["flutter", "run", "-d", device["id"], f"--{mode}"]
+    if standalone:
+        command.append("--no-resident")
     print(f"\n{DIM}$ {shlex.join(command)}{RESET}\n")
+    print("Flutter will build, install, and open the app. Cached builds are reused.")
+    if standalone:
+        print("The menu returns after launch; BiGuess remains installed and running.\n")
+    elif android:
+        print("After the app opens: d = detach and keep it running; q = stop the app.\n")
+    else:
+        print("Keep this terminal open while using the app.\n")
     run_command(command)
+    if standalone:
+        print(f"\n{GREEN}BiGuess installed and launched. Reopen it from your phone's app list.{RESET}")
 
 
 def task_build_app() -> None:

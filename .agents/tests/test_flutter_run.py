@@ -35,15 +35,15 @@ class FlutterRunTests(unittest.TestCase):
     def discovery(self, devices=None, code=0):
         return subprocess.CompletedProcess([], code, json.dumps(self.devices if devices is None else devices), '')
 
-    def test_chosen_device_is_the_only_launch_option(self):
+    def test_chosen_device_and_profile_type_launch_without_extra_prompts(self):
         with patch.object(menu.subprocess, 'run', return_value=self.discovery()) as discover, \
-                patch.object(menu, 'read_line_with_esc', return_value='2') as prompt, \
+                patch.object(menu, 'read_line_with_esc', side_effect=['2', '2']) as prompt, \
                 patch.object(menu, 'run_command') as run:
             menu.task_run_app()
         discover.assert_called_once_with(['flutter', 'devices', '--machine'], cwd=str(ROOT),
                                          capture_output=True, text=True, timeout=30)
-        prompt.assert_called_once()
-        run.assert_called_once_with(['flutter', 'run', '-d', 'browser-id'])
+        self.assertEqual(prompt.call_count, 2)
+        run.assert_called_once_with(['flutter', 'run', '-d', 'browser-id', '--profile'])
         self.assertIn('My phone', self.output.getvalue())
         self.assertIn('Chrome', self.output.getvalue())
         self.assertIn('browser-id', self.output.getvalue())
@@ -51,10 +51,10 @@ class FlutterRunTests(unittest.TestCase):
 
     def test_default_device_and_invalid_selection_reprompt(self):
         with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
-                patch.object(menu, 'read_line_with_esc', side_effect=['99', 'invalid', '']), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['99', 'invalid', '', '']), \
                 patch.object(menu, 'run_command') as run:
             menu.task_run_app()
-        run.assert_called_once_with(['flutter', 'run', '-d', 'phone-id'])
+        run.assert_called_once_with(['flutter', 'run', '-d', 'phone-id', '--profile', '--no-resident'])
 
     def test_cancel_never_launches(self):
         with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
@@ -94,9 +94,74 @@ class FlutterRunTests(unittest.TestCase):
 
     def test_launch_failure_preserves_flutter_exit_status(self):
         with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
-                patch.object(menu, 'read_line_with_esc', return_value='1'), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['1', '2']), \
                 patch.object(menu, 'run_command', side_effect=menu.ScriptFailed(7)):
             self.assertEqual(menu.run_single_task('run'), 7)
+
+    def test_debug_stays_attached_and_explains_detach(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['1', '1']), \
+                patch.object(menu, 'run_command') as run:
+            menu.task_run_app()
+        run.assert_called_once_with(['flutter', 'run', '-d', 'phone-id', '--debug'])
+        self.assertIn('d = detach', self.output.getvalue())
+
+    def test_android_release_requires_signing_before_launch(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['1', '3', '2']), \
+                patch.object(menu, 'android_release_signing_ready', return_value=False) as signing, \
+                patch.object(menu, 'run_command') as run:
+            menu.task_run_app()
+        signing.assert_called_once()
+        run.assert_called_once_with(['flutter', 'run', '-d', 'phone-id', '--profile', '--no-resident'])
+
+    def test_configured_android_release_launches_standalone(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['1', '3']), \
+                patch.object(menu, 'android_release_signing_ready', return_value=True), \
+                patch.object(menu, 'run_command') as run:
+            menu.task_run_app()
+        run.assert_called_once_with(['flutter', 'run', '-d', 'phone-id', '--release', '--no-resident'])
+        self.assertIn('installed and launched', self.output.getvalue())
+
+    def test_non_android_release_keeps_host_running_without_android_signing(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['2', '3']), \
+                patch.object(menu, 'android_release_signing_ready') as signing, \
+                patch.object(menu, 'run_command') as run:
+            menu.task_run_app()
+        signing.assert_not_called()
+        run.assert_called_once_with(['flutter', 'run', '-d', 'browser-id', '--release'])
+
+    def test_build_type_cancel_or_invalid_choice_does_not_launch_prematurely(self):
+        for answers in (['1', '0'], ['1', 'invalid', '0']):
+            with self.subTest(answers=answers), \
+                    patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                    patch.object(menu, 'read_line_with_esc', side_effect=answers), \
+                    patch.object(menu, 'run_command') as run:
+                self.assertEqual(menu.run_single_task('run'), 0)
+                run.assert_not_called()
+
+    def test_failed_launch_never_reports_success(self):
+        with patch.object(menu.subprocess, 'run', return_value=self.discovery()), \
+                patch.object(menu, 'read_line_with_esc', side_effect=['1', '2']), \
+                patch.object(menu, 'run_command', side_effect=menu.ScriptFailed(1)):
+            self.assertEqual(menu.run_single_task('run'), 1)
+        self.assertNotIn('BiGuess installed and launched.', self.output.getvalue())
+
+    def test_signing_check_errors_fail_closed_without_exposing_output(self):
+        for outcome, expected in ((subprocess.CompletedProcess([], 0, 'private', 'private'), True),
+                                  (subprocess.CompletedProcess([], 1, 'private', 'private'), False),
+                                  (FileNotFoundError(), False),
+                                  (subprocess.TimeoutExpired('gradle', 90), False)):
+            with self.subTest(outcome=type(outcome).__name__), patch.object(menu.subprocess, 'run') as run:
+                if isinstance(outcome, Exception):
+                    run.side_effect = outcome
+                else:
+                    run.return_value = outcome
+                self.assertEqual(menu.android_release_signing_ready(), expected)
+                self.assertIn(':app:validateReleaseSigning', run.call_args.args[0])
+        self.assertNotIn('private', self.output.getvalue())
 
     def test_menu_numbers_stay_sequential_and_run_aliases_match(self):
         entries = [entry for _, group in menu.TOOL_GROUPS for entry in group]

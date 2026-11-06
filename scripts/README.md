@@ -112,10 +112,21 @@ Choose **11 — run**, or open the device picker directly:
 ./scripts/run.sh run
 ```
 
-The picker lists available devices by name, platform, and ID. Select a device
-number to start `flutter run -d <device-id>` with Flutter's default settings.
-Use `0` or Escape to go back. Flutter stays attached to the terminal for hot reload
-and quit controls.
+Choose a device, then a build type:
+
+- **Debug:** development with hot reload. On Android, press `d` to detach and keep
+  the app running; `q` stops the app. Neither action uninstalls it.
+- **Profile (default):** recommended for local play and performance testing.
+- **Release:** optimized build; Android requires configured release signing.
+
+For Android Profile/Release, the launcher returns to the menu after installing
+and opening BiGuess (`--no-resident`); the app remains installed and running.
+Browser/desktop runs stay attached. Use `0` or Escape to cancel either choice.
+There are no entry-point, define, or extra-flag prompts. These are Flutter build
+modes, not separate Stable/Beta distribution channels or side-by-side apps.
+
+The first build, switching modes, or changing source can take time. Flutter
+automatically reuses cached build work; Profile does not promise faster compilation.
 
 You can also specify a device directly:
 
