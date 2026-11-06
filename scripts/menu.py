@@ -9,6 +9,7 @@ import json as json_mod
 import os
 import re
 import select
+import shlex
 import shutil
 import subprocess
 import sys
@@ -207,6 +208,9 @@ def run_command(cmd: list) -> None:
             raise ScriptFailed(result.returncode)
     except KeyboardInterrupt:
         raise ScriptFailed(130)
+    except FileNotFoundError:
+        print(f"Command not found: {cmd[0]}. Install it or add it to PATH.", file=sys.stderr)
+        raise ScriptFailed(127)
 
 
 def run_script(script_name: str, args: list) -> None:
@@ -330,6 +334,48 @@ def task_character_stats() -> None:
         run_script("character_stats.py", ["--export-json", json_p, "--export-csv", csv_p])
     elif choice == "1":
         run_script("character_stats.py", [])
+
+
+def task_run_app() -> None:
+    """Choose launch settings and keep Flutter's interactive console attached."""
+    print(f"\n{BOLD}{BLUE}▶ Run BiGuess{RESET}")
+    while True:
+        print(f"  {CYAN}[1]{RESET} Debug — development with hot reload")
+        print(f"  {CYAN}[2]{RESET} Profile — measure performance")
+        print(f"  {CYAN}[3]{RESET} Release — run an optimized build")
+        print(f"  {CYAN}[4]{RESET} List connected devices and emulators")
+        print(f"  {CYAN}[0]{RESET} Back\n")
+        choice = prompt_input("Run mode", "1")
+        if choice == "4":
+            run_command(["flutter", "devices"])
+            continue
+        mode = {"1": "debug", "2": "profile", "3": "release"}.get(choice)
+        if mode is None:
+            print("Choose a run option from 1 to 4.")
+            return
+        break
+
+    device = prompt_input("Device ID or name (blank lets Flutter choose)")
+    target = prompt_input("Entry-point file", "lib/main.dart")
+    defines = prompt_input('Dart defines (KEY=value, space-separated; quote values with spaces)')
+    extra = prompt_input("Extra Flutter options (for example --verbose or --web-port 8080)")
+    try:
+        define_args = shlex.split(defines)
+        extra_args = shlex.split(extra)
+    except ValueError as error:
+        print(f"{RED}Invalid quoting: {error}{RESET}")
+        return
+    if any("=" not in value or not value.split("=", 1)[0].strip() for value in define_args):
+        print(f"{RED}Each Dart define must use KEY=value.{RESET}")
+        return
+    command = ["flutter", "run", f"--{mode}", "--target", target]
+    if device:
+        command.extend(["--device-id", device])
+    command.extend(f"--dart-define={value}" for value in define_args)
+    command.extend(extra_args)
+    print(f"\n{DIM}$ {shlex.join(command)}{RESET}")
+    print("Flutter keeps control of this terminal. Use its displayed keys to reload or quit.\n")
+    run_command(command)
 
 
 def task_build_app() -> None:
@@ -620,6 +666,8 @@ TASK_MAP = {
     "stats": task_character_stats,
     "analytics": task_character_stats,
     "build": task_build_app,
+    "run": task_run_app,
+    "launch": task_run_app,
     "clean": task_clean_project,
     "release": task_release_pipeline,
     "publish": task_release_pipeline,
@@ -656,10 +704,11 @@ TOOL_GROUPS = [
         ("10", "export", "Create an offline test Pack", "export_pack.py"),
     ]),
     ("Build and maintain", [
-        ("11", "build", "Build APKs, an App Bundle, or the web app", "build_app.py"),
-        ("12", "version", "View or synchronize version files", "release.py --version-only"),
-        ("13", "clean", "Remove generated caches and temporary files", "menu.py clean"),
-        ("14", "release", "Publish a base release or OTA patch", "release.py"),
+        ("11", "run", "Run the app on a device or emulator", "flutter run"),
+        ("12", "build", "Build APKs, an App Bundle, or the web app", "build_app.py"),
+        ("13", "version", "View or synchronize version files", "release.py --version-only"),
+        ("14", "clean", "Remove generated caches and temporary files", "menu.py clean"),
+        ("15", "release", "Publish a base release or OTA patch", "release.py"),
     ]),
 ]
 
@@ -676,7 +725,7 @@ def print_tool_tree(show_files: bool = False) -> None:
         "baseline": "✅", "audit": "🔍", "inventory": "📦", "offline": "📴",
         "topics": "📂", "manifest": "📋", "convert": "🖼️", "normalize": "✏️",
         "stats": "📊", "export": "📤", "build": "🚀", "version": "🏷️",
-        "clean": "🧹", "release": "📦",
+        "clean": "🧹", "release": "📦", "run": "📱",
     }
     description_width = max(
         _display_width(description)

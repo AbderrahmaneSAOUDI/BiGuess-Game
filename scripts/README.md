@@ -8,7 +8,7 @@ Start here:
 ./scripts/run.sh --help   # Show commands
 ```
 
-The menu groups tools into **Check the app**, **Manage content**, and **Build and maintain**. Enter a number or tool name. Use `0`, Escape, or `back` to return. Menu numbers follow display order: **1–4** for checks, **5–10** for content, and **11–14** for build and maintenance. Script paths and named shortcuts stay the same.
+The menu groups tools into **Check the app**, **Manage content**, and **Build and maintain**. Enter a number or tool name. Use `0`, Escape, or `back` to return. Menu numbers follow display order: **1–4** for checks, **5–10** for content, and **11–15** for running, building and maintenance. Script paths and named shortcuts stay the same.
 
 To run a command directly, add its arguments after the tool name. For example, `./scripts/run.sh manifest --check` checks the image list without opening a menu. Commands report a failed check with a nonzero exit code.
 
@@ -105,6 +105,26 @@ A fixture Pack and every Card must explicitly declare publication clearance, sou
 `content_inventory.py --export-public-test` copies only verified, explicitly cleared images to an empty destination. It verifies the inventoried bytes again before copying. See the [Pack format](../docs/migration/PACK_FORMAT.md) and [content inventory](../docs/migration/CONTENT_INVENTORY_AND_RIGHTS.md).
 
 ## Build and maintain
+
+Choose **11 — run**, or open its launch options directly:
+
+```bash
+./scripts/run.sh run
+```
+
+Choose Debug (default, with hot reload), Profile, or Release. You can list devices,
+enter a device ID/name, change the entry-point file, add `KEY=value` Dart defines,
+and supply extra Flutter flags. Leave optional fields blank to use Flutter's
+defaults. Quote defines with spaces, for example `LABEL="My test build"`.
+Flutter stays attached to the terminal for its interactive reload/quit controls.
+
+Pass arguments directly to skip the prompts:
+
+```bash
+./scripts/run.sh run --debug -d DEVICE_ID
+./scripts/run.sh run --profile -d DEVICE_ID --dart-define=isProTestEnabled=true
+./scripts/run.sh run --help  # All options supported by your installed Flutter SDK
+```
 
 ```bash
 ./scripts/run.sh build apk --debug

@@ -34,7 +34,7 @@ else
             stats|analytics|\
             inventory|quarantine|\
             baseline|export|offline|\
-            build|\
+            run|launch|build|\
             clean|\
             release|publish|\
             patch|\
@@ -86,6 +86,9 @@ else
                 ;;
             offline)
                 python3 "$SCRIPT_DIR/check_offline_gameplay.py" "$@"
+                ;;
+            run|launch)
+                flutter run "$@"
                 ;;
             build)
                 python3 "$SCRIPT_DIR/build_app.py" "$@"
