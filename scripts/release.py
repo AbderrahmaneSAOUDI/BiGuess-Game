@@ -17,6 +17,7 @@ import time
 import urllib.request
 from pathlib import Path
 from typing import Optional, Tuple
+from zoneinfo import ZoneInfo
 
 # ANSI formatting
 GREEN = "\033[92m"
@@ -37,6 +38,8 @@ VERSION_JSON = REPO_ROOT / "version.json"
 # GitHub config
 GITHUB_USER = "AbderrahmaneSAOUDI"
 GITHUB_REPO = "BiGuess-Game"
+APK_NAMES = {abi: f"app-{abi}-release.apk"
+             for abi in ("arm64-v8a", "armeabi-v7a", "x86_64")}
 
 
 # =============================================================================
@@ -128,7 +131,7 @@ BASE_DATE = datetime.date(2025, 5, 27)
 def bump_version(current: str, bump_type: str) -> str:
     """Bump the version string by major, minor, or patch with date-based minor calculation."""
     major, minor, patch, build = parse_semver(current)
-    today = datetime.date.today()
+    today = datetime.datetime.now(ZoneInfo("Africa/Algiers")).date()
     expected_minor = max(0, (today - BASE_DATE).days)
 
     if bump_type == "major":
@@ -280,7 +283,7 @@ def sync_version_json(
     # Build number MUST match the binary built from pubspec.yaml (single source of truth)
     build_number = build
 
-    apk_base = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/latest/download"
+    apk_base = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/download/v{ver_part}"
     
     # Strictly split-ABI APK mapping (no universal/fat APK)
     apk_urls = {
@@ -300,6 +303,18 @@ def sync_version_json(
         "release_notes": release_notes,
     }
 
+    if apk_files:
+        by_name = {path.name: path for path in apk_files}
+        if not set(APK_NAMES.values()) <= by_name.keys():
+            raise ValueError("All three ABI-specific APKs are required before generating release hashes")
+        payload["sha256_hashes"] = {
+            abi: calculate_sha256(by_name[name]) for abi, name in APK_NAMES.items()
+        }
+        payload["sha256"] = payload["sha256_hashes"]["arm64-v8a"]
+    elif existing.get("latest_version") == ver_part and existing.get("build_number") == build:
+        for key in ("sha256_hashes", "sha256", "apk_hashes", "apk_sha256"):
+            if key in existing:
+                payload[key] = existing[key]
     VERSION_JSON.write_text(json.dumps(payload, indent=2) + "\n")
     print(f"{GREEN}✅ version.json → v{ver_part}+{build_number} (has_native_changes: {has_native_changes}){RESET}")
     return payload
@@ -327,6 +342,26 @@ def update_app_constants(version: str) -> None:
 # Build
 # =============================================================================
 
+def find_release_apks(built_after: Optional[float] = None) -> list[Path]:
+    """Choose one complete ABI set, rejecting stale artifacts from a partial build."""
+    directories = [
+        REPO_ROOT / "build/app/outputs/flutter-apk",
+        REPO_ROOT / "build/app/outputs/apk/release",
+        REPO_ROOT / "build/app/outputs/apk",
+    ]
+    selected = []
+    for name in APK_NAMES.values():
+        candidates = [directory / name for directory in directories]
+        artifact = next((path for path in candidates if path.is_file()
+                         and path.stat().st_size > 0
+                         and (built_after is None or path.stat().st_mtime >= built_after - 1)), None)
+        if artifact is None:
+            print(f"Missing or stale release artifact: {name}. A complete new ABI set is required.")
+            return []
+        selected.append(artifact)
+    return selected
+
+
 def build_apks(
     skip_checks: bool = False,
     clean: bool = False,
@@ -339,15 +374,18 @@ def build_apks(
     builder_label = "Shorebird Engine" if sb_bin else "Standard Flutter"
     print(f"\n{BOLD}{BLUE}▶ Building Release APKs via {builder_label} [Split-per-ABI (arm64, armeabi, x86_64)]...{RESET}")
 
-    if clean:
-        run(["flutter", "clean"])
+    if clean and run(["flutter", "clean"]).returncode != 0:
+        return []
 
-    run(["flutter", "pub", "get"])
+    if run(["flutter", "pub", "get"]).returncode != 0:
+        return []
 
     if not skip_checks:
-        result = run(["flutter", "analyze"], capture=True)
-        if result.returncode != 0:
-            print(f"{YELLOW}⚠️  Analysis warnings detected. Continuing...{RESET}")
+        for command in (["flutter", "analyze"], ["flutter", "test"]):
+            result = run(command)
+            if result.returncode != 0:
+                print(f"{RED}Validation failed. Release build stopped.{RESET}")
+                return []
 
     if sb_bin:
         # Build and register base release with Shorebird
@@ -371,18 +409,7 @@ def build_apks(
         print(f"{RED}❌ APK build failed after {elapsed:.1f}s{RESET}")
         return []
 
-    # Find all generated output APKs across output directories
-    candidate_dirs = [
-        REPO_ROOT / "build" / "app" / "outputs" / "flutter-apk",
-        REPO_ROOT / "build" / "app" / "outputs" / "apk" / "release",
-        REPO_ROOT / "build" / "app" / "outputs" / "apk",
-    ]
-    apk_files: list[Path] = []
-    for c_dir in candidate_dirs:
-        if c_dir.exists():
-            for f in c_dir.glob("*.apk"):
-                if "debug" not in f.name and f not in apk_files:
-                    apk_files.append(f)
+    apk_files = find_release_apks(built_after=start)
 
     if not apk_files:
         print(f"{RED}❌ Could not find built APKs in outputs directory{RESET}")
@@ -407,6 +434,9 @@ def build_apks(
 
 def check_gh_cli() -> bool:
     """Check if the GitHub CLI (gh) is installed and authenticated, or GITHUB_TOKEN exists."""
+    if not shutil.which("gh"):
+        print("GitHub CLI is not installed. Install gh before publishing a release.")
+        return False
     if os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"):
         return True
     result = run(["gh", "auth", "status"], capture=True)
@@ -458,17 +488,8 @@ def create_github_release(
     result = run(cmd, capture=False)
 
     if result.returncode != 0:
-        print(f"\n{YELLOW}⚠️  Release creation returned non-zero. Attempting update on existing release...{RESET}")
-        upload_cmd = [
-            "gh", "release", "upload", tag,
-            *[str(p) for p in apk_paths],
-            "--repo", f"{GITHUB_USER}/{GITHUB_REPO}",
-            "--clobber",
-        ]
-        upload_result = run(upload_cmd, capture=False)
-        if upload_result.returncode != 0:
-            print(f"{RED}❌ Failed to upload APKs to GitHub.{RESET}")
-            return False
+        print("GitHub release creation or upload failed. Existing release assets were not overwritten.")
+        return False
 
     print(f"\n{GREEN}✅ GitHub Release {tag} published with {len(apk_paths)} APK(s) attached ({format_bytes(total_bytes)}){RESET}")
     print(f"   🔗 https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/tag/{tag}")
@@ -479,31 +500,74 @@ def create_github_release(
 # Git Operations
 # =============================================================================
 
-def git_commit_and_push(version: str, files: list[str]) -> bool:
+def git_commit_and_push(version: str, files: list[str], push_branch: bool = True) -> bool:
     """Stage, commit, and push release files."""
     tag = f"v{version.split('+')[0]}"
 
     print(f"\n{BOLD}{BLUE}▶ Committing release files...{RESET}")
 
+    if run(["git", "diff", "--cached", "--quiet"]).returncode != 0:
+        print(f"{RED}Commit stopped: existing staged changes must be handled separately.{RESET}")
+        return False
     for f in files:
-        run(["git", "add", f])
+        if run(["git", "add", "--", f]).returncode != 0:
+            return False
 
     result = run(["git", "commit", "-m", f"release: {tag}"])
     if result.returncode != 0:
-        print(f"{YELLOW}⚠️  Nothing to commit (files may already be staged){RESET}")
+        print(f"{RED}Release commit failed. Tagging and push stopped.{RESET}")
+        return False
 
     # Tag the commit
-    run(["git", "tag", "-a", tag, "-m", f"Release {tag}"])
+    if run(["git", "tag", "-a", tag, "-m", f"Release {tag}"]).returncode != 0:
+        return False
 
     # Push
     print(f"\n{BOLD}{BLUE}▶ Pushing to remote...{RESET}")
-    result = run(["git", "push", "--follow-tags"])
+    command = (["git", "push", "--follow-tags"] if push_branch
+               else ["git", "push", "origin", f"refs/tags/{tag}"])
+    result = run(command)
 
     if result.returncode != 0:
         print(f"{RED}❌ Git push failed{RESET}")
         return False
 
-    print(f"{GREEN}✅ Pushed commit + tag {tag}{RESET}")
+    print(f"{GREEN}Pushed {'branch and tag' if push_branch else 'tag only'} {tag}{RESET}")
+    return True
+
+
+def ensure_committed_app_source() -> bool:
+    """A release tag must describe every source file used to build its binaries."""
+    paths = ["lib", "assets", "android", "ios", "linux", "macos", "windows", "web",
+             "pubspec.yaml", "pubspec.lock", "pubspec_overrides.yaml", "shorebird.yaml",
+             ":(exclude)pubspec.yaml", ":(exclude)lib/core/constants/app_constants.dart",
+             ":(exclude)shorebird.yaml"]
+    changed = []
+    for command in (
+        ["git", "diff", "--name-only", "-z", "HEAD", "--", *paths],
+        ["git", "ls-files", "--others", "--exclude-standard", "-z", "--", *paths],
+    ):
+        result = run(command, capture=True)
+        if result.returncode != 0:
+            print("Release stopped: Git could not verify the app source.")
+            return False
+        changed.extend(path for path in result.stdout.split("\0") if path)
+    if changed:
+        print("Release stopped: commit app source changes before building so the tag matches the binary.")
+        for path in sorted(set(changed)):
+            print(f"  {path!r}")
+        return False
+    return True
+
+
+def ensure_draft_branch() -> bool:
+    """Keep draft metadata commits away from the branch serving active updates."""
+    result = run(["git", "symbolic-ref", "--quiet", "--short", "HEAD"], capture=True)
+    branch = result.stdout.strip() if result.returncode == 0 else ""
+    if not branch or branch in ("main", "master"):
+        print("Drafts and prereleases require a separate named release-preparation branch.")
+        print("Create or switch to that branch before publishing; main/master must keep the active manifest.")
+        return False
     return True
 
 
@@ -511,8 +575,36 @@ def git_commit_and_push(version: str, files: list[str]) -> bool:
 # Main Pipeline
 # =============================================================================
 
+def pipeline_preview(args: argparse.Namespace, mode: Optional[str] = None) -> int:
+    """Describe an operation without writing files or invoking pipeline commands."""
+    if mode is None:
+        mode = ("patch" if args.patch else "full release" if args.full_release
+                else "version sync" if args.version_only else "automatic release")
+    current = read_pubspec_version()
+    version = args.set_version or (bump_version(current, args.bump) if args.bump else current)
+    print("Release plan only: no commands will run and no files will change.")
+    print(f"Mode: {mode}")
+    print(f"Current version: {current}")
+    print(f"Requested version: {version}")
+    if mode == "automatic release":
+        print("Execution chooses a patch or base release from native changes and available tooling.")
+    print("Validation during execution: flutter analyze and flutter test"
+          if not args.skip_checks else "Validation during execution: skipped by request")
+    print("Build, upload, version writes, Git commit, tag, and push are all skipped.")
+    return 0
+
+
 def pipeline_full_release(args: argparse.Namespace) -> int:
     """Run the full release pipeline."""
+    if getattr(args, "dry_run", False):
+        return pipeline_preview(args, "full release")
+    if args.skip_github and not args.skip_git and not (args.draft or args.prerelease):
+        print("Active update metadata cannot be pushed without uploading its APKs. Use --skip-git for a local build.")
+        return 1
+    if not ensure_committed_app_source():
+        return 1
+    if (args.draft or args.prerelease) and not ensure_draft_branch():
+        return 1
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         🚀  BiGuess Full Release Pipeline                    {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
@@ -520,7 +612,7 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
     # Step 0: Pre-flight checks
     if not args.skip_github:
         if not check_gh_cli():
-            print(f"{YELLOW}⚠️  GitHub upload will be skipped because 'gh auth login' has not been performed.{RESET}")
+            return 1
 
     # Step 1: Version
     current = read_pubspec_version()
@@ -564,10 +656,9 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
             return 1
     else:
         # Look for existing APKs
-        apk_dir = REPO_ROOT / "build" / "app" / "outputs" / "flutter-apk"
-        apk_paths = [f for f in apk_dir.glob("*.apk") if "debug" not in f.name]
+        apk_paths = find_release_apks()
         if not apk_paths:
-            print(f"{RED}❌ No existing APKs found in {apk_dir}. Remove --skip-build to build.{RESET}")
+            print("No complete ABI APK set found. Remove --skip-build to build it.")
             return 1
         print(f"{YELLOW}⏭️  Skipping build — using {len(apk_paths)} existing APK(s){RESET}")
 
@@ -580,29 +671,31 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
         apk_files=apk_paths,
     )
 
-    # Step 5: Git commit & push
+    # Upload against the new tag, while main still serves the prior valid manifest.
+    publish_manifest = not args.skip_git and not args.draft and not args.prerelease
     if not args.skip_git:
         files_to_commit = ["pubspec.yaml", "version.json", "lib/core/constants/app_constants.dart"]
         if (REPO_ROOT / "shorebird.yaml").exists():
             files_to_commit.append("shorebird.yaml")
-        if not git_commit_and_push(version, files_to_commit):
+        if not git_commit_and_push(version, files_to_commit, push_branch=False):
             return 1
     else:
-        print(f"{YELLOW}⏭️  Skipping git commit/push{RESET}")
+        print("Skipping Git commit and tag preparation.")
 
     # Step 6: GitHub Release
     if not args.skip_github:
-        if not check_gh_cli():
-            print(f"{YELLOW}⚠️  Skipping GitHub release (gh CLI not available){RESET}")
-        else:
-            notes = payload.get("release_notes", "Bug fixes and improvements.")
-            if not create_github_release(
-                version, apk_paths, notes,
-                draft=args.draft, prerelease=args.prerelease,
-            ):
-                return 1
+        notes = payload.get("release_notes", "Bug fixes and improvements.")
+        if not create_github_release(
+            version, apk_paths, notes,
+            draft=args.draft, prerelease=args.prerelease,
+        ):
+            return 1
     else:
         print(f"{YELLOW}⏭️  Skipping GitHub release{RESET}")
+
+    if publish_manifest and run(["git", "push"]).returncode != 0:
+        print("APK upload succeeded, but publishing the update manifest failed. Retry the branch push.")
+        return 1
 
     # Done!
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
@@ -613,6 +706,10 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
 
 def pipeline_patch_release(args: argparse.Namespace) -> int:
     """Publish a Shorebird OTA patch (pure Dart/UI/assets update without APK reinstall)."""
+    if getattr(args, "dry_run", False):
+        return pipeline_preview(args, "patch")
+    if not ensure_committed_app_source():
+        return 1
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         🚀  BiGuess Shorebird OTA Patch Pipeline             {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
@@ -635,8 +732,6 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
         print(f"   Registered active base release is: {BOLD}{latest_active}{RESET}")
         print(f"   {GREEN}🎯 Auto-targeting active release {BOLD}{latest_active}{RESET} for this OTA patch.{RESET}\n")
         target_version = latest_active
-        write_pubspec_version(target_version)
-        update_app_constants(target_version)
         current = target_version
         ver_part = current.split("+")[0]
 
@@ -652,10 +747,11 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
         return 1
 
     if not args.skip_checks:
-        print(f"\n{BOLD}{BLUE}▶ Running static analysis...{RESET}")
-        result = run(["flutter", "analyze"], capture=True)
-        if result.returncode != 0:
-            print(f"{YELLOW}⚠️  Analysis warnings detected. Continuing...{RESET}")
+        for command in (["flutter", "analyze"], ["flutter", "test"]):
+            result = run(command)
+            if result.returncode != 0:
+                print(f"{RED}Validation failed. Patch stopped.{RESET}")
+                return 1
 
     # Step 1: Run Shorebird patch
     print(f"\n{BOLD}{BLUE}▶ Creating Shorebird OTA Patch for Android (Release: {target_version})...{RESET}")
@@ -667,11 +763,23 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
     if getattr(args, "verbose", False):
         cmd.append("--verbose")
 
+    version_paths = [PUBSPEC, REPO_ROOT / "lib/core/constants/app_constants.dart"]
+    originals = {path: path.read_bytes() for path in version_paths if path.exists()}
+    if read_pubspec_version() != target_version:
+        write_pubspec_version(target_version)
+        update_app_constants(target_version)
     start = time.time()
-    result = run(cmd)
+    try:
+        result = run(cmd)
+    except BaseException:
+        for path, data in originals.items():
+            path.write_bytes(data)
+        raise
     elapsed = time.time() - start
 
     if result.returncode != 0:
+        for path, data in originals.items():
+            path.write_bytes(data)
         print(f"{RED}❌ Shorebird patch failed after {elapsed:.1f}s{RESET}")
         return 1
 
@@ -689,17 +797,22 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
 
     # Step 3: Git commit & push version.json if requested
     if not args.skip_git:
-        files_to_commit = ["version.json"]
-        print(f"\n{BOLD}{BLUE}▶ Committing updated version.json to git...{RESET}")
-        for f in files_to_commit:
-            run(["git", "add", f])
-        run(["git", "commit", "-m", f"patch: shorebird OTA update for v{current}"])
+        print(f"\n{BOLD}{BLUE}▶ Committing synchronized version files...{RESET}")
+        if run(["git", "diff", "--cached", "--quiet"]).returncode != 0:
+            print(f"{RED}Commit stopped: existing staged changes must be handled separately.{RESET}")
+            return 1
+        for f in ("pubspec.yaml", "version.json", "lib/core/constants/app_constants.dart"):
+            if run(["git", "add", "--", f]).returncode != 0:
+                return 1
+        if run(["git", "commit", "-m", f"patch: shorebird OTA update for v{current}"]).returncode != 0:
+            return 1
         print(f"\n{BOLD}{BLUE}▶ Pushing version.json to remote...{RESET}")
         res = run(["git", "push"])
         if res.returncode == 0:
             print(f"{GREEN}✅ Pushed version.json to GitHub{RESET}")
         else:
-            print(f"{YELLOW}⚠️  Git push failed. Run 'git push' manually when internet connection is stable.{RESET}")
+            print(f"{RED}Git push failed. The patch is published; its metadata remains in a local commit.{RESET}")
+            return 1
     else:
         print(f"{YELLOW}⏭️  Skipping git commit/push{RESET}")
 
@@ -716,6 +829,8 @@ def pipeline_auto_release(args: argparse.Namespace) -> int:
     - If native code changed or native dependencies modified or major/minor bump -> Full Base Release
     - If pure Dart/UI/assets changed and no major/minor bump -> Instant Shorebird OTA Patch
     """
+    if getattr(args, "dry_run", False):
+        return pipeline_preview(args, "automatic release")
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         ⚡  BiGuess Smart Release Pipeline (Auto-Detect)     {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
@@ -776,6 +891,8 @@ def pipeline_doctor() -> int:
 
 def pipeline_version_only(args: argparse.Namespace) -> int:
     """Just bump version and sync files — no build or release."""
+    if getattr(args, "dry_run", False):
+        return pipeline_preview(args, "version sync")
     current = read_pubspec_version()
     print(f"📋 Current version: {BOLD}{current}{RESET}")
 
@@ -951,10 +1068,10 @@ def main() -> int:
     )
     pipe_group.add_argument("--split-apk", "--split-per-abi", action="store_true", default=True, help="Enforce Split-per-ABI APK build (always enabled by default)")
     pipe_group.add_argument("--no-shorebird", action="store_true", help="Build with standard Flutter instead of Shorebird")
-    pipe_group.add_argument("--dry-run", action="store_true", help="Validate build/patch without uploading to Shorebird")
+    pipe_group.add_argument("--dry-run", action="store_true", help="Preview the plan only; do not build, write files, upload, commit, tag, or push")
     pipe_group.add_argument("--allow-native-diffs", action="store_true", help="Force patch even if native diffs are detected")
     pipe_group.add_argument("--skip-build", action="store_true", help="Skip APK build (use existing)")
-    pipe_group.add_argument("--skip-checks", action="store_true", help="Skip flutter analyze")
+    pipe_group.add_argument("--skip-checks", action="store_true", help="Skip flutter analyze and flutter test")
     pipe_group.add_argument("--skip-git", action="store_true", help="Skip git commit/push/tag")
     pipe_group.add_argument("--skip-github", action="store_true", help="Skip GitHub release creation")
     pipe_group.add_argument("--clean", action="store_true", help="Run flutter clean before build")
@@ -964,6 +1081,8 @@ def main() -> int:
 
     args = parser.parse_args()
 
+    if args.dry_run:
+        return pipeline_preview(args)
     if getattr(args, "check", False):
         return pipeline_check_update()
     elif args.doctor:

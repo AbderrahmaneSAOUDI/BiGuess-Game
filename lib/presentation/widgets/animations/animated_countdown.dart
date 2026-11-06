@@ -5,10 +5,7 @@ import 'package:gdg_guess_game/core/theme/app_colors.dart';
 class AnimatedCountdown extends StatefulWidget {
   final int countdown;
 
-  const AnimatedCountdown({
-    super.key,
-    required this.countdown,
-  });
+  const AnimatedCountdown({super.key, required this.countdown});
 
   @override
   State<AnimatedCountdown> createState() => _AnimatedCountdownState();
@@ -30,13 +27,17 @@ class _AnimatedCountdownState extends State<AnimatedCountdown>
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.6, end: 0.9)
-            .chain(CurveTween(curve: Curves.easeOutBack)),
+        tween: Tween<double>(
+          begin: 1.6,
+          end: 0.9,
+        ).chain(CurveTween(curve: Curves.easeOutBack)),
         weight: 60,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.9, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween<double>(
+          begin: 0.9,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 40,
       ),
     ]).animate(_rippleController);
@@ -157,10 +158,7 @@ class _ShockwaveRingsPainter extends CustomPainter {
   final double progress;
   final Color color;
 
-  _ShockwaveRingsPainter({
-    required this.progress,
-    required this.color,
-  });
+  _ShockwaveRingsPainter({required this.progress, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -43,7 +43,7 @@ final class ContentDeletionMarker {
        revision = ContentValidation.revision(revision);
 }
 
-/// Native local content store; not bound to the app until the offline-flow ticket.
+/// Native local content store.
 /// Reads preserve insertion order and return immutable values. Materialize an
 /// in-memory game snapshot before play; do not query/write storage on each draw.
 final class SqliteContentRepository implements ContentRepository {
@@ -71,52 +71,84 @@ final class SqliteContentRepository implements ContentRepository {
     Iterable<Topic> topics = const [],
     Iterable<Pack> packs = const [],
     Iterable<Card> cards = const [],
-  }) {
-    _transaction(() {
-      for (final topic in topics) {
-        _database.execute(
-          '''INSERT INTO topics VALUES (?, ?, ?, ?, ?)
+  }) => _transaction(() => _putContent(topics, packs, cards));
+
+  void _putContent(
+    Iterable<Topic> topics,
+    Iterable<Pack> packs,
+    Iterable<Card> cards,
+  ) {
+    for (final topic in topics) {
+      _database.execute(
+        '''INSERT INTO topics VALUES (?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET name=excluded.name,
           published=excluded.published, deleted=excluded.deleted,
           revision=excluded.revision''',
-          [
-            topic.id,
-            topic.name,
-            topic.published ? 1 : 0,
-            topic.deleted ? 1 : 0,
-            topic.revision,
-          ],
-        );
-      }
-      for (final pack in packs) {
-        _database.execute(
-          '''INSERT INTO packs VALUES (?, ?, ?, ?, ?, ?)
+        [
+          topic.id,
+          topic.name,
+          topic.published ? 1 : 0,
+          topic.deleted ? 1 : 0,
+          topic.revision,
+        ],
+      );
+    }
+    for (final pack in packs) {
+      _database.execute(
+        '''INSERT INTO packs VALUES (?, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET topic_id=excluded.topic_id,
           name=excluded.name, published=excluded.published,
           deleted=excluded.deleted, revision=excluded.revision''',
-          [
-            pack.id,
-            pack.topicId,
-            pack.name,
-            pack.published ? 1 : 0,
-            pack.deleted ? 1 : 0,
-            pack.revision,
-          ],
-        );
-      }
-      for (final card in cards) {
-        _database.execute(
-          '''INSERT INTO cards VALUES (?, ?, ?, ?, ?)
+        [
+          pack.id,
+          pack.topicId,
+          pack.name,
+          pack.published ? 1 : 0,
+          pack.deleted ? 1 : 0,
+          pack.revision,
+        ],
+      );
+    }
+    for (final card in cards) {
+      _database.execute(
+        '''INSERT INTO cards VALUES (?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET pack_id=excluded.pack_id,
           name=excluded.name, image_reference=excluded.image_reference,
           difficulty=excluded.difficulty''',
-          [
-            card.id,
-            card.packId,
-            card.name,
-            card.imageReference,
-            card.difficulty.value,
-          ],
+        [
+          card.id,
+          card.packId,
+          card.name,
+          card.imageReference,
+          card.difficulty.value,
+        ],
+      );
+    }
+  }
+
+  /// Rebuild only the dedicated installed-content projection from verified
+  /// filesystem generations, before exposing it to screens. Never use this on
+  /// the catalog/sync database: files remain the installation authority.
+  void replaceInstalledContent({
+    required Iterable<Topic> topics,
+    required Iterable<Pack> packs,
+    required Iterable<Card> cards,
+    required DateTime projectedAt,
+  }) {
+    final localPacks = List<Pack>.of(packs);
+    _transaction(() {
+      _database.execute('DELETE FROM installed_packs');
+      _database.execute('DELETE FROM cards');
+      _database.execute('DELETE FROM packs');
+      _database.execute('DELETE FROM topics');
+      _putContent(topics, localPacks, cards);
+      for (final pack in localPacks) {
+        _setInstalledPack(
+          InstalledPackState(
+            packId: pack.id,
+            revision: pack.revision,
+            installedAt: projectedAt,
+          ),
         );
       }
     });
@@ -196,36 +228,33 @@ final class SqliteContentRepository implements ContentRepository {
   /// Snapshot already verified, installed Card metadata and its revision together.
   /// File validation/activation is owned by the installer. An existing revision
   /// retry leaves its snapshot intact even when the catalog has advanced.
-  void setInstalledPack(InstalledPackState state) {
-    _transaction(() {
-      final packs = _packs('SELECT * FROM packs WHERE id = ?', [state.packId]);
-      final previous = getInstalledPack(state.packId);
-      if (previous != null && state.revision < previous.revision) {
-        throw StateError('Installed revision cannot go backwards');
-      }
-      if (previous?.revision == state.revision) return;
-      if (packs.isEmpty || state.revision != packs.single.revision) {
-        throw StateError('Installed Cards must match the cached Pack revision');
-      }
-      _database.execute(
-        '''INSERT INTO installed_packs VALUES (?, ?, ?)
+  void setInstalledPack(InstalledPackState state) =>
+      _transaction(() => _setInstalledPack(state));
+
+  void _setInstalledPack(InstalledPackState state) {
+    final packs = _packs('SELECT * FROM packs WHERE id = ?', [state.packId]);
+    final previous = getInstalledPack(state.packId);
+    if (previous != null && state.revision < previous.revision) {
+      throw StateError('Installed revision cannot go backwards');
+    }
+    if (previous?.revision == state.revision) return;
+    if (packs.isEmpty || state.revision != packs.single.revision) {
+      throw StateError('Installed Cards must match the cached Pack revision');
+    }
+    _database.execute(
+      '''INSERT INTO installed_packs VALUES (?, ?, ?)
         ON CONFLICT(pack_id) DO UPDATE SET revision=excluded.revision,
         installed_at=excluded.installed_at''',
-        [
-          state.packId,
-          state.revision,
-          state.installedAt.millisecondsSinceEpoch,
-        ],
-      );
-      _database.execute('DELETE FROM installed_cards WHERE pack_id = ?', [
-        state.packId,
-      ]);
-      _database.execute(
-        '''INSERT INTO installed_cards SELECT * FROM cards
+      [state.packId, state.revision, state.installedAt.millisecondsSinceEpoch],
+    );
+    _database.execute('DELETE FROM installed_cards WHERE pack_id = ?', [
+      state.packId,
+    ]);
+    _database.execute(
+      '''INSERT INTO installed_cards SELECT * FROM cards
         WHERE pack_id = ? ORDER BY rowid''',
-        [state.packId],
-      );
-    });
+      [state.packId],
+    );
   }
 
   InstalledPackState? getInstalledPack(String packId) {

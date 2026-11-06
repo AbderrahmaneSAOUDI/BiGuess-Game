@@ -49,13 +49,13 @@ For a local standard Flutter APK build:
 flutter build apk --release --split-per-abi
 ```
 
-Expected names are `app-arm64-v8a-release.apk`, `app-armeabi-v7a-release.apk`, and `app-x86_64-release.apk` under `build/app/outputs/flutter-apk/`. Inspect actual output and artifact freshness; the release script scans several output directories and can discover older APKs. Its Shorebird build branch invokes `shorebird release android --artifact apk`; verify that the resulting ABI files match the manifest instead of assuming parity with Flutter flags.
+Expected names are `app-arm64-v8a-release.apk`, `app-armeabi-v7a-release.apk`, and `app-x86_64-release.apk` under `build/app/outputs/flutter-apk/`. The release script requires all three nonempty outputs and rejects stale files after a build. Its Shorebird branch invokes `shorebird release android --artifact apk`; a universal-only result cannot satisfy this split-ABI contract. For explicit `--skip-build` reuse, verify the binaries' intended version and signature before publishing; collection alone cannot prove that match.
 
 ## Script limitations to account for
 
-- `--dry-run` is forwarded to Shorebird only. The surrounding pipeline can still rewrite version files and perform Git/GitHub actions. `--skip-git --skip-github` suppress those actions but does not prevent file changes.
-- The patch pipeline can rewrite pubspec/constants to an active Shorebird base version before checking native changes. Its commit step stages only `version.json`; inspect the resulting triad and Git index.
-- Release analysis failures currently print a warning and continue. Treat failed validation as unresolved even if the script proceeds. Run tests separately; the pipeline does not run the Flutter suite.
-- The default generated manifest uses `/releases/latest/download/` URLs and an ARM64 fallback. Verify all ABI artifacts exist for the intended release before publishing its manifest.
+- `--dry-run` prints a read-only plan without commands, version writes, builds, validation, Git or uploads. It proves planning only; run the actual local gates separately.
+- The patch pipeline validates native changes and Flutter analysis/tests before retargeting an active Shorebird base. A failed patch restores original pubspec/constants; success synchronizes and commits the whole triad. Existing staged work stops release commits.
+- Build/patch validation failures stop the pipeline unless checks are explicitly skipped. Full releases prepare a source tag, upload APKs, then push the active branch manifest. Draft/prerelease paths leave that manifest unpublished.
+- Generated APK URLs are pinned to `v<version>` with an ARM64 fallback. Verify the actual ABI artifacts, version and signature before publishing; a version manifest alone does not prove correct binaries.
 
 For runtime update changes, run `flutter test test/unit/update_test.dart` and review `SemVer`, `RemoteVersion.resolveApkUrl`, `UpdateController`, and `OtaInstallerService` together. Do not publish a test manifest or upload a patch merely to validate the decision engine.

@@ -40,16 +40,18 @@ class AboutGameTab extends ConsumerWidget {
                 gradient: LinearGradient(
                   colors: [
                     theme.colorScheme.primaryContainer.withValues(alpha: 0.6),
-                    theme.colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.7),
+                    theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.7,
+                    ),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color:
-                      theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.4,
+                  ),
                 ),
               ),
               child: Column(
@@ -62,8 +64,9 @@ class AboutGameTab extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              theme.colorScheme.shadow.withValues(alpha: 0.12),
+                          color: theme.colorScheme.shadow.withValues(
+                            alpha: 0.12,
+                          ),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -105,7 +108,9 @@ class AboutGameTab extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary,
                           borderRadius: BorderRadius.circular(12),
@@ -122,7 +127,9 @@ class AboutGameTab extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.secondaryContainer,
                           borderRadius: BorderRadius.circular(12),
@@ -187,8 +194,9 @@ class AboutGameTab extends ConsumerWidget {
                 color: theme.colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color:
-                      theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.5,
+                  ),
                 ),
               ),
               child: Column(
@@ -300,156 +308,155 @@ class _AppUpdateCard extends ConsumerWidget {
   ) {
     return switch (state) {
       UpdateIdle() => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                'Instant OTA patches enabled',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            FilledButton.tonalIcon(
-              onPressed: () => controller.checkForUpdates(silent: false),
-              icon: const Icon(Icons.refresh_rounded, size: 16),
-              label: const Text('Check', style: TextStyle(fontSize: 12)),
-              style: FilledButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ],
-        ),
-      UpdateChecking() => Row(
-          children: [
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'Checking for new version...',
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              'Instant OTA patches enabled',
               style: TextStyle(
                 fontSize: 12,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-          ],
-        ),
+          ),
+          FilledButton.tonalIcon(
+            onPressed: () => controller.checkForUpdates(silent: false),
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: const Text('Check', style: TextStyle(fontSize: 12)),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+      UpdateChecking() => Row(
+        children: [
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Checking for new version...',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
       UpdateAvailable(:final latestVersion) => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                '🎉 Version v$latestVersion available!',
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              '🎉 Version v$latestVersion available!',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          FilledButton.icon(
+            onPressed: () => UpdateDialog.show(context),
+            icon: const Icon(Icons.download_rounded, size: 16),
+            label: const Text('Update', style: TextStyle(fontSize: 12)),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+      UpdateDownloading(:final progress, :final speedText) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LinearProgressIndicator(value: progress > 0 ? progress : null),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${(progress * 100).toStringAsFixed(0)}% downloaded',
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
                   color: theme.colorScheme.primary,
                 ),
               ),
-            ),
-            FilledButton.icon(
-              onPressed: () => UpdateDialog.show(context),
-              icon: const Icon(Icons.download_rounded, size: 16),
-              label: const Text('Update', style: TextStyle(fontSize: 12)),
-              style: FilledButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ],
-        ),
-      UpdateDownloading(:final progress, :final speedText) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            LinearProgressIndicator(value: progress > 0 ? progress : null),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${(progress * 100).toStringAsFixed(0)}% downloaded',
-                  style:
-                      TextStyle(fontSize: 11, color: theme.colorScheme.primary),
+              Text(
+                speedText,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-                Text(
-                  speedText,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ],
+      ),
+      UpdateCompleted(:final message) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    message.isNotEmpty ? message : 'App is up to date',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-      UpdateCompleted(:final message) => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    size: 16,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      message.isNotEmpty ? message : 'App is up to date',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded, size: 18),
-              tooltip: 'Check again',
-              onPressed: () => controller.checkForUpdates(silent: false),
-            ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            tooltip: 'Check again',
+            onPressed: () => controller.checkForUpdates(silent: false),
+          ),
+        ],
+      ),
       _ => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                'Check for latest updates',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              'Check for latest updates',
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            FilledButton.tonal(
-              onPressed: () => UpdateDialog.show(context),
-              style: FilledButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text('Manage', style: TextStyle(fontSize: 12)),
+          ),
+          FilledButton.tonal(
+            onPressed: () => UpdateDialog.show(context),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-          ],
-        ),
+            child: const Text('Manage', style: TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
     };
   }
 }

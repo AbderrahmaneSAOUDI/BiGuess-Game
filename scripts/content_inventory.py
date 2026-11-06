@@ -15,6 +15,7 @@ Acceptance gates:
 
 import argparse
 import hashlib
+import io
 import json
 import os
 import re
@@ -247,10 +248,19 @@ def inspect_image_file(file_path: Path) -> Tuple[TechnicalImportability, bytes]:
 
     if Image is not None:
         try:
-            with Image.open(file_path) as img:
+            with Image.open(io.BytesIO(data)) as img:
                 img.verify()
                 img_format = img.format
                 width, height = img.size
+            with Image.open(io.BytesIO(data)) as img:
+                img.load()
+                if img.format not in {"WEBP", "PNG", "JPEG"}:
+                    raise ValueError("Unsupported image encoding")
+                expected = {".webp": "WEBP", ".png": "PNG", ".jpg": "JPEG", ".jpeg": "JPEG"}
+                if img.format != expected[suffix]:
+                    raise ValueError("Image extension does not match its encoding")
+                if getattr(img, "n_frames", 1) != 1:
+                    raise ValueError("Animated images are unsupported")
         except Exception as e:
             issues.append(f"Corrupt image payload: {e}")
             return (
@@ -265,21 +275,11 @@ def inspect_image_file(file_path: Path) -> Tuple[TechnicalImportability, bytes]:
                 data,
             )
     else:
-        # Fallback check when PIL is not installed
-        if suffix == ".webp" and (not data.startswith(b"RIFF") or b"WEBP" not in data[:16]):
-            issues.append("Invalid WebP RIFF header signature")
-            return (
-                TechnicalImportability(
-                    status="corrupt",
-                    is_importable=False,
-                    format="WEBP",
-                    width=None,
-                    height=None,
-                    issues=issues,
-                ),
-                data,
-            )
-        img_format = suffix.lstrip(".").upper()
+        return (TechnicalImportability(
+            status="unreadable", is_importable=False, format=None,
+            width=None, height=None,
+            issues=["Pillow is required to verify image integrity; install Pillow"],
+        ), data)
 
     return (
         TechnicalImportability(
@@ -569,6 +569,7 @@ def build_inventory_report(
     records: List[AssetRecord],
     images_dir: Path,
     expected_counts: Optional[Dict[str, Dict[str, int]]] = None,
+    repo_root: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Compile comprehensive deterministic inventory report."""
     total_files = len(records)
@@ -586,13 +587,17 @@ def build_inventory_report(
     importable_count = sum(1 for r in records if r.technical_importability.is_importable)
     corrupt_count = sum(1 for r in records if r.technical_importability.status == "corrupt")
     unsupported_count = sum(1 for r in records if r.technical_importability.status == "unsupported_format")
+    unreadable_count = sum(1 for r in records if r.technical_importability.status == "unreadable")
 
     # Rights aggregation
     unverified_count = sum(1 for r in records if r.rights.rights_status == "unverified")
     cleared_count = sum(1 for r in records if r.rights.rights_status == "cleared")
     quarantined_count = sum(1 for r in records if r.rights.rights_status == "quarantined")
     permission_to_publish_count = sum(1 for r in records if r.rights.permission_to_publish)
-    public_test_publishable_count = sum(1 for r in records if r.rights.public_test_publishable)
+    public_test_publishable_count = sum(
+        1 for r in records if r.rights.public_test_publishable
+        and r.rights.permission_to_publish and r.technical_importability.is_importable
+    )
 
     # Duplicate aggregation
     exact_hash_sets: Dict[str, List[str]] = {}
@@ -607,13 +612,29 @@ def build_inventory_report(
     cross_pack_names = {n: packs for n, packs in name_sets.items() if len(packs) > 1}
 
     # Count disk files directly for reconciliation
-    disk_files_count = 0
+    disk_paths: Set[Path] = set()
     if images_dir.exists():
         for p in images_dir.rglob("*"):
             if p.is_file() and not p.name.startswith(".") and p.suffix.lower() in VALID_IMAGE_EXTENSIONS:
-                disk_files_count += 1
+                disk_paths.add(p.absolute())
+    disk_files_count = len(disk_paths)
+    source_root = repo_root or Path(__file__).resolve().parents[1]
+    inventory_paths = [(source_root / r.source_path).absolute() for r in records]
+    inventoried_source_paths = {p for p in inventory_paths if p.is_relative_to(images_dir.absolute())}
 
     discrepancies: List[str] = []
+    for path in sorted(disk_paths - inventoried_source_paths):
+        discrepancies.append(f"Source file missing from inventory: {path}")
+    for path in sorted(inventoried_source_paths - disk_paths):
+        discrepancies.append(f"Inventoried source file missing from disk: {path}")
+    if len(set(inventory_paths)) != len(inventory_paths):
+        discrepancies.append("Duplicate source paths in inventory")
+    proposed_ids: Dict[str, Set[str]] = {}
+    for row in records:
+        proposed_ids.setdefault(row.proposed_stable_id, set()).add(row.source_path)
+    for identifier, paths in sorted(proposed_ids.items()):
+        if len(paths) > 1:
+            discrepancies.append(f"Proposed Card ID collision: {identifier}: {', '.join(sorted(paths))}")
     # Check baseline expected numbers if supplied (e.g. 922 Anime + 252 Flags = 1174)
     if expected_counts:
         for exp_topic, exp_packs in expected_counts.items():
@@ -628,7 +649,7 @@ def build_inventory_report(
                         f"Count mismatch in '{exp_topic}/{exp_pack}': expected {exp_cnt}, found {act_cnt}"
                     )
 
-    is_reconciled = (len(discrepancies) == 0) and (disk_files_count <= total_files)
+    is_reconciled = len(discrepancies) == 0
 
     summary = {
         "total_records": total_files,
@@ -639,6 +660,7 @@ def build_inventory_report(
         "reconciliation": {
             "disk_files_count": disk_files_count,
             "inventoried_records_count": total_files,
+            "inventoried_source_files_count": len(inventoried_source_paths),
             "is_reconciled": is_reconciled,
             "discrepancies": discrepancies,
         },
@@ -646,6 +668,7 @@ def build_inventory_report(
             "importable": importable_count,
             "corrupt": corrupt_count,
             "unsupported_format": unsupported_count,
+            "unreadable": unreadable_count,
         },
         "rights_quarantine": {
             "unverified": unverified_count,
@@ -670,107 +693,77 @@ def build_inventory_report(
 
 
 def generate_markdown_report(report: Dict[str, Any]) -> str:
-    """Format inventory report as clean, authoritative GitHub Markdown."""
-    s = report["summary"]
-    r_reconcile = s["reconciliation"]
-    t_import = s["technical_importability"]
-    r_rights = s["rights_quarantine"]
-    d_dup = s["duplicate_analysis"]
+    """Render only facts from this inventory, including empty and failed scans."""
+    summary = report["summary"]
+    reconciliation = summary["reconciliation"]
+    technical = summary["technical_importability"]
+    rights = summary["rights_quarantine"]
+    records = report["records"]
+    total = summary["total_records"]
 
-    status_icon = "✅" if r_reconcile["is_reconciled"] else "❌"
+    def cell(value: Any) -> str:
+        return str(value).replace("|", "\\|").replace("\n", " ").replace("\r", " ")
 
-    lines: List[str] = [
-        "# BiGuess Content Inventory & Rights Quarantine Report",
-        "",
-        f"> **Gate Status:** {status_icon} Reconciled ({s['total_records']} assets) | Rights Quarantine Enforced",
-        "",
-        "## 1. Executive Summary",
-        "",
-        "| Metric | Count / Value | Status |",
-        "| --- | --- | --- |",
-        f"| **Total Inventoried Assets** | `{s['total_records']}` | 100% accounted for |",
-        f"| **Disk Files Scanned** | `{r_reconcile['disk_files_count']}` | Matched |",
-        f"| **Total Data Volume** | `{s['total_bytes'] / (1024 * 1024):.2f} MB` ({s['total_bytes']} bytes) | WebP optimized |",
-        f"| **Topics Count** | `{s['total_topics']}` | Anime, Geography |",
-        f"| **Packs Count** | `{s['total_packs']}` | 6 Anime + 1 Geography |",
-        f"| **Technical Importability** | `{t_import['importable']} / {s['total_records']}` | 100% valid images, 0 corruptions |",
-        f"| **Unverified Rights (Quarantined)** | `{r_rights['unverified']}` | Default quarantine active |",
-        f"| **Public Test Publishable** | `{r_rights['public_test_publishable_count']}` | Excluded by default |",
-        "",
-        "## 2. Topic and Pack Breakdown & Reconciliation",
-        "",
-        "| Topic | Pack | Cards Count | Technical Importability | Rights Status | Public Test Publishable |",
+    def percent(count: int) -> str:
+        return f"{count / total * 100:.2f}%" if total else "0.00%"
+
+    lines = [
+        "# BiGuess content inventory and rights report", "",
+        f"Source reconciliation: **{'PASS' if reconciliation['is_reconciled'] else 'FAIL'}**.", "",
+        "| Check | Result |", "| --- | --- |",
+        f"| Inventoried images (including selected fixtures) | {total} |",
+        f"| Images on disk in the source tree | {reconciliation['disk_files_count']} |",
+        f"| Total image size | {summary['total_bytes'] / (1024 * 1024):.2f} MiB |",
+        f"| Topics / Packs | {summary['total_topics']} / {summary['total_packs']} |",
+        f"| Verified images | {technical['importable']} ({percent(technical['importable'])}) |",
+        f"| Corrupt / unsupported / unreadable images | {technical['corrupt']} / {technical['unsupported_format']} / {technical.get('unreadable', 0)} |",
+        f"| Explicitly cleared images | {rights['cleared']} ({percent(rights['cleared'])}) |",
+        f"| Unverified images | {rights['unverified']} |",
+        f"| Images eligible for public test export | {rights['public_test_publishable_count']} |", "",
+        "## Topics and Packs", "",
+        "| Topic | Pack | Images | Verified | Cleared | Public test export |",
         "| --- | --- | --- | --- | --- | --- |",
     ]
-
-    for topic, t_data in sorted(s["topics"].items()):
-        for pack, count in sorted(t_data["packs"].items()):
-            # Check if this pack is from fixture or legacy
-            is_fixture = (topic == "Shapes")
-            rights_label = "Cleared (Internal Fixture)" if is_fixture else "Unverified (Quarantined)"
-            pub_label = "Allowed" if is_fixture else "Excluded"
-            lines.append(
-                f"| **{topic}** | {pack} | `{count}` | 100% Importable | `{rights_label}` | `{pub_label}` |"
-            )
-
+    for topic, topic_data in sorted(summary["topics"].items()):
+        for pack, count in sorted(topic_data["packs"].items()):
+            rows = [r for r in records if r["topic"] == topic and r["pack"] == pack]
+            valid = sum(r["technical_importability"]["is_importable"] for r in rows)
+            cleared = sum(r["rights"]["rights_status"] == "cleared" for r in rows)
+            publishable = sum(r["rights"]["public_test_publishable"]
+                              and r["rights"]["permission_to_publish"]
+                              and r["technical_importability"]["is_importable"] for r in rows)
+            lines.append(f"| {cell(topic)} | {cell(pack)} | {count} | {valid} | {cleared} | {publishable} |")
+    if reconciliation["discrepancies"]:
+        lines.extend(["", "## Reconciliation errors", ""])
+        lines.extend(f"- {cell(issue)}" for issue in reconciliation["discrepancies"])
     lines.extend([
-        "",
-        f"**Reconciliation Result:** {status_icon} `{'All counts match source files exactly' if r_reconcile['is_reconciled'] else 'Discrepancies detected'}`",
-        "",
-        "## 3. Technical Importability vs. Permission to Publish",
-        "",
-        "> [!IMPORTANT]",
-        "> **Core Architectural Gate Principle:** Technical importability is strictly decoupled from permission to publish.",
-        "> * **Technical Importability:** A binary property indicating whether an asset can be decoded, formatted, and loaded safely into memory by the engine without crashes or memory corruption.",
-        "> * **Permission to Publish:** A legal/operational property requiring confirmed public domain or express copyright clearance. All legacy Anime characters and national flags are classified `unverified` and **excluded from public test publishing by default**.",
-        "",
-        "| Metric | Total | Percentage | Policy Action |",
-        "| --- | --- | --- | --- |",
-        f"| Technically Importable | `{t_import['importable']}` | 100.0% | Supported for local/offline gameplay engine |",
-        f"| Corrupt / Unreadable Assets | `{t_import['corrupt']}` | 0.0% | No repair actions required |",
-        f"| Rights: Cleared (Fixtures) | `{r_rights['cleared']}` | `{r_rights['cleared'] / s['total_records'] * 100:.2f}%` | Permitted for public automated tests |",
-        f"| Rights: Unverified (Quarantined) | `{r_rights['unverified']}` | `{r_rights['unverified'] / s['total_records'] * 100:.2f}%` | Quarantined from public distribution |",
-        "",
-        "## 4. Duplicate Candidate Findings",
-        "",
-        f"Detected **{d_dup['exact_binary_duplicate_sets']} exact binary duplicate sets** ({d_dup['exact_binary_duplicate_files']} files total) and **{d_dup['cross_pack_name_matches']} cross-pack name collisions**:",
-        "",
-        "### Exact Binary Duplicates (Identical SHA-256)",
-        "1. **Norway Flag (`86d435944536...`)**:",
-        "   - `assets/images/Geography/Flags/Bouvet Island.webp`",
-        "   - `assets/images/Geography/Flags/Norway.webp`",
-        "   - `assets/images/Geography/Flags/Svalbard and Jan Mayen.webp`",
-        "2. **France Flag (`2dbb454a2184...`)**:",
-        "   - `assets/images/Geography/Flags/France.webp`",
-        "   - `assets/images/Geography/Flags/Saint Martin.webp`",
-        "3. **United States Flag (`d6b03dcbfdd6...`)**:",
-        "   - `assets/images/Geography/Flags/United States.webp`",
-        "   - `assets/images/Geography/Flags/United States Minor Outlying Islands.webp`",
-        "",
-        "### Cross-Pack Name Collisions (Identical Display Name in Different Packs)",
-        "- `Kaya`: *Attack on Titan* vs *One Piece*",
-        "- `Tom`: *Attack on Titan* vs *One Piece*",
-        "- `Doma`: *Demon Slayer* vs *One Piece*",
-        "- `Hina`: *Hunter X Hunter* vs *One Piece*",
-        "- `Sai`: *Naruto* vs *One Piece*",
-        "",
-        "Each card is assigned a unique, deterministic **RFC 4122 UUIDv5** scoped to its Topic, Pack, and Display Name, ensuring collisions do not overwrite or conflate cards in future database tables.",
-        "",
-        "## 5. Confirmed-Cleared Automated Test Fixture",
-        "",
-        "To enable automated CI test publishing without risking IP infringement, a minimal, internally authored fixture pack is created:",
-        "",
-        "- **Topic:** `Shapes`",
-        "- **Pack:** `Geometric Shapes`",
-        "- **Cards (4):** `Circle` (Difficulty 1), `Square` (Difficulty 1), `Triangle` (Difficulty 2), `Star` (Difficulty 3)",
-        "- **Rights:** `cleared` | **License:** `CC0-1.0 / MIT` | **Attribution:** `BiGuess Engineering Team`",
-        "- **Public Test Publishable:** `true`",
-        "",
-        "---",
-        "*Report generated deterministically by `scripts/content_inventory.py`.*",
+        "", "## Publication rights", "",
+        "A readable image does not grant permission to publish it. Legacy assets remain "
+        "unverified. A fixture is cleared only when its Pack and matching Card explicitly "
+        "declare permission, source, license, and attribution. Folder and Topic names do not grant clearance.",
+        "", "## Duplicate candidates", "",
     ])
-
-    return "\n".join(lines) + "\n"
+    by_hash: Dict[str, List[str]] = {}
+    by_name: Dict[str, List[Dict[str, Any]]] = {}
+    for row in records:
+        by_hash.setdefault(row["sha256"], []).append(row["source_path"])
+        by_name.setdefault(row["display_name"].lower(), []).append(row)
+    duplicates = [(digest, paths) for digest, paths in sorted(by_hash.items()) if len(paths) > 1]
+    lines.append(f"Exact image-byte duplicate groups: {len(duplicates)}.")
+    for digest, paths in duplicates:
+        lines.append(f"- SHA-256 `{digest}`: " + ", ".join(f"`{cell(path)}`" for path in sorted(paths)))
+    lines.extend(["", "Names shared across Packs:"])
+    shared = [(name, rows) for name, rows in sorted(by_name.items())
+              if len({(r["topic"], r["pack"]) for r in rows}) > 1]
+    for name, rows in shared:
+        packs = sorted({f"{r['topic']} / {r['pack']}" for r in rows})
+        lines.append(f"- {cell(name)}: " + ", ".join(cell(pack) for pack in packs))
+    if not shared:
+        lines.append("- None found.")
+    lines.extend(["", "Proposed IDs use deterministic UUIDv5 values scoped to the original "
+                  "Topic, Pack, and name. ID collisions are reported as reconciliation errors.",
+                  "", "Generated by `scripts/content_inventory.py`.", ""])
+    return "\n".join(lines)
 
 
 def export_public_test_assets(records: List[AssetRecord], target_dir: Path, repo_root: Path) -> int:
@@ -779,19 +772,29 @@ def export_public_test_assets(records: List[AssetRecord], target_dir: Path, repo
     Guarantees that unverified / quarantined assets are completely excluded.
     Returns the count of exported assets.
     """
-    target_dir.mkdir(parents=True, exist_ok=True)
-    exported_count = 0
-
+    if target_dir.exists() and any(target_dir.iterdir()):
+        raise ValueError("Public test export needs an empty destination directory")
+    outputs: List[Tuple[Path, bytes]] = []
+    destination = target_dir.resolve()
     for r in records:
-        if r.rights.public_test_publishable and r.rights.permission_to_publish:
+        if (r.rights.rights_status == "cleared" and r.rights.public_test_publishable
+                and r.rights.permission_to_publish and r.technical_importability.is_importable):
             src = repo_root / r.source_path
-            if src.exists():
-                dst = target_dir / r.topic / r.pack / r.file_name
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                dst.write_bytes(src.read_bytes())
-                exported_count += 1
-
-    return exported_count
+            data = src.read_bytes()
+            if len(data) != r.size_bytes or hashlib.sha256(data).hexdigest() != r.sha256:
+                raise ValueError(f"Image changed since inventory: {r.source_path}")
+            dst = (destination / r.topic / r.pack / r.file_name).resolve()
+            if not dst.is_relative_to(destination):
+                raise ValueError("Export path escapes the destination directory")
+            outputs.append((dst, data))
+    if len({path for path, _ in outputs}) != len(outputs):
+        raise ValueError("Multiple images map to the same export path")
+    target_dir.mkdir(parents=True, exist_ok=True)
+    for dst, data in outputs:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        with dst.open("xb") as stream:
+            stream.write(data)
+    return len(outputs)
 
 
 def verify_reproducibility(
@@ -875,6 +878,12 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parent.parent
     images_dir = repo_root / args.images_dir if not args.images_dir.is_absolute() else args.images_dir
     fixtures_dir = repo_root / args.fixtures_dir if not args.fixtures_dir.is_absolute() else args.fixtures_dir
+    if not images_dir.is_dir():
+        print(f"Image folder does not exist: {images_dir}", file=sys.stderr)
+        return 1
+    if args.include_fixtures and not fixtures_dir.is_dir():
+        print(f"Fixture folder does not exist: {fixtures_dir}", file=sys.stderr)
+        return 1
 
     fixture_dirs_to_scan: Optional[List[Path]] = None
     if args.include_fixtures and fixtures_dir.exists():
@@ -907,7 +916,8 @@ def main() -> int:
     report = build_inventory_report(
         records,
         images_dir,
-        expected_counts=expected_baseline_counts if not args.include_fixtures else None,
+        expected_counts=expected_baseline_counts
+        if images_dir.resolve() == (repo_root / "assets/images").resolve() else None,
     )
 
     # Handle outputs
@@ -925,7 +935,11 @@ def main() -> int:
         print(f"{GREEN}✅ Markdown report exported to {args.markdown}{RESET}")
 
     if args.export_public_test:
-        count = export_public_test_assets(records, args.export_public_test, repo_root)
+        try:
+            count = export_public_test_assets(records, args.export_public_test, repo_root)
+        except (OSError, ValueError) as error:
+            print(f"Public test export failed: {error}", file=sys.stderr)
+            return 1
         print(
             f"{CYAN}Public test export completed: {count} assets exported to {args.export_public_test} "
             f"({report['summary']['rights_quarantine']['unverified']} unverified assets safely excluded).{RESET}"
@@ -947,7 +961,7 @@ def main() -> int:
         print(f"Total Data Volume:           {BOLD}{s['total_bytes'] / (1024 * 1024):.2f} MB{RESET}")
         print(f"Disk Files Scanned:          {BOLD}{r['disk_files_count']}{RESET}")
         print(f"Counts Reconciled:           {GREEN if r['is_reconciled'] else RED}{r['is_reconciled']}{RESET}")
-        print(f"Technical Importability:     {GREEN}{t['importable']}{RESET} importable, {t['corrupt']} corrupt, {t['unsupported_format']} unsupported")
+        print(f"Image checks:                {GREEN}{t['importable']}{RESET} verified, {t['corrupt']} damaged, {t['unsupported_format']} unsupported, {t['unreadable']} unreadable")
         print(f"Rights Breakdown:            {YELLOW}{q['unverified']} unverified (quarantined){RESET}, {GREEN}{q['cleared']} cleared{RESET}")
         print(f"Public Test Publishable:     {GREEN if q['public_test_publishable_count'] > 0 else YELLOW}{q['public_test_publishable_count']}{RESET} (quarantine prevents public exposure)")
         print(f"Exact Duplicate Hash Sets:   {d['exact_binary_duplicate_sets']} ({d['exact_binary_duplicate_files']} files)")
@@ -964,8 +978,8 @@ def main() -> int:
         if not report["summary"]["reconciliation"]["is_reconciled"]:
             print(f"{RED}❌ Reconciliation check failed! Discrepancies: {report['summary']['reconciliation']['discrepancies']}{RESET}")
             return 1
-        if report["summary"]["technical_importability"]["corrupt"] > 0:
-            print(f"{RED}❌ Corrupt assets detected!{RESET}")
+        if report["summary"]["technical_importability"]["importable"] != len(records):
+            print(f"{RED}Image verification failed. Check corrupt, unsupported, and unreadable images.{RESET}")
             return 1
         print(f"{GREEN}✅ All counts reconciled and integrity checks passed!{RESET}")
 

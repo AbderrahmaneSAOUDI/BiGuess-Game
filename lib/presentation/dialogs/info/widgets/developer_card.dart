@@ -7,10 +7,7 @@ import '../../../widgets/animations/interactive_scale_card.dart';
 class DeveloperCard extends StatelessWidget {
   final DeveloperProfile profile;
 
-  const DeveloperCard({
-    super.key,
-    required this.profile,
-  });
+  const DeveloperCard({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -117,14 +114,14 @@ class DeveloperCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: theme.colorScheme.onSurface,
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  side: BorderSide(
-                    color: accentColor.withValues(alpha: 0.3),
-                  ),
+                  side: BorderSide(color: accentColor.withValues(alpha: 0.3)),
                   onPressed: () => UrlHelper.launchExternalUrl(link.url),
                 );
               }).toList(),

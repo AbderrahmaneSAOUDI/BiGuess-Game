@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 BiGuess Game - Flutter Build & Release Automation Helper
-Builds APKs, App Bundles, Web, and Desktop binaries with pre-flight checks and checksum generation.
+Builds APKs, App Bundles, and the web app with checks and checksum generation.
 """
 
 import argparse
@@ -92,7 +92,7 @@ def find_shorebird_bin() -> Optional[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build BiGuess Flutter game binaries (APK, App Bundle, Web, Desktop).",
+        description="Build BiGuess APKs, an Android App Bundle, or the web app.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     repo_root = Path(__file__).resolve().parent.parent
@@ -134,6 +134,11 @@ def main() -> int:
     args = parser.parse_args()
     flutter = find_flutter_bin()
     sb_bin = find_shorebird_bin() if args.shorebird else None
+    if args.shorebird and not sb_bin:
+        print("Shorebird was requested but is not installed. Install it or omit --shorebird.", file=sys.stderr)
+        return 1
+    if args.shorebird and (args.debug or args.target not in ("apk", "appbundle")):
+        parser.error("--shorebird requires a release APK or App Bundle target")
 
     mode = "debug" if args.debug else "release"
     engine_name = "Shorebird" if sb_bin else "Flutter"
@@ -162,10 +167,11 @@ def main() -> int:
     # Step 3: Analysis & Tests (unless skipped)
     if not args.skip_checks:
         if not run_step("Running static analysis", [flutter, "analyze"], repo_root):
-            print(f"{YELLOW}⚠️  Analysis found warnings. Continuing build...{RESET}")
+            return 1
 
         if (repo_root / "test").exists():
-            run_step("Running unit tests", [flutter, "test"], repo_root)
+            if not run_step("Running tests", [flutter, "test"], repo_root):
+                return 1
 
     # Step 4: Execute Build
     if sb_bin and mode == "release" and args.target in ("apk", "appbundle"):
@@ -193,7 +199,8 @@ def main() -> int:
     if args.target in ("apk", "all"):
         apk_dir = repo_root / "build" / "app" / "outputs" / "flutter-apk"
         if apk_dir.exists():
-            artifact_paths.extend(apk_dir.glob("*.apk"))
+            artifact_paths.extend(path for abi in ("arm64-v8a", "armeabi-v7a", "x86_64")
+                                  if (path := apk_dir / f"app-{abi}-{mode}.apk").is_file())
     if args.target == "appbundle":
         bundle_dir = repo_root / "build" / "app" / "outputs" / "bundle" / f"{mode}"
         if bundle_dir.exists():
@@ -202,6 +209,10 @@ def main() -> int:
         web_dir = repo_root / "build" / "web"
         if web_dir.exists():
             artifact_paths.append(web_dir)
+    expected_count = 3 if args.target in ("apk", "all") else 1
+    if len(artifact_paths) != expected_count:
+        print("Build command finished, but the expected output files are missing.", file=sys.stderr)
+        return 1
 
     for art in artifact_paths:
         if art.is_file():

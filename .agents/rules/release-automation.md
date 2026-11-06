@@ -5,7 +5,7 @@ description: Keep app release delivery distinct from local version synchronizati
 
 # Release boundaries
 
-Use the `biguess-ota-release` skill for a requested APK/OTA release or updater change. Read `scripts/release.py` before running its pipeline: a no-flags invocation can publish, and `--dry-run` is not a complete pipeline dry run.
+Use the `biguess-ota-release` skill for a requested APK/OTA release or updater change. Read `scripts/release.py` before running its pipeline: a no-flags invocation can publish. `--dry-run` prints a read-only plan without running validation, builds, uploads or Git commands.
 
 - `python3 scripts/release.py --version-only` synchronizes from pubspec but also regenerates URLs and can detect native changes. For the normal commit lifecycle use `version_increment.py`, which preserves release metadata.
 - Native plugins/platform changes need a new binary; set the native-change policy accordingly. Dart-only changes are patch candidates, subject to installed Shorebird compatibility and an existing base release. Asset patchability must be verified, not assumed.

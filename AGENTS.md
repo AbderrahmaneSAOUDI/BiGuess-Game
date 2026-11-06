@@ -14,10 +14,10 @@ BiGuess is a Flutter/Dart face-to-face guessing game using Riverpod 2.x, Materia
 | Path | Responsibility |
 | --- | --- |
 | `lib/main.dart` | Flutter initialization, ProviderScope, themes, TopicsScreen |
-| `lib/data/`, `lib/assets_manifest.dart` | TopicPackDataSource and generated bundled `topicPackAssets` |
-| `lib/domain/` | GameRoundState, selection results/use case, version/update models |
-| `lib/providers/` | GameRoundNotifier and family provider, settings/theme/content providers |
-| `lib/presentation/` | Topic → pack → game navigation, reveal widgets, info/update dialogs, update controller |
+| `lib/data/`, `lib/assets_manifest.dart` | Local Pack files/private images, SQLite installed snapshots, legacy manifest adapter and bundled `topicPackAssets` |
+| `lib/domain/` | Canonical content models, Card deck, game configuration/session snapshots, legacy round and update models |
+| `lib/providers/` | GameSessionNotifier, Pack selection/entitlements, legacy GameRoundNotifier, settings/theme/content providers |
+| `lib/presentation/` | Topic → Pack → setup → identity/completion navigation, local image loader, legacy reveal and info/update dialogs |
 | `lib/services/` | Version/APK/Shorebird adapters; separate optional CloudDatabaseService |
 | `lib/core/` | AppConstants, themes, asset labels, URL helpers |
 | `assets/` | Bundled character and flag images, logos, fonts, profile images |
@@ -25,7 +25,7 @@ BiGuess is a Flutter/Dart face-to-face guessing game using Riverpod 2.x, Materia
 | `scripts/`, `test/`, `.github/` | Asset/release tools, Flutter verification, CI |
 | `.agents/`, `.codex/hooks.json` | Shared guidance, tools, optional sidecars, Codex hook entrypoint |
 
-There are no current `Character`/`TopicPack` domain entities or `GameController` class. Check declarations before introducing abstractions from the target design. Historical copies under `old-lib/`, `old-test/`, and `ChatGPT/` are not active application source.
+Current content entities are `Topic`, `Pack`, `Card`, and `Difficulty`; gameplay uses `GameSessionNotifier` and `CardSelectionEngine`. The legacy `GameRoundNotifier` / `SelectCharacterUseCase` path remains for rollback. There is no `Character`, `TopicPack`, or `GameController` class. Check declarations before introducing target-design abstractions. Historical copies under `old-lib/`, `old-test/`, and `ChatGPT/` are not active application source.
 
 ## Required invariants
 

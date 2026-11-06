@@ -25,7 +25,8 @@ class UpdateDialog extends ConsumerWidget {
     final updateState = ref.watch(updateControllerProvider);
     final controller = ref.read(updateControllerProvider.notifier);
 
-    final isMandatory = updateState is UpdateAvailable &&
+    final isMandatory =
+        updateState is UpdateAvailable &&
         updateState.decision is UpdateFullApk &&
         (updateState.decision as UpdateFullApk).mandatory;
 
@@ -103,18 +104,39 @@ class UpdateDialog extends ConsumerWidget {
                   UpdateIdle() => _buildIdleState(context, controller, theme),
                   UpdateChecking() => _buildCheckingState(theme),
                   UpdateAvailable() => _buildAvailableState(
-                      context, ref, updateState, theme, isMandatory),
+                    context,
+                    ref,
+                    updateState,
+                    theme,
+                    isMandatory,
+                  ),
                   UpdateDownloading() => _buildDownloadingState(
-                      context, controller, updateState, theme, isMandatory),
+                    context,
+                    controller,
+                    updateState,
+                    theme,
+                    isMandatory,
+                  ),
                   UpdateInstalling() => _buildInstallingState(theme),
                   UpdatePatching() => _buildPatchingState(theme),
                   UpdateRestarting() => _buildRestartingState(theme),
                   UpdateCompleted() => _buildCompletedState(
-                      context, controller, updateState, theme),
-                  UpdateSkipped() =>
-                    _buildSkippedState(context, controller, theme),
-                  UpdateError() =>
-                    _buildErrorState(context, controller, updateState, theme),
+                    context,
+                    controller,
+                    updateState,
+                    theme,
+                  ),
+                  UpdateSkipped() => _buildSkippedState(
+                    context,
+                    controller,
+                    theme,
+                  ),
+                  UpdateError() => _buildErrorState(
+                    context,
+                    controller,
+                    updateState,
+                    theme,
+                  ),
                 },
               ],
             ),
@@ -301,8 +323,9 @@ class UpdateDialog extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.4),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.4,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -345,8 +368,9 @@ class UpdateDialog extends ConsumerWidget {
             isPatch ? Icons.bolt_rounded : Icons.download_rounded,
             size: 18,
           ),
-          label:
-              Text(isPatch ? 'Apply Instant Patch' : 'Download & Install APK'),
+          label: Text(
+            isPatch ? 'Apply Instant Patch' : 'Download & Install APK',
+          ),
           style: FilledButton.styleFrom(
             backgroundColor: isMandatory ? theme.colorScheme.error : null,
             foregroundColor: isMandatory ? theme.colorScheme.onError : null,
@@ -506,10 +530,7 @@ class UpdateDialog extends ConsumerWidget {
         Text(
           message,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 13,
-            color: theme.colorScheme.onSurface,
-          ),
+          style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface),
         ),
         const SizedBox(height: 18),
         if (isInstallerLaunched) ...[
@@ -584,10 +605,7 @@ class UpdateDialog extends ConsumerWidget {
         Text(
           state.message,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 13,
-            color: theme.colorScheme.error,
-          ),
+          style: TextStyle(fontSize: 13, color: theme.colorScheme.error),
         ),
         const SizedBox(height: 18),
         Row(

@@ -6,10 +6,14 @@ Paths below describe the live tree. Read [architecture.md](architecture.md) for 
 | --- | --- |
 | Startup, orientation, root theme | `lib/main.dart` (`main`, `BiGuessApp`) |
 | Topic → Pack → Game navigation | `lib/presentation/screens/topics/topics_screen.dart`, `lib/presentation/screens/packs/packs_screen.dart`, `lib/presentation/screens/game/game_screen.dart` |
+| Pack selection and game setup | `lib/providers/pack_selection_controller.dart`, `lib/domain/use_cases/select_packs_use_case.dart`, `lib/presentation/screens/packs/selected_packs_setup.dart`, `lib/presentation/screens/game/game_configuration_screen.dart` |
+| Configured session, identity, completion | `lib/providers/game_session_controller.dart`, `lib/domain/models/game_session.dart`, `lib/domain/models/game_session_configuration.dart`, `lib/domain/use_cases/card_selection_engine.dart`, `lib/presentation/screens/game/widgets/identity_card.dart`, `lib/presentation/screens/game/game_screen.dart` |
+| Free rules and internal Pro QA | `lib/domain/models/entitlement.dart`, `lib/providers/entitlement_provider.dart` |
 | Round state and countdown | `lib/providers/game_controller.dart` (`GameRoundNotifier`, `gameRoundProvider`); `lib/domain/models/game_state.dart` (`GameRoundState`) |
 | Random/non-repeating selection | `lib/domain/use_cases/select_character_use_case.dart` (`SelectCharacterUseCase`); `lib/domain/models/character_algorithm.dart` |
 | Algorithm, countdown, hint, theme settings | `lib/providers/game_settings_controller.dart`, `lib/providers/theme_controller.dart`; `lib/presentation/dialogs/info/tabs/settings_tab.dart` |
 | Content repository and bundled adapter | `lib/domain/repositories/content_repository.dart`; `lib/data/repositories/legacy_manifest_content_repository.dart`; `lib/providers/topic_pack_providers.dart` (`contentRepositoryProvider`); legacy `lib/data/datasources/topic_pack_data_source.dart` and generated `lib/assets_manifest.dart` (`topicPackAssets`) |
+| Installed content and private image storage | `lib/data/local/local_pack_file.dart`, `local_pack_store.dart`, `private_pack_images.dart`, `local_content_runtime.dart`; `lib/data/database/content_database.dart`; `lib/data/repositories/sqlite_content_repository.dart`; `lib/presentation/images/content_image_loader.dart` |
 | Content generation and checks | `scripts/generate_manifest.py`, `scripts/audit_assets.py`, `scripts/character_stats.py`; `assets/images/<Topic>/<Pack>/`; `pubspec.yaml` |
 | Filename-derived display names | `lib/core/utils/asset_loader.dart` (`AssetLoader.extractCharacterName`) |
 | Topic styling and shared copy | `lib/core/constants/app_constants.dart`; `lib/core/theme/app_colors.dart`; `lib/core/theme/app_theme.dart` |

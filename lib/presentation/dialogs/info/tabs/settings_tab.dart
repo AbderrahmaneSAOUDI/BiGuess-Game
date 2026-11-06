@@ -10,11 +10,13 @@ import '../widgets/settings_section_card.dart';
 class SettingsTab extends ConsumerWidget {
   final CharacterAlgorithm? algorithm;
   final ValueChanged<CharacterAlgorithm>? onAlgorithmChanged;
+  final bool showLegacyGameSettings;
 
   const SettingsTab({
     super.key,
     this.algorithm,
     this.onAlgorithmChanged,
+    this.showLegacyGameSettings = true,
   });
 
   @override
@@ -38,92 +40,103 @@ class SettingsTab extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: AnimationConfiguration.toStaggeredList(
-          duration: const Duration(milliseconds: 400),
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 400),
           childAnimationBuilder: (widget) => SlideAnimation(
             verticalOffset: 20.0,
             child: FadeInAnimation(child: widget),
           ),
           children: [
-            // 1. Character Algorithm Card
-            SettingsSectionCard(
-              title: 'Character Algorithm',
-              icon: Icons.shuffle_rounded,
-              child: RadioGroup<CharacterAlgorithm>(
-                groupValue: selectedAlgorithm,
-                onChanged: (val) {
-                  if (val != null) setAlgo(val);
-                },
-                child: const Column(
-                  children: [
-                    RadioListTile<CharacterAlgorithm>(
-                      title: Text(
-                        'Non-Repeating (Fair Rotation)',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
+            if (showLegacyGameSettings) ...[
+              // 1. Character Algorithm Card
+              SettingsSectionCard(
+                title: 'Character Algorithm',
+                icon: Icons.shuffle_rounded,
+                child: RadioGroup<CharacterAlgorithm>(
+                  groupValue: selectedAlgorithm,
+                  onChanged: (val) {
+                    if (val != null) setAlgo(val);
+                  },
+                  child: const Column(
+                    children: [
+                      RadioListTile<CharacterAlgorithm>(
+                        title: Text(
+                          'Non-Repeating (Fair Rotation)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        value: CharacterAlgorithm.nonRepeating,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
                       ),
-                      value: CharacterAlgorithm.nonRepeating,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                    RadioListTile<CharacterAlgorithm>(
-                      title: Text(
-                        'Random (Can Repeat)',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
+                      RadioListTile<CharacterAlgorithm>(
+                        title: Text(
+                          'Random (Can Repeat)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        value: CharacterAlgorithm.random,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
                       ),
-                      value: CharacterAlgorithm.random,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 2. Countdown Duration Card
-            SettingsSectionCard(
-              title: 'Countdown Duration',
-              icon: Icons.timer_outlined,
-              trailing: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${countdown}s',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
+                    ],
                   ),
                 ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: AppConstants.supportedCountdownDurations.map((sec) {
-                    final isCurrent = countdown == sec;
-                    return ChoiceChip(
-                      label: Text('$sec seconds'),
-                      selected: isCurrent,
-                      showCheckmark: true,
-                      onSelected: (selected) {
-                        if (selected) {
-                          ref
-                              .read(countdownDurationProvider.notifier)
-                              .setDuration(sec);
-                        }
-                      },
-                    );
-                  }).toList(),
+              const SizedBox(height: 16),
+
+              // 2. Countdown Duration Card
+              SettingsSectionCard(
+                title: 'Countdown Duration',
+                icon: Icons.timer_outlined,
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${countdown}s',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: AppConstants.supportedCountdownDurations.map((
+                      sec,
+                    ) {
+                      final isCurrent = countdown == sec;
+                      return ChoiceChip(
+                        label: Text('$sec seconds'),
+                        selected: isCurrent,
+                        showCheckmark: true,
+                        onSelected: (selected) {
+                          if (selected) {
+                            ref
+                                .read(countdownDurationProvider.notifier)
+                                .setDuration(sec);
+                          }
+                        },
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-
+              const SizedBox(height: 16),
+            ],
             // 3. Appearance Card
             SettingsSectionCard(
               title: 'Appearance',
@@ -161,21 +174,25 @@ class SettingsTab extends ConsumerWidget {
                         }
                       },
                     ),
-                    const Divider(height: 24),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        'Show Character Name On Reveal',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
+                    if (showLegacyGameSettings) ...[
+                      const Divider(height: 24),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Show Character Name On Reveal',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        value: showHint,
+                        onChanged: (val) {
+                          ref
+                              .read(showCharacterNameHintProvider.notifier)
+                              .set(val);
+                        },
                       ),
-                      value: showHint,
-                      onChanged: (val) {
-                        ref
-                            .read(showCharacterNameHintProvider.notifier)
-                            .set(val);
-                      },
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -183,31 +200,32 @@ class SettingsTab extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Reset Defaults Button
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              icon: const Icon(Icons.restore_rounded, size: 18),
-              label: const Text('Reset All Settings to Default'),
-              onPressed: () {
-                ref
-                    .read(characterAlgorithmProvider.notifier)
-                    .setAlgorithm(CharacterAlgorithm.nonRepeating);
-                ref
-                    .read(countdownDurationProvider.notifier)
-                    .setDuration(AppConstants.defaultCountdownSeconds);
-                ref.read(showCharacterNameHintProvider.notifier).set(true);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Settings restored to defaults'),
-                    duration: Duration(seconds: 2),
+            if (showLegacyGameSettings)
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-            ),
+                ),
+                icon: const Icon(Icons.restore_rounded, size: 18),
+                label: const Text('Reset All Settings to Default'),
+                onPressed: () {
+                  ref
+                      .read(characterAlgorithmProvider.notifier)
+                      .setAlgorithm(CharacterAlgorithm.nonRepeating);
+                  ref
+                      .read(countdownDurationProvider.notifier)
+                      .setDuration(AppConstants.defaultCountdownSeconds);
+                  ref.read(showCharacterNameHintProvider.notifier).set(true);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Settings restored to defaults'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ),

@@ -9,8 +9,11 @@ void main() {
     final packJsonFile = File('$fixtureDir/pack.json');
 
     test('pack.json exists and contains valid JSON', () {
-      expect(packJsonFile.existsSync(), isTrue,
-          reason: 'Fixture pack.json must exist');
+      expect(
+        packJsonFile.existsSync(),
+        isTrue,
+        reason: 'Fixture pack.json must exist',
+      );
       final content = packJsonFile.readAsStringSync();
       final data = json.decode(content) as Map<String, dynamic>;
 
@@ -44,8 +47,11 @@ void main() {
           json.decode(packJsonFile.readAsStringSync()) as Map<String, dynamic>;
       final cards = data['cards'] as List<dynamic>;
 
-      expect(cards.length, greaterThanOrEqualTo(2),
-          reason: 'Minimum playable pack requires at least 2 cards');
+      expect(
+        cards.length,
+        greaterThanOrEqualTo(2),
+        reason: 'Minimum playable pack requires at least 2 cards',
+      );
       expect(cards.length, 4);
 
       final difficulties = <int>{};
@@ -67,10 +73,16 @@ void main() {
 
         // Verify underlying image exists and is non-empty
         final imgFile = File('$fixtureDir/${card['image']}');
-        expect(imgFile.existsSync(), isTrue,
-            reason: 'Card image ${card['image']} must exist on disk');
-        expect(imgFile.lengthSync(), greaterThan(0),
-            reason: 'Card image ${card['image']} must not be empty');
+        expect(
+          imgFile.existsSync(),
+          isTrue,
+          reason: 'Card image ${card['image']} must exist on disk',
+        );
+        expect(
+          imgFile.lengthSync(),
+          greaterThan(0),
+          reason: 'Card image ${card['image']} must not be empty',
+        );
       }
 
       // Covers Easy (1), Medium (2), Hard (3)

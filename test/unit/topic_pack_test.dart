@@ -57,17 +57,20 @@ void main() {
     test('extracts flag names without file extension', () {
       expect(
         AssetLoader.extractCharacterName(
-            'assets/images/Geography/Flags/Algeria.png'),
+          'assets/images/Geography/Flags/Algeria.png',
+        ),
         'Algeria',
       );
       expect(
         AssetLoader.extractCharacterName(
-            'assets/images/Geography/Flags/United States.png'),
+          'assets/images/Geography/Flags/United States.png',
+        ),
         'United States',
       );
       expect(
         AssetLoader.extractCharacterName(
-            'assets/images/Geography/Flags/South Korea.png'),
+          'assets/images/Geography/Flags/South Korea.png',
+        ),
         'South Korea',
       );
     });
@@ -75,12 +78,14 @@ void main() {
     test('extracts anime character names properly', () {
       expect(
         AssetLoader.extractCharacterName(
-            'assets/images/Anime/Naruto/Itachi Utchiha.webp'),
+          'assets/images/Anime/Naruto/Itachi Utchiha.webp',
+        ),
         'Itachi Utchiha',
       );
       expect(
         AssetLoader.extractCharacterName(
-            'assets/images/Anime/Attack on Titan/Eren YAEGER.webp'),
+          'assets/images/Anime/Attack on Titan/Eren YAEGER.webp',
+        ),
         'Eren YAEGER',
       );
     });
@@ -88,12 +93,18 @@ void main() {
 
   group('AppConstants Dynamic Theme & Icons', () {
     test('known topics return configured colors', () {
-      expect(AppConstants.getTopicColor('Anime'),
-          AppConstants.topicColors['Anime']);
-      expect(AppConstants.getTopicColor('Geography'),
-          AppConstants.topicColors['Geography']);
-      expect(AppConstants.getTopicColor('Movies'),
-          AppConstants.topicColors['Movies']);
+      expect(
+        AppConstants.getTopicColor('Anime'),
+        AppConstants.topicColors['Anime'],
+      );
+      expect(
+        AppConstants.getTopicColor('Geography'),
+        AppConstants.topicColors['Geography'],
+      );
+      expect(
+        AppConstants.getTopicColor('Movies'),
+        AppConstants.topicColors['Movies'],
+      );
     });
 
     test('future custom topics dynamically receive valid colors', () {
@@ -105,17 +116,27 @@ void main() {
 
     test('future custom topics dynamically receive contextual icons', () {
       expect(AppConstants.getTopicIcon('Anime'), Icons.auto_awesome_rounded);
-      expect(AppConstants.getTopicIcon('Flags of the World'),
-          Icons.public_rounded);
-      expect(AppConstants.getTopicIcon('Classic Cinema'),
-          Icons.movie_creation_rounded);
-      expect(AppConstants.getTopicIcon('Video Games'),
-          Icons.sports_esports_rounded);
+      expect(
+        AppConstants.getTopicIcon('Flags of the World'),
+        Icons.public_rounded,
+      );
+      expect(
+        AppConstants.getTopicIcon('Classic Cinema'),
+        Icons.movie_creation_rounded,
+      );
+      expect(
+        AppConstants.getTopicIcon('Video Games'),
+        Icons.sports_esports_rounded,
+      );
       expect(AppConstants.getTopicIcon('Pop Music'), Icons.music_note_rounded);
-      expect(AppConstants.getTopicIcon('Football Legends'),
-          Icons.sports_soccer_rounded);
-      expect(AppConstants.getTopicIcon('Unknown Topic 123'),
-          Icons.category_rounded);
+      expect(
+        AppConstants.getTopicIcon('Football Legends'),
+        Icons.sports_soccer_rounded,
+      );
+      expect(
+        AppConstants.getTopicIcon('Unknown Topic 123'),
+        Icons.category_rounded,
+      );
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../../images/content_image_loader.dart';
 
 /// 3D flip card with holographic diagonal light sweep and spring name hint tag
 class AnimatedCharacterCard extends StatefulWidget {
@@ -11,6 +12,8 @@ class AnimatedCharacterCard extends StatefulWidget {
   final double maxHeight;
   final double maxWidth;
   final double? cardSize;
+  final ContentImageLoader? imageLoader;
+  final bool fastReveal;
 
   const AnimatedCharacterCard({
     super.key,
@@ -21,6 +24,8 @@ class AnimatedCharacterCard extends StatefulWidget {
     this.maxHeight = 600.0,
     this.maxWidth = 480.0,
     this.cardSize,
+    this.imageLoader,
+    this.fastReveal = false,
   });
 
   @override
@@ -38,6 +43,8 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
   double? _imageAspectRatio;
   ImageStream? _imageStream;
   ImageStreamListener? _imageListener;
+  late ImageProvider<Object> _imageProvider;
+  bool? _reduceMotion;
 
   @override
   void initState() {
@@ -45,74 +52,94 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
 
     _flipController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: Duration(milliseconds: widget.fastReveal ? 250 : 900),
     );
 
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: Duration(milliseconds: widget.fastReveal ? 250 : 1600),
     );
 
     _flipAnimation = Tween<double>(begin: pi / 2, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _flipController,
-        curve: Curves.easeOutBack,
-      ),
+      CurvedAnimation(parent: _flipController, curve: Curves.easeOutBack),
     );
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.6, end: 1.05)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 0.6,
+          end: 1.05,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 70,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.05, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween<double>(
+          begin: 1.05,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 30,
       ),
     ]).animate(_flipController);
 
     _shimmerAnimation = Tween<double>(begin: -1.2, end: 1.8).animate(
-      CurvedAnimation(
-        parent: _shimmerController,
-        curve: Curves.easeInOutSine,
-      ),
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOutSine),
     );
 
     _resolveImageDimensions();
-    _playRevealAnimation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (_reduceMotion != reduceMotion) {
+      _reduceMotion = reduceMotion;
+      _playRevealAnimation();
+    }
   }
 
   void _resolveImageDimensions() {
     if (_imageStream != null && _imageListener != null) {
       _imageStream!.removeListener(_imageListener!);
     }
-    final imageProvider = AssetImage(widget.imageAsset);
-    _imageStream = imageProvider.resolve(const ImageConfiguration());
-    _imageListener = ImageStreamListener(
-      (ImageInfo info, bool synchronousCall) {
-        final double width = info.image.width.toDouble();
-        final double height = info.image.height.toDouble();
-        if (height > 0) {
-          final ratio = width / height;
-          if (synchronousCall) {
-            _imageAspectRatio = ratio;
-          } else if (mounted) {
-            setState(() {
-              _imageAspectRatio = ratio;
-            });
-          }
-        }
-      },
-      onError: (_, stackTrace) {},
+    _imageAspectRatio = null;
+    _imageProvider = (widget.imageLoader ?? ContentImageLoader.shared).imageFor(
+      widget.imageAsset,
     );
+    _imageStream = _imageProvider.resolve(const ImageConfiguration());
+    _imageListener = ImageStreamListener((
+      ImageInfo info,
+      bool synchronousCall,
+    ) {
+      final double width = info.image.width.toDouble();
+      final double height = info.image.height.toDouble();
+      if (height > 0) {
+        final ratio = width / height;
+        if (synchronousCall) {
+          _imageAspectRatio = ratio;
+        } else if (mounted) {
+          setState(() {
+            _imageAspectRatio = ratio;
+          });
+        }
+      }
+      info.dispose();
+    }, onError: (_, stackTrace) {});
     _imageStream!.addListener(_imageListener!);
   }
 
   void _playRevealAnimation() {
     _sequenceTimer?.cancel();
+    if (_reduceMotion == true) {
+      _flipController.value = 1;
+      _shimmerController.value = 1;
+      return;
+    }
     _flipController.forward(from: 0.0);
+    if (widget.fastReveal) {
+      _shimmerController.forward(from: 0.0);
+      return;
+    }
     _sequenceTimer = Timer(const Duration(milliseconds: 300), () {
       if (mounted) {
         _shimmerController.forward(from: 0.0);
@@ -123,7 +150,17 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
   @override
   void didUpdateWidget(covariant AnimatedCharacterCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.imageAsset != widget.imageAsset) {
+    if (oldWidget.fastReveal != widget.fastReveal) {
+      _flipController.duration = Duration(
+        milliseconds: widget.fastReveal ? 250 : 900,
+      );
+      _shimmerController.duration = Duration(
+        milliseconds: widget.fastReveal ? 250 : 1600,
+      );
+    }
+    if (oldWidget.imageAsset != widget.imageAsset ||
+        oldWidget.imageLoader != widget.imageLoader ||
+        oldWidget.fastReveal != widget.fastReveal) {
       _resolveImageDimensions();
       _playRevealAnimation();
     }
@@ -208,16 +245,18 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                       gradient: LinearGradient(
                         colors: [
                           theme.colorScheme.primary.withValues(alpha: 0.85),
-                          theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.85),
+                          theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.85,
+                          ),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.32),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.32,
+                          ),
                           blurRadius: 24,
                           spreadRadius: 2,
                           offset: const Offset(0, 6),
@@ -231,28 +270,32 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                         alignment: Alignment.center,
                         fit: StackFit.expand,
                         children: [
-                          Image.asset(
-                            widget.imageAsset,
+                          Image(
+                            image: _imageProvider,
                             fit: BoxFit.cover,
                             filterQuality: FilterQuality.high,
+                            excludeFromSemantics: true,
+                            frameBuilder: (context, child, frame, synchronous) {
+                              if (synchronous || frame != null) return child;
+                              return Center(
+                                child: Semantics(
+                                  label: 'Loading image',
+                                  child: const Icon(Icons.image_outlined),
+                                ),
+                              );
+                            },
                             errorBuilder: (context, error, stackTrace) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(32.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.broken_image_rounded,
-                                        color: Colors.red,
-                                        size: 50,
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        'Error loading image',
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
+                              return Center(
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Text(
+                                    'Error loading image',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurface,
+                                      backgroundColor:
+                                          theme.colorScheme.surface,
+                                    ),
                                   ),
                                 ),
                               );
@@ -270,7 +313,7 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                 }
                                 final sweepDistance =
                                     (targetWidth > 0 ? targetWidth : 300.0) *
-                                        1.5;
+                                    1.5;
                                 return IgnorePointer(
                                   child: Transform.translate(
                                     offset: Offset(
@@ -283,12 +326,15 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [
-                                              Colors.white
-                                                  .withValues(alpha: 0.0),
-                                              Colors.white
-                                                  .withValues(alpha: 0.45),
-                                              Colors.white
-                                                  .withValues(alpha: 0.0),
+                                              Colors.white.withValues(
+                                                alpha: 0.0,
+                                              ),
+                                              Colors.white.withValues(
+                                                alpha: 0.45,
+                                              ),
+                                              Colors.white.withValues(
+                                                alpha: 0.0,
+                                              ),
                                             ],
                                             stops: const [0.0, 0.5, 1.0],
                                           ),
@@ -330,16 +376,20 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                           return FadeTransition(
                             opacity: animation,
                             child: ScaleTransition(
-                              scale: Tween<double>(begin: 0.94, end: 1.0)
-                                  .animate(animation),
+                              scale: Tween<double>(
+                                begin: 0.94,
+                                end: 1.0,
+                              ).animate(animation),
                               child: child,
                             ),
                           );
                         },
                         child: Material(
-                          key: ValueKey(widget.showNameHint
-                              ? 'toggle_name_button'
-                              : 'show_name_button'),
+                          key: ValueKey(
+                            widget.showNameHint
+                                ? 'toggle_name_button'
+                                : 'show_name_button',
+                          ),
                           color: Colors.transparent,
                           child: Tooltip(
                             message: widget.showNameHint
@@ -357,23 +407,28 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                 decoration: BoxDecoration(
                                   color: widget.showNameHint
                                       ? theme
-                                          .colorScheme.surfaceContainerHighest
+                                            .colorScheme
+                                            .surfaceContainerHighest
                                       : (isDark
-                                          ? Colors.white.withValues(alpha: 0.08)
-                                          : Colors.black
-                                              .withValues(alpha: 0.05)),
+                                            ? Colors.white.withValues(
+                                                alpha: 0.08,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.05,
+                                              )),
                                   borderRadius: BorderRadius.circular(22),
                                   border: Border.all(
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.45),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.45,
+                                    ),
                                     width: 1.5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          theme.colorScheme.shadow.withValues(
-                                        alpha: isDark ? 0.25 : 0.10,
-                                      ),
+                                      color: theme.colorScheme.shadow
+                                          .withValues(
+                                            alpha: isDark ? 0.25 : 0.10,
+                                          ),
                                       blurRadius: 8,
                                       offset: const Offset(0, 3),
                                     ),

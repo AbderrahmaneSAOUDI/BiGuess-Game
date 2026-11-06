@@ -1,0 +1,26 @@
+Command: flutter analyze --fatal-infos
+Analyzing BiGuess-Game...                                       
+
+   info • Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' • lib/ci_negative_2sa8lrqy.dart:1:1 • prefer_const_declarations
+  error • A value of type 'String' can't be assigned to a variable of type 'int'. Try changing the type of the variable, or casting the right-hand type to 'int' • lib/ci_negative_2sa8lrqy.dart:1:35 • invalid_assignment
+
+2 issues found. (ran in 3.8s)
+
+PASS: expected exit 1 and 'invalid_assignment' detected
+Command: flutter test --reporter expanded test/ci_negative_inp91u2m_test.dart
+00:00 +0: loading /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/ci_negative_inp91u2m_test.dart
+00:00 +0: deliberate CI failure
+00:00 +0 -1: deliberate CI failure [E]
+  Expected: <3>
+    Actual: <2>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/ci_negative_inp91u2m_test.dart 2:50            main.<fn>
+  
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/ci_negative_inp91u2m_test.dart: deliberate CI failure
+
+PASS: expected exit 1 and 'Expected: <3>' detected

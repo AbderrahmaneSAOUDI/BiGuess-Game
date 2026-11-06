@@ -34,7 +34,8 @@ class VersionService {
     try {
       client.connectionTimeout = _timeout;
       final uri = Uri.parse(
-          '$_versionJsonUrl?t=${DateTime.now().millisecondsSinceEpoch}');
+        '$_versionJsonUrl?t=${DateTime.now().millisecondsSinceEpoch}',
+      );
       final request = await client.getUrl(uri);
       request.headers.set(HttpHeaders.cacheControlHeader, 'no-cache, no-store');
       request.headers.set(HttpHeaders.pragmaHeader, 'no-cache');

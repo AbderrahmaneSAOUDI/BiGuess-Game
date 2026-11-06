@@ -35,11 +35,7 @@ class GlassIconButton extends StatefulWidget {
       onPressed: onPressed,
       glowColor: glowColor,
       size: size,
-      icon: Icon(
-        iconData,
-        size: iconSize,
-        color: iconColor,
-      ),
+      icon: Icon(iconData, size: iconSize, color: iconColor),
     );
   }
 
@@ -61,19 +57,19 @@ class _GlassIconButtonState extends State<GlassIconButton> {
 
     final glassBg = isDark
         ? (_isHovered
-            ? primary.withValues(alpha: 0.20)
-            : Colors.white.withValues(alpha: 0.08))
+              ? primary.withValues(alpha: 0.20)
+              : Colors.white.withValues(alpha: 0.08))
         : (_isHovered
-            ? primary.withValues(alpha: 0.15)
-            : Colors.black.withValues(alpha: 0.05));
+              ? primary.withValues(alpha: 0.15)
+              : Colors.black.withValues(alpha: 0.05));
 
     final glassBorder = isDark
         ? (_isHovered
-            ? primary.withValues(alpha: 0.45)
-            : Colors.white.withValues(alpha: 0.12))
+              ? primary.withValues(alpha: 0.45)
+              : Colors.white.withValues(alpha: 0.12))
         : (_isHovered
-            ? primary.withValues(alpha: 0.35)
-            : Colors.black.withValues(alpha: 0.08));
+              ? primary.withValues(alpha: 0.35)
+              : Colors.black.withValues(alpha: 0.08));
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -105,10 +101,7 @@ class _GlassIconButtonState extends State<GlassIconButton> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: glassBg,
-              border: Border.all(
-                color: glassBorder,
-                width: 1.0,
-              ),
+              border: Border.all(color: glassBorder, width: 1.0),
               boxShadow: [
                 if (_isHovered)
                   BoxShadow(

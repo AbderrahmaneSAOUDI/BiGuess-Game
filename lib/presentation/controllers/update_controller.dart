@@ -31,12 +31,12 @@ final shorebirdPatchServiceProvider = Provider<ShorebirdPatchService>((_) {
 
 final updateControllerProvider =
     StateNotifierProvider<UpdateController, UpdateState>((ref) {
-  return UpdateController(
-    versionService: ref.watch(versionServiceProvider),
-    otaInstaller: ref.watch(otaInstallerServiceProvider),
-    shorebirdPatch: ref.watch(shorebirdPatchServiceProvider),
-  );
-});
+      return UpdateController(
+        versionService: ref.watch(versionServiceProvider),
+        otaInstaller: ref.watch(otaInstallerServiceProvider),
+        shorebirdPatch: ref.watch(shorebirdPatchServiceProvider),
+      );
+    });
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -59,10 +59,10 @@ class UpdateController extends StateNotifier<UpdateState> {
     required VersionService versionService,
     required OtaInstallerService otaInstaller,
     required ShorebirdPatchService shorebirdPatch,
-  })  : _versionService = versionService,
-        _otaInstaller = otaInstaller,
-        _shorebirdPatch = shorebirdPatch,
-        super(const UpdateIdle());
+  }) : _versionService = versionService,
+       _otaInstaller = otaInstaller,
+       _shorebirdPatch = shorebirdPatch,
+       super(const UpdateIdle());
 
   SemVer? get localVersion => _localVersion;
   SemVer? get minRequired => _minRequired;
@@ -96,7 +96,8 @@ class UpdateController extends StateNotifier<UpdateState> {
             if (!mounted) return;
             if (applied) {
               state = const UpdateCompleted(
-                  'New patch installed. Restart anytime to apply.');
+                'New patch installed. Restart anytime to apply.',
+              );
             } else {
               state = const UpdateCompleted();
             }
@@ -140,9 +141,7 @@ class UpdateController extends StateNotifier<UpdateState> {
         return;
       } catch (e) {
         if (!silent && mounted) {
-          state = UpdateError(
-            message: 'Failed to check for updates: $e',
-          );
+          state = UpdateError(message: 'Failed to check for updates: $e');
         } else if (mounted) {
           state = const UpdateCompleted();
         }
@@ -185,8 +184,9 @@ class UpdateController extends StateNotifier<UpdateState> {
             // Silently download and apply the patch
             final applied = await _shorebirdPatch.downloadAndApplyPatch();
             if (applied && mounted) {
-              state =
-                  const UpdateCompleted('Patch downloaded. Restart anytime.');
+              state = const UpdateCompleted(
+                'Patch downloaded. Restart anytime.',
+              );
             } else if (mounted) {
               state = const UpdateCompleted();
             }
@@ -224,11 +224,7 @@ class UpdateController extends StateNotifier<UpdateState> {
     // Clean stale APKs first
     await _otaInstaller.cleanStaleApks();
 
-    state = const UpdateDownloading(
-      progress: 0,
-      speedText: '',
-      etaText: '',
-    );
+    state = const UpdateDownloading(progress: 0, speedText: '', etaText: '');
 
     try {
       final apkFile = await _otaInstaller.downloadApk(
@@ -252,7 +248,8 @@ class UpdateController extends StateNotifier<UpdateState> {
 
       if (!mounted) return;
       state = const UpdateCompleted(
-          'Installer launched. Follow the on-screen prompt to finish.');
+        'Installer launched. Follow the on-screen prompt to finish.',
+      );
     } catch (e) {
       debugPrint('APK download/install error: $e');
       if (!mounted) return;
@@ -325,9 +322,7 @@ class UpdateController extends StateNotifier<UpdateState> {
     } catch (e) {
       debugPrint('Shorebird patch apply error: $e');
       if (!mounted) return;
-      state = const UpdateError(
-        message: 'Failed to apply patch.',
-      );
+      state = const UpdateError(message: 'Failed to apply patch.');
     }
   }
 

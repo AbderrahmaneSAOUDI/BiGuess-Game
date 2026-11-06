@@ -1,0 +1,32 @@
+[96mChecking export reproducibility (2 independent passes)...[0m
+[92m✅ Export is 100% byte-reproducible and deterministic.[0m
+[92m✅ Inventory JSON exported to docs/migration/content_inventory.json (1178 records)[0m
+[92m✅ Markdown report exported to docs/migration/CONTENT_INVENTORY_AND_RIGHTS.md[0m
+
+[1m[96m======================================================================[0m
+[1m[96m             📦 BiGuess Content Inventory & Rights Gate               [0m
+[1m[96m======================================================================[0m
+Total Assets Inventoried:    [1m1178[0m
+Total Data Volume:           [1m11.42 MB[0m
+Disk Files Scanned:          [1m1174[0m
+Counts Reconciled:           [92mTrue[0m
+Technical Importability:     [92m1178[0m importable, 0 corrupt, 0 unsupported
+Rights Breakdown:            [93m1174 unverified (quarantined)[0m, [92m4 cleared[0m
+Public Test Publishable:     [92m4[0m (quarantine prevents public exposure)
+Exact Duplicate Hash Sets:   3 (7 files)
+Cross-Pack Name Matches:     7 characters
+[1m[96m----------------------------------------------------------------------[0m
+[1mAnime[0m (922 cards):
+   • Attack on Titan: 131 cards
+   • Black Clover: 67 cards
+   • Demon Slayer: 43 cards
+   • Hunter X Hunter: 135 cards
+   • Naruto: 80 cards
+   • One Piece: 466 cards
+[1mGeography[0m (252 cards):
+   • Flags: 252 cards
+[1mShapes[0m (4 cards):
+   • Geometric Shapes: 4 cards
+[1m[96m======================================================================[0m
+
+[92m✅ All counts reconciled and integrity checks passed![0m

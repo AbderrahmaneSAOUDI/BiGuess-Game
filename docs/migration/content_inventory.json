@@ -34,13 +34,15 @@
     "reconciliation": {
       "disk_files_count": 1174,
       "inventoried_records_count": 1178,
+      "inventoried_source_files_count": 1174,
       "is_reconciled": true,
       "discrepancies": []
     },
     "technical_importability": {
       "importable": 1178,
       "corrupt": 0,
-      "unsupported_format": 0
+      "unsupported_format": 0,
+      "unreadable": 0
     },
     "rights_quarantine": {
       "unverified": 1174,

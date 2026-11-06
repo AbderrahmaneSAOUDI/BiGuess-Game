@@ -97,11 +97,16 @@ class GameRoundNotifier
     );
 
     if (result.hasImages && result.assetPath != null) {
+      // Imported images use opaque references; their names belong to Cards.
+      final cards = configuredGame?.cards;
+      final selected = cards?.firstWhere(
+        (card) => card.imageReference == result.assetPath,
+      );
       state = state.copyWith(
         isCountingDown: false,
         showPicture: true,
         currentImageAsset: result.assetPath,
-        correctAnswer: result.characterName,
+        correctAnswer: selected?.name ?? result.characterName,
         remainingImages: result.updatedRemainingImages,
         roundsPlayed: state.roundsPlayed + 1,
       );

@@ -13,10 +13,7 @@ class GameEmptyState extends StatelessWidget {
       builder: (context, value, child) {
         return Opacity(
           opacity: value,
-          child: Transform.scale(
-            scale: 0.8 + 0.2 * value,
-            child: child,
-          ),
+          child: Transform.scale(scale: 0.8 + 0.2 * value, child: child),
         );
       },
       child: const Center(

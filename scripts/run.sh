@@ -33,6 +33,7 @@ else
             normalize|clean-names|\
             stats|analytics|\
             inventory|quarantine|\
+            baseline|export|offline|\
             build|\
             clean|\
             release|publish|\
@@ -42,13 +43,13 @@ else
             version|ver|bump)
                 python3 "$SCRIPT_DIR/menu.py" "$TASK"
                 ;;
-            -h|--help|help)
+            -h|--help|--list|help)
                 python3 "$SCRIPT_DIR/menu.py" --help
                 ;;
             *)
                 echo "Unknown command: $TASK"
                 echo "Available shortcuts:"
-                echo "  topics, convert, manifest, audit, normalize, stats, inventory, build, clean, release, patch, doctor, check-update, version"
+                echo "Run ./scripts/run.sh --help to browse tools by group."
                 echo "Or run without arguments for interactive menu: ./scripts/run.sh"
                 exit 1
                 ;;
@@ -76,6 +77,15 @@ else
                 ;;
             inventory|quarantine)
                 python3 "$SCRIPT_DIR/content_inventory.py" "$@"
+                ;;
+            baseline)
+                bash "$SCRIPT_DIR/baseline_check.sh" "$@"
+                ;;
+            export)
+                python3 "$SCRIPT_DIR/export_pack.py" "$@"
+                ;;
+            offline)
+                python3 "$SCRIPT_DIR/check_offline_gameplay.py" "$@"
                 ;;
             build)
                 python3 "$SCRIPT_DIR/build_app.py" "$@"

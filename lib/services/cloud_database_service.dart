@@ -17,18 +17,19 @@ class CloudDatabaseService {
       'https://biguess-api.biguess-api.workers.dev';
 
   CloudDatabaseService({Dio? dio, String baseUrl = defaultEndpoint})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: baseUrl,
-                connectTimeout: const Duration(seconds: 8),
-                receiveTimeout: const Duration(seconds: 8),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                },
-              ),
-            );
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: baseUrl,
+              connectTimeout: const Duration(seconds: 8),
+              receiveTimeout: const Duration(seconds: 8),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+            ),
+          );
 
   /// Checks the connectivity and health status of the Cloudflare Worker API.
   Future<bool> checkHealth() async {
@@ -55,7 +56,8 @@ class CloudDatabaseService {
       return const [];
     } on DioException catch (e) {
       throw Exception(
-          'Failed to load records from Cloudflare D1: ${e.message}');
+        'Failed to load records from Cloudflare D1: ${e.message}',
+      );
     }
   }
 

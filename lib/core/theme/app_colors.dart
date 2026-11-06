@@ -7,12 +7,14 @@ class AppColors {
   static const Color primarySeed = Colors.blue;
 
   // Countdown timer colors
-  static const Color countdownCritical =
-      Color(0xFFFF3366); // Energetic Crimson (1s)
+  static const Color countdownCritical = Color(
+    0xFFFF3366,
+  ); // Energetic Crimson (1s)
   static const Color countdownWarning = Color(0xFFFF9900); // Vibrant Amber (2s)
   static const Color countdownAlert = Color(0xFFFFD700); // Gold (3s)
-  static const Color countdownDefault =
-      Color(0xFF00E5FF); // Electric Cyan (4s+)
+  static const Color countdownDefault = Color(
+    0xFF00E5FF,
+  ); // Electric Cyan (4s+)
 
   // Gameplay Action Buttons
   static const Color startGradientStart = Color(0xFF00E676); // Spring Green

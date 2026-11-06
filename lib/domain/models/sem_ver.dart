@@ -52,8 +52,12 @@ class SemVer implements Comparable<SemVer> {
   }
 
   /// Zero / unknown version sentinel.
-  static const SemVer zero =
-      SemVer(major: 0, minor: 0, patch: 0, buildNumber: 0);
+  static const SemVer zero = SemVer(
+    major: 0,
+    minor: 0,
+    patch: 0,
+    buildNumber: 0,
+  );
 
   /// Whether [other] has a higher major or minor component than `this`.
   ///

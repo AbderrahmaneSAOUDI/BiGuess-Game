@@ -47,60 +47,57 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
       vsync: this,
     );
 
-    _buttonScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.03,
-    ).animate(CurvedAnimation(
-      parent: _buttonAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    _buttonScaleAnimation = Tween<double>(begin: 1.0, end: 1.03).animate(
+      CurvedAnimation(
+        parent: _buttonAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
-    _shimmerAnimation = Tween<double>(
-      begin: -1.2,
-      end: 2.2,
-    ).animate(CurvedAnimation(
-      parent: _buttonAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    _shimmerAnimation = Tween<double>(begin: -1.2, end: 2.2).animate(
+      CurvedAnimation(
+        parent: _buttonAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
-    _glowAnimation = Tween<double>(
-      begin: 0.35,
-      end: 0.85,
-    ).animate(CurvedAnimation(
-      parent: _buttonAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    _glowAnimation = Tween<double>(begin: 0.35, end: 0.85).animate(
+      CurvedAnimation(
+        parent: _buttonAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _tapScalePunchAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.90)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 0.90,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 25,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.90, end: 1.06)
-            .chain(CurveTween(curve: Curves.easeOutBack)),
+        tween: Tween<double>(
+          begin: 0.90,
+          end: 1.06,
+        ).chain(CurveTween(curve: Curves.easeOutBack)),
         weight: 45,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.06, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween<double>(
+          begin: 1.06,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 30,
       ),
     ]).animate(_tapClickController);
 
     _tapSpinAnimation = Tween<double>(begin: 0.0, end: 4 * pi).animate(
-      CurvedAnimation(
-        parent: _tapClickController,
-        curve: Curves.easeOutCubic,
-      ),
+      CurvedAnimation(parent: _tapClickController, curve: Curves.easeOutCubic),
     );
 
     _tapFlashAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _tapClickController,
-        curve: Curves.easeOutQuad,
-      ),
+      CurvedAnimation(parent: _tapClickController, curve: Curves.easeOutQuad),
     );
   }
 
@@ -136,8 +133,9 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final primaryGlow =
-        isDark ? AppColors.refreshGradientStart : theme.colorScheme.primary;
+    final primaryGlow = isDark
+        ? AppColors.refreshGradientStart
+        : theme.colorScheme.primary;
     final primaryDeep = isDark
         ? AppColors.refreshGradientEnd
         : theme.colorScheme.primaryContainer;
@@ -151,9 +149,9 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
         final scale = _isPressed
             ? 0.95
             : (_buttonScaleAnimation.value *
-                (_tapClickController.isAnimating
-                    ? _tapScalePunchAnimation.value
-                    : 1.0));
+                  (_tapClickController.isAnimating
+                      ? _tapScalePunchAnimation.value
+                      : 1.0));
 
         final verticalOffset = _isPressed ? 4.0 : 0.0;
 

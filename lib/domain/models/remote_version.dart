@@ -32,8 +32,8 @@ class RemoteVersion {
     if (rawApkUrls is Map) {
       for (final entry in rawApkUrls.entries) {
         if (entry.key != null && entry.value != null) {
-          parsedUrls[entry.key.toString().toLowerCase()] =
-              entry.value.toString();
+          parsedUrls[entry.key.toString().toLowerCase()] = entry.value
+              .toString();
         }
       }
     }
@@ -54,8 +54,8 @@ class RemoteVersion {
     if (rawShaHashes is Map) {
       for (final entry in rawShaHashes.entries) {
         if (entry.key != null && entry.value != null) {
-          parsedHashes[entry.key.toString().toLowerCase()] =
-              entry.value.toString();
+          parsedHashes[entry.key.toString().toLowerCase()] = entry.value
+              .toString();
         }
       }
     }
@@ -117,16 +117,16 @@ class RemoteVersion {
   }
 
   Map<String, dynamic> toJson() => {
-        'latest_version': latestVersion,
-        'build_number': buildNumber,
-        'min_required_version': minRequiredVersion,
-        'has_native_changes': hasNativeChanges,
-        if (apkUrls.isNotEmpty) 'apk_urls': apkUrls,
-        'apk_url': apkUrl,
-        if (sha256 != null && sha256!.isNotEmpty) 'sha256': sha256,
-        if (sha256Hashes.isNotEmpty) 'sha256_hashes': sha256Hashes,
-        'release_notes': releaseNotes,
-      };
+    'latest_version': latestVersion,
+    'build_number': buildNumber,
+    'min_required_version': minRequiredVersion,
+    'has_native_changes': hasNativeChanges,
+    if (apkUrls.isNotEmpty) 'apk_urls': apkUrls,
+    'apk_url': apkUrl,
+    if (sha256 != null && sha256!.isNotEmpty) 'sha256': sha256,
+    if (sha256Hashes.isNotEmpty) 'sha256_hashes': sha256Hashes,
+    'release_notes': releaseNotes,
+  };
 
   @override
   String toString() =>

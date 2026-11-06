@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as image;
 import 'package:gdg_guess_game/data/local/local_pack_file.dart';
 import 'package:gdg_guess_game/data/local/local_pack_store.dart';
+import 'package:gdg_guess_game/data/local/private_pack_images.dart';
 import 'package:path/path.dart' as p;
 
 class FailingStorage extends PackStorageIo {
@@ -82,7 +83,13 @@ void main() {
       final key = reopened.manifest.cards
           .singleWhere((value) => value.id == card.id)
           .imageReference;
-      expect(await File(card.imageReference).readAsBytes(), objects[key]);
+      expect(
+        await PrivatePackImages.read(
+          root,
+          PrivateImageReference.parse(card.imageReference),
+        ),
+        objects[key],
+      );
     }
   }
 
@@ -103,8 +110,9 @@ void main() {
     source = File(p.join(temp.path, 'input.biguesspack'));
     await File('test/fixtures/local_pack/colors.biguesspack').copy(source.path);
     final archive = ZipDecoder().decodeBytes(await source.readAsBytes());
-    fixture = jsonDecode(utf8.decode(archive.find('manifest.json')!.content))
-        as Map<String, dynamic>;
+    fixture =
+        jsonDecode(utf8.decode(archive.find('manifest.json')!.content))
+            as Map<String, dynamic>;
     objects = {
       for (final entry in archive.files.where(
         (file) => file.name != 'manifest.json',
@@ -126,6 +134,104 @@ void main() {
       await expectPreviousIntact(installed);
       expect(await LocalPackStore(root).readAllInstalled(), hasLength(1));
       expect(await store.readInstalled('unknown'), isNull);
+    },
+  );
+
+  test('new installs package images without loose gallery files', () async {
+    final installed = await store.install(source);
+    final files = await installed.directory.list(recursive: true).toList();
+    expect(files.map((file) => p.basename(file.path)).toSet(), {
+      'manifest.json',
+      PrivatePackImages.fileName,
+    });
+    expect(
+      installed.cards.every(
+        (card) => card.imageReference.startsWith('biguess-pack:'),
+      ),
+      isTrue,
+    );
+    // References survive relocation of the application support directory.
+    final moved = await root.rename(p.join(temp.path, 'relocated-private'));
+    final reopened = (await LocalPackStore(
+      moved,
+    ).readInstalled('fixture-pack'))!;
+    expect(reopened.cards, installed.cards);
+    for (final card in reopened.cards) {
+      expect(
+        await PrivatePackImages.read(
+          moved,
+          PrivateImageReference.parse(card.imageReference),
+        ),
+        isNotEmpty,
+      );
+    }
+  });
+
+  test(
+    'pre-T11 loose generations reopen without rewriting their images',
+    () async {
+      final installed = await store.install(source);
+      await Directory(p.join(installed.directory.path, 'objects')).create();
+      for (final object in objects.entries) {
+        await File(
+          p.join(installed.directory.path, object.key),
+        ).writeAsBytes(object.value);
+      }
+      await File(
+        p.join(installed.directory.path, PrivatePackImages.fileName),
+      ).delete();
+      await expectPreviousIntact(installed);
+    },
+  );
+
+  test('tampered private payload fails reopening and direct loading', () async {
+    final installed = await store.install(source);
+    final container = File(
+      p.join(installed.directory.path, PrivatePackImages.fileName),
+    );
+    final bytes = await container.readAsBytes();
+    bytes[PrivatePackImages.header.length] ^= 0xff;
+    await container.writeAsBytes(bytes);
+    await expectLater(
+      store.readInstalled('fixture-pack'),
+      throwsFormatException,
+    );
+    final first = PrivateImageReference.parse(
+      installed.cards.first.imageReference,
+    );
+    await expectLater(
+      PrivatePackImages.read(root, first),
+      throwsFormatException,
+    );
+  });
+
+  test(
+    'private reader rejects traversal, URLs, bounds and symlink escapes',
+    () async {
+      final installed = await store.install(source);
+      final value = installed.cards.first.imageReference;
+      for (final invalid in [
+        '/storage/DCIM/image.jpg',
+        'https://example.com/image.jpg',
+        value.replaceFirst('generation-', '../generation-'),
+        value.replaceFirst(RegExp(r'offset=\d+'), 'offset=0'),
+        value.replaceFirst(RegExp(r'size=\d+'), 'size=999999999'),
+      ]) {
+        expect(
+          () => PrivateImageReference.parse(invalid),
+          throwsFormatException,
+        );
+      }
+      final container = File(
+        p.join(installed.directory.path, PrivatePackImages.fileName),
+      );
+      final outside = await container.copy(p.join(temp.path, 'outside.bgpack'));
+      await container.delete();
+      await Link(container.path).create(outside.path);
+      await expectLater(
+        PrivatePackImages.read(root, PrivateImageReference.parse(value)),
+        throwsFormatException,
+      );
     },
   );
 
@@ -157,13 +263,17 @@ void main() {
       expect(next.manifest.pack.revision, 2);
       expect(next.cards.first.name, 'Renamed red');
       expect(next.directory.path, isNot(first.directory.path));
-      expect(await File(first.cards.first.imageReference).exists(), isTrue);
+      expect(
+        await PrivatePackImages.read(
+          root,
+          PrivateImageReference.parse(first.cards.first.imageReference),
+        ),
+        objects[first.manifest.cards.first.imageReference],
+      );
       expect(
         (await LocalPackStore(
           root,
-        ).readInstalled('fixture-pack'))!
-            .manifest
-            .digest,
+        ).readInstalled('fixture-pack'))!.manifest.digest,
         next.manifest.digest,
       );
     },
@@ -191,8 +301,13 @@ void main() {
     'absolute path': (json) => images(json)[0]['key'] = '/outside.png',
     'Windows path': (json) => images(json)[0]['key'] = r'..\outside.png',
     'missing provenance': (json) => json.remove('provenance'),
-    'false clearance': (json) => (json['provenance']
-        as Map<String, dynamic>)['packRights']['permission_to_publish'] = false,
+    'false clearance': (json) =>
+        (json['provenance']
+                as Map<
+                  String,
+                  dynamic
+                >)['packRights']['permission_to_publish'] =
+            false,
     'control in name': (json) => cards(json)[0]['name'] = 'a\u0000b',
   };
 
@@ -314,14 +429,13 @@ void main() {
   );
 
   for (final ioFactory in <String, FailingStorage Function()>{
-    'first image write': () => FailingStorage(failWrite: 1),
-    'second image write': () => FailingStorage(failWrite: 2),
-    'metadata write': () => FailingStorage(failWrite: 3),
-    'pointer write': () => FailingStorage(failWrite: 4),
+    'container write': () => FailingStorage(failWrite: 1),
+    'metadata write': () => FailingStorage(failWrite: 2),
+    'pointer write': () => FailingStorage(failWrite: 3),
     'atomic rename': () => FailingStorage(failActivation: true),
     'corrupt disk write': () => FailingStorage(corruptWrite: true),
     'corrupt pointer write': () =>
-        FailingStorage(corruptWrite: true, corruptAt: 4),
+        FailingStorage(corruptWrite: true, corruptAt: 3),
   }.entries) {
     test('${ioFactory.key} failure rolls back and allows retry', () async {
       final first = await store.install(source);
@@ -440,8 +554,9 @@ void main() {
       cards(update)[0]['name'] = 'Étoile 紙';
       cards(update)[1]['imageReference'] = key;
       images(update).removeWhere((dynamic row) => row['key'] != key);
-      final rights = (update['provenance']
-          as Map<String, dynamic>)['cardRights'] as List<dynamic>;
+      final rights =
+          (update['provenance'] as Map<String, dynamic>)['cardRights']
+              as List<dynamic>;
       rights[0]['id'] = 'replacement-card';
       final next = await store.install(
         await writePack(update, payloads: {key: objects[key]!}),
@@ -463,31 +578,40 @@ void main() {
     },
   );
   for (final extension in ['webp', 'jpg']) {
-    test('valid static $extension images install with shared object references',
-        () async {
-      final data = extension == 'webp'
-          ? base64Decode(
-              'UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoIAAgAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA=')
-          : image.encodeJpg(image.Image(width: 8, height: 8));
-      final hash = sha256.convert(data).toString();
-      final key = 'objects/$hash.$extension';
-      final json = copy();
-      for (final card in cards(json)) {
-        card['imageReference'] = key;
-      }
-      json['objects'] = [
-        {
-          'key': key,
-          'sha256': hash,
-          'sizeBytes': data.length,
-          'mediaType': extension == 'jpg' ? 'image/jpeg' : 'image/webp'
+    test(
+      'valid static $extension images install with shared object references',
+      () async {
+        final data = extension == 'webp'
+            ? base64Decode(
+                'UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoIAAgAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA=',
+              )
+            : image.encodeJpg(image.Image(width: 8, height: 8));
+        final hash = sha256.convert(data).toString();
+        final key = 'objects/$hash.$extension';
+        final json = copy();
+        for (final card in cards(json)) {
+          card['imageReference'] = key;
         }
-      ];
-      final installed =
-          await store.install(await writePack(json, payloads: {key: data}));
-      expect(installed.cards, hasLength(2));
-      expect(
-          await File(installed.cards.first.imageReference).readAsBytes(), data);
-    });
+        json['objects'] = [
+          {
+            'key': key,
+            'sha256': hash,
+            'sizeBytes': data.length,
+            'mediaType': extension == 'jpg' ? 'image/jpeg' : 'image/webp',
+          },
+        ];
+        final installed = await store.install(
+          await writePack(json, payloads: {key: data}),
+        );
+        expect(installed.cards, hasLength(2));
+        expect(
+          await PrivatePackImages.read(
+            root,
+            PrivateImageReference.parse(installed.cards.first.imageReference),
+          ),
+          data,
+        );
+      },
+    );
   }
 }

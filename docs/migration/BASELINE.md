@@ -1,5 +1,8 @@
 # BiGuess behavioral baseline (T01 recheck)
 
+This is the retained T01 snapshot. For current Phase A/B behavior and checks, read
+the [follow-up review](PHASE_AB_REVIEW.md) and [live architecture map](../../.agents/sidecars/architecture.md).
+
 Reinspected on **2026-11-06**, starting at `main` commit
 `853f50687084228399062122f926753e6e955824`. The app/platform sources were unchanged
 through this audit; CI/script/document corrections are separate from product behavior.

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/models/game_state.dart';
 import '../../../domain/models/game_session.dart';
 import '../../../providers/game_controller.dart';
 import '../../../providers/game_session_controller.dart';
 import '../../../providers/game_settings_controller.dart';
+import '../../../providers/content_image_provider.dart';
+import '../../images/content_image_loader.dart';
 import '../../widgets/animations/animated_action_button.dart';
 import '../../widgets/animations/animated_countdown.dart';
 import '../../widgets/animations/animated_mystery_box.dart';
@@ -15,6 +16,7 @@ import '../../widgets/animations/animated_character_card.dart';
 import '../../widgets/common/glass_icon_button.dart';
 import '../../dialogs/info/game_info_dialog.dart';
 import 'widgets/game_empty_state.dart';
+import 'widgets/identity_card.dart';
 
 /// Main gameplay duel screen for a selected topic + pack
 class GameScreen extends ConsumerStatefulWidget {
@@ -40,7 +42,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final images = widget.useSession
           ? ref
@@ -50,8 +52,14 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                     .map((card) => card.imageReference) ??
                 const <String>[]
           : ref.read(gameRoundProvider(_key)).allImages;
-      for (final asset in images.take(5)) {
-        precacheImage(AssetImage(asset), context, onError: (_, stackTrace) {});
+      final loader = ref.read(contentImageLoaderProvider);
+      for (final asset in images.take(ContentImageLoader.precacheCount)) {
+        if (!mounted) return;
+        await precacheImage(
+          loader.imageFor(asset),
+          context,
+          onError: (_, stackTrace) {},
+        );
       }
     });
   }
@@ -298,7 +306,11 @@ class _GameSessionView extends ConsumerWidget {
       },
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: _GameAppBar(topicName: topicName, packName: packName),
+        appBar: _GameAppBar(
+          topicName: topicName,
+          packName: packName,
+          sessionMode: true,
+        ),
         body: DecoratedBox(
           decoration: BoxDecoration(
             gradient: RadialGradient(
@@ -324,88 +336,87 @@ class _GameSessionView extends ConsumerWidget {
                         ),
                       ),
                       Expanded(
+                        flex: 3,
                         child: isComplete
                             ? _GameCompletionState(rounds: configuration.rounds)
-                            : LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final card = session.assignedCard!;
-                                  return Center(
-                                    child: _GameCharacterDisplay(
-                                      key: ValueKey(
-                                        '${session.roundIndex}_${card.id}',
-                                      ),
-                                      imageAsset: card.imageReference,
-                                      characterName: card.name,
-                                      constraints: constraints,
-                                    ),
-                                  );
-                                },
+                            : IdentityCard(
+                                key: ValueKey(
+                                  '${session.roundIndex}_${session.assignedCard!.id}',
+                                ),
+                                card: session.assignedCard!,
                               ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FilledButton.icon(
-                              onPressed: () {
-                                // A stale button callback cannot advance a
-                                // second round before the screen rebuilds.
-                                if (!identical(
-                                  ref.read(gameSessionProvider),
-                                  session,
-                                )) {
-                                  return;
-                                }
-                                final controller = ref.read(
-                                  gameSessionProvider.notifier,
-                                );
-                                ref
-                                    .read(
-                                      showCharacterNameHintProvider.notifier,
-                                    )
-                                    .set(false);
-                                if (isComplete) {
-                                  if (controller.requestReplay() ==
-                                      GameReplayRoute.home) {
-                                    Navigator.of(context).pop();
-                                  }
-                                } else {
-                                  controller.nextRound();
-                                }
-                              },
-                              icon: Icon(
-                                isComplete
-                                    ? configuration.isPro
-                                          ? Icons.replay_rounded
-                                          : Icons.home_rounded
-                                    : Icons.navigate_next_rounded,
-                              ),
-                              label: Text(
-                                isComplete
-                                    ? configuration.isPro
-                                          ? 'Replay'
-                                          : 'Return to Packs'
-                                    : session.roundNumber ==
-                                          configuration.rounds
-                                    ? 'Finish Game'
-                                    : 'Next Round',
-                              ),
+                      Flexible(
+                        flex: 2,
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FilledButton.icon(
+                                  onPressed: () {
+                                    // A stale button callback cannot advance a
+                                    // second round before the screen rebuilds.
+                                    if (!identical(
+                                      ref.read(gameSessionProvider),
+                                      session,
+                                    )) {
+                                      return;
+                                    }
+                                    final controller = ref.read(
+                                      gameSessionProvider.notifier,
+                                    );
+                                    ref
+                                        .read(
+                                          showCharacterNameHintProvider
+                                              .notifier,
+                                        )
+                                        .set(false);
+                                    if (isComplete) {
+                                      if (controller.requestReplay() ==
+                                          GameReplayRoute.home) {
+                                        Navigator.of(context).pop();
+                                      }
+                                    } else {
+                                      controller.nextRound();
+                                    }
+                                  },
+                                  icon: Icon(
+                                    isComplete
+                                        ? configuration.isPro
+                                              ? Icons.replay_rounded
+                                              : Icons.home_rounded
+                                        : Icons.navigate_next_rounded,
+                                  ),
+                                  label: Text(
+                                    isComplete
+                                        ? configuration.isPro
+                                              ? 'Replay'
+                                              : 'Return to Packs'
+                                        : session.roundNumber ==
+                                              configuration.rounds
+                                        ? 'Finish Game'
+                                        : 'Next Round',
+                                  ),
+                                ),
+                                if (!isComplete) ...[
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    AppConstants.imageDisclaimer,
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                                if (isComplete && configuration.isPro)
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text('Return to Packs'),
+                                  ),
+                              ],
                             ),
-                            if (!isComplete) ...[
-                              const SizedBox(height: 10),
-                              Text(
-                                AppConstants.imageDisclaimer,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
-                            if (isComplete && configuration.isPro)
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Return to Packs'),
-                              ),
-                          ],
+                          ),
                         ),
                       ),
                     ],
@@ -475,6 +486,7 @@ class _GameCharacterDisplay extends ConsumerWidget {
     final double availableWidth = effectiveContainerWidth * 0.80;
 
     return AnimatedCharacterCard(
+      imageLoader: ref.watch(contentImageLoaderProvider),
       key: ValueKey(imageAsset),
       imageAsset: imageAsset,
       characterName: characterName,
@@ -491,8 +503,13 @@ class _GameCharacterDisplay extends ConsumerWidget {
 class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String topicName;
   final String packName;
+  final bool sessionMode;
 
-  const _GameAppBar({required this.topicName, required this.packName});
+  const _GameAppBar({
+    required this.topicName,
+    required this.packName,
+    this.sessionMode = false,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -506,7 +523,10 @@ class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      flexibleSpace: const AnimatedGlassAppBarBackground(),
+      flexibleSpace: AnimatedGlassAppBarBackground(
+        showShimmerBorder:
+            !sessionMode && !MediaQuery.disableAnimationsOf(context),
+      ),
       centerTitle: true,
       leading: Padding(
         padding: const EdgeInsets.only(left: 10.0),
@@ -562,7 +582,11 @@ class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 38,
             iconSize: 20,
             onPressed: () {
-              GameInfoDialog.show(context, initialTab: GameInfoTab.settings);
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.settings,
+                showLegacyGameSettings: !sessionMode,
+              );
             },
           ),
         ),
@@ -574,7 +598,11 @@ class _GameAppBar extends StatelessWidget implements PreferredSizeWidget {
             size: 38,
             iconSize: 20,
             onPressed: () {
-              GameInfoDialog.show(context, initialTab: GameInfoTab.howToPlay);
+              GameInfoDialog.show(
+                context,
+                initialTab: GameInfoTab.howToPlay,
+                showLegacyGameSettings: !sessionMode,
+              );
             },
           ),
         ),

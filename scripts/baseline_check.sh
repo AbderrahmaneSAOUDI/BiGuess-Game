@@ -4,6 +4,12 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+if [[ ${1:-} == --help || ${1:-} == -h ]]; then
+  echo "Usage: bash scripts/baseline_check.sh [--fast] [output-directory]"
+  echo "Run every verification gate and save logs. --fast skips SDK diagnostics and the Android debug build."
+  exit 0
+fi
+
 mode=full
 if [[ ${1:-} == --fast ]]; then
   mode=fast
@@ -18,12 +24,12 @@ mkdir -p "$output"
 summary="$output/summary.tsv"
 printf 'check\texit_code\n' > "$summary"
 {
-  git rev-parse HEAD
-  git status --short
+  git rev-parse HEAD || true
+  git status --short || true
   date -u +%Y-%m-%dT%H:%M:%SZ
-  flutter --version
-  python3 --version
-  python3 -c 'import PIL; print("Pillow", PIL.__version__)'
+  flutter --version || true
+  python3 --version || true
+  python3 -c 'import PIL; print("Pillow", PIL.__version__)' || true
 } > "$output/context.txt" 2>&1
 failed=0
 run_check() {

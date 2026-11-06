@@ -10,7 +10,7 @@ class ShorebirdPatchService {
   final ShorebirdUpdater _updater;
 
   ShorebirdPatchService({ShorebirdUpdater? updater})
-      : _updater = updater ?? ShorebirdUpdater();
+    : _updater = updater ?? ShorebirdUpdater();
 
   /// Whether the Shorebird runtime is available in this binary.
   Future<bool> isShorebirdAvailable() async {

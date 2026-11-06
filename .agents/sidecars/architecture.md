@@ -1,49 +1,51 @@
 # Current application architecture
 
-This map describes source behavior, not the full target product. Use [file-map.md](file-map.md) to locate code and `docs/migration/DECISIONS.md` for approved migration contracts.
+This map describes live source. Use [file-map.md](file-map.md) for entry points and [migration decisions](../../docs/migration/DECISIONS.md) for approved contracts and open choices. Dated baseline reports describe their audited commits.
 
-## Startup and navigation
+## Startup and content
 
-`main` initializes Flutter, requests portrait orientations, and mounts `BiGuessApp` inside `ProviderScope`. `BiGuessApp` watches `themeNotifierProvider`, installs Material 3 light/dark themes, and opens `TopicsScreen`.
+`main` initializes Flutter, portrait orientation and the bounded image cache, then opens `LocalContentRuntime` before mounting `BiGuessApp` in `ProviderScope`. Committed app-private Pack generations are verified and projected transactionally into a separate SQLite database. This projection is disposable metadata; installed files remain the authority. Empty or failed local storage falls back to `LegacyManifestContentRepository` without deleting failed files or resetting an unsupported database. `biguessUseLegacyContent` explicitly selects rollback; the optional `biguessLocalPackPath` define seeds development content.
+
+`contentRepositoryProvider` supplies synchronous Topic, Pack, Card and installed-Card reads. Screens use canonical IDs for selection; legacy name-keyed providers remain for compatibility. Names are labels and may repeat across IDs. Cached catalog Cards do not count as installed Cards.
 
 ```mermaid
 flowchart LR
-  App[BiGuessApp] --> Topics[TopicsScreen]
-  Topics --> Packs[PacksScreen]
-  Packs --> Game[GameScreen]
-  Game --> Round[GameRoundNotifier]
-  Round --> Select[SelectCharacterUseCase]
-  Round --> Assets[packAssetsProvider]
-  Assets --> Repository[ContentRepository]
-  Repository --> Adapter[LegacyManifestContentRepository]
-  Adapter --> Source[TopicPackDataSource]
-  Source --> Manifest[topicPackAssets]
-  Topics -. first-frame check .-> Updates[UpdateController]
+  Files[Private Pack generations] --> Runtime[LocalContentRuntime]
+  Runtime --> SQL[SQLite installed projection]
+  Runtime --> Legacy[Bundled fallback]
+  SQL --> Repository[ContentRepository]
+  Legacy --> Repository
+  Repository --> Topics[Topics]
+  Topics --> Packs[Pack selection by ID]
+  Packs --> Setup[Difficulty and rounds]
+  Setup --> Snapshot[Immutable content and configuration]
+  Snapshot --> Session[GameSessionNotifier]
+  Session --> Deck[CardSelectionEngine]
+  Session --> Identity[Identity and completion]
 ```
 
-Navigation uses `Navigator.push` with animated `PageRouteBuilder` transitions. Topic and pack names remain screen/round keys through a compatibility provider layer; the content repository reads canonical models by ID. `GameInfoDialog` exposes rules, settings, about, and credits.
+`LocalPackFile` validates full-Pack v1 manifests, archive contents, relationships, image sizes/hashes and decoded dimensions. `LocalPackStore` serializes writers in its owning isolate and holds a filesystem lock against other processes, verifies staged private containers, and activates an immutable generation with an atomic pointer rename. Existing generations remain readable by active game snapshots. SQLite schema migrations and installed snapshots are separate from newer cached metadata.
 
-## Offline content and round state
+`ContentImageLoader` handles bundled assets and private image references without extracting installed images into the gallery. It bounds decoded dimensions and cache retention. Packaging is practical private storage, not encryption or perfect DRM. See [private images](../../docs/migration/PRIVATE_IMAGES.md).
 
-- `scripts/generate_manifest.py` scans `assets/images/<Topic>/<Pack>/` into `lib/assets_manifest.dart`; `--sync-pubspec` updates bundle declarations. Display names come from filenames through `AssetLoader.extractCharacterName`; preserve spelling, spaces, and Unicode. The generator accepts WebP, PNG, JPG, and JPEG; the separate dynamic `AssetLoader.loadCategoryAssets` filter accepts WebP, PNG, and JPG.
-- `ContentRepository` exposes synchronous local Topic, Pack, and Card reads with immutable lists. `contentRepositoryProvider` selects the source; the default `LegacyManifestContentRepository` snapshots `TopicPackDataSource`, preserving order, names and asset references. Legacy IDs encode source keys and survive reordering, but source renames/moves need migration mappings. Legacy Cards default to Easy because the manifest has no difficulty metadata; draft metadata does not imply publishing rights.
-- Screens keep their existing providers for topic/pack names, asset lists and counts. Those providers translate repository models into the current UI contract; unknown topic/pack lookups return empty lists or zero. Override `contentRepositoryProvider` to swap content without rewriting screens. Names must remain unique within the legacy navigation scope until routes migrate to IDs.
-- `gameRoundProvider` is an auto-disposed family keyed by `({String topic, String pack})`. `GameRoundNotifier.build` watches pack assets and initializes `GameRoundState`; missing images produce the empty state.
-- `startCountdown` ignores duplicate taps during countdown, hides the previous image, clears the answer, and resets the global hint provider. A periodic timer updates countdown, then reveals a selection. The timer is canceled on provider disposal and `reset`.
-- `SelectCharacterUseCase` accepts an injectable `Random`. Random mode samples the full list; non-repeating mode copies the remaining pool, removes the selected entry, and refills after exhaustion. It returns `CharacterSelectionResult`, not a Card entity.
-- `GameScreen` renders empty state, mystery box, countdown, or revealed card and precaches a bounded initial set of images. `AnimatedCharacterCard` provides hint toggling; layout reserves name space so toggling does not move the card.
-- Algorithm, countdown duration, hint visibility, and theme are in-memory settings. Read mutable defaults/options from providers and `AppConstants`.
+## Configured gameplay
 
-The gameplay chain uses bundled assets and local state. It does not call the record API or perform online selection. The selection use case currently imports `AssetLoader`, which depends on Flutter services; do not describe the entire domain path as platform-independent.
+`TopicsScreen` → `PacksScreen` → `GameConfigurationScreen` → `GameScreen(useSession: true)` uses local content only. Selection supports single, multiple and random Packs within one Topic. Setup rechecks installed content at Start, defaults to Easy and ten rounds, and freezes the configuration/content before assignment.
 
-## Optional update and record services
+`GameSessionNotifier` owns temporary in-memory transitions. `CardSelectionEngine` draws eligible Card IDs without replacement, refilling after exhaustion; difficulty is cumulative. Neither watches repository, entitlement or settings changes during a running game. Identity shows the canonical name and local image immediately, with bounded entrance motion and inert image/name taps. Next Round advances once per frame; Finish Game completes the final displayed round without another draw. Free games return through Packs before reset; internal Pro QA permits immediate replay of the same snapshot. Production defaults enforce ten rounds and five stored imported Packs; billing is deferred.
 
-`TopicsScreen` checks for updates after its first frame and listens for `UpdateState`. Optional updates use a snackbar; required APK updates open `UpdateDialog`. About exposes manual checks.
+No countdown, timer, score, question counter, winner, authentication or gameplay API belongs to this configured path. [The offline gate](../../docs/migration/OFFLINE_GAMEPLAY_GATE.md) tests process death/restart with real SQLite/private files in an isolated host network namespace. Physical-device and published Shorebird-engine behavior require separate validation.
 
-`UpdateController` coordinates `VersionService`, `ShorebirdPatchService`, and `OtaInstallerService`. `VersionService` resolves installed version/device ABIs, fetches remote `version.json`, and evaluates semantic-version/native-change/mandatory decisions. `RemoteVersion.resolveApkUrl` selects a matching ABI with fallbacks. Patch and APK paths perform native work; unit decision tests do not verify delivery, installation, signing, or restart.
+## Legacy compatibility
 
-`CloudDatabaseService` is a separate Dio client for a simple record API backed by `backend/biguess-api/`. Screens and the round notifier do not invoke it. It does not implement the planned content-distribution API.
+`topicPackAssets` → `TopicPackDataSource` → `LegacyManifestContentRepository` preserves bundled order, paths and filename labels. `scripts/generate_manifest.py` regenerates the manifest and optionally pubspec registration; preserve case, spaces and Unicode.
 
-## Target boundaries for future tickets
+`gameRoundProvider` remains an auto-disposed family keyed by Topic/Pack names. `GameRoundNotifier` owns countdown cancellation, duplicate taps and hint reset; `SelectCharacterUseCase` provides random/non-repeating image selection. Direct legacy `GameScreen` calls retain mystery-box/countdown behavior. The configured flow uses the Card session engine for both imported and bundled content.
 
-Canonical immutable Topic, Pack, Card, and Difficulty models live under `lib/domain/models/`; Card has a technical ID plus name, imageReference, difficulty and packId. The repository adapter supplies these models, while the current round still consumes image paths and derives answers from filenames. `docs/migration/DECISIONS.md` defines target one-topic sessions, cumulative difficulty, local no-repeat decks, Free/Pro limits, immutable snapshots, and deletion at safe points. These guide requested migration work; documentation does not make them implemented systems. The target excludes software adjudication of questions, scores, winners, and gameplay timers. Preserve current reveal behavior until its migration ticket and required UX decisions authorize change.
+Theme and legacy countdown/algorithm/hint settings remain in memory. Complex UI, controllers and private image loading stay in presentation/data layers; the new Card deck and session domain are pure local logic. The legacy selection utility still imports Flutter-dependent `AssetLoader`.
+
+## Update and backend boundaries
+
+`automaticUpdateChecksProvider` suppresses the first-frame update request when SQLite local content or the offline-demo define is active. The bundled fallback retains its existing automatic updater behavior; About offers manual updates. Native Shorebird engine auto-checks are a separate release-policy concern. Do not infer zero native network traffic from ordinary host tests.
+
+`UpdateController` coordinates version/patch/APK services and update dialogs. `CloudDatabaseService` and `backend/biguess-api/` remain a separate unused game-record scaffold. Neither supplies gameplay content. Phase C–F catalog, Studio, remote download/sync, billing and final release gates remain future work.

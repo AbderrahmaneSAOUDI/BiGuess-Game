@@ -1,0 +1,26 @@
+{
+  "result": "pass",
+  "network": "isolated Linux network namespace; loopback only",
+  "process_restart": "SIGKILL during first rendered round; fresh flutter_tester",
+  "source_archive": "removed before restart",
+  "rounds_after_restart": [
+    10,
+    3
+  ],
+  "http_client_attempts": 0,
+  "sqlite_integrity_check": "ok",
+  "sqlite_foreign_key_check": [],
+  "device_validation": "not performed; host Flutter engine and real SQLite/files",
+  "phases": [
+    {
+      "phase": "seed",
+      "exit_code": 79,
+      "app_sigkill_sent": true
+    },
+    {
+      "phase": "restart",
+      "exit_code": 0,
+      "app_sigkill_sent": false
+    }
+  ]
+}

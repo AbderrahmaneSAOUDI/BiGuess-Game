@@ -62,22 +62,24 @@ void main() {
   });
 
   group('RemoteVersion parsing and ABI resolution', () {
-    test('parses json defensively with string build number and string boolean',
-        () {
-      final json = {
-        'latest_version': '0.32.0',
-        'build_number': '12',
-        'min_required_version': '0.30.0',
-        'has_native_changes': 'true',
-        'apk_url': 'https://example.com/app.apk',
-        'release_notes': 'Notes',
-      };
+    test(
+      'parses json defensively with string build number and string boolean',
+      () {
+        final json = {
+          'latest_version': '0.32.0',
+          'build_number': '12',
+          'min_required_version': '0.30.0',
+          'has_native_changes': 'true',
+          'apk_url': 'https://example.com/app.apk',
+          'release_notes': 'Notes',
+        };
 
-      final remote = RemoteVersion.fromJson(json);
-      expect(remote.latestVersion, '0.32.0');
-      expect(remote.buildNumber, 12);
-      expect(remote.hasNativeChanges, isTrue);
-    });
+        final remote = RemoteVersion.fromJson(json);
+        expect(remote.latestVersion, '0.32.0');
+        expect(remote.buildNumber, 12);
+        expect(remote.hasNativeChanges, isTrue);
+      },
+    );
 
     test('resolves targeted ABI APK correctly', () {
       const remote = RemoteVersion(
@@ -128,14 +130,8 @@ void main() {
         remote.resolveSha256(['arm64-v8a', 'armeabi-v7a']),
         'arm64-sha-hash',
       );
-      expect(
-        remote.resolveSha256(['x86_64']),
-        'x86_64-sha-hash',
-      );
-      expect(
-        remote.resolveSha256(['mips']),
-        'fallback-sha',
-      );
+      expect(remote.resolveSha256(['x86_64']), 'x86_64-sha-hash');
+      expect(remote.resolveSha256(['mips']), 'fallback-sha');
     });
   });
 
@@ -175,64 +171,67 @@ void main() {
     });
 
     test(
-        'returns UpdateFullApk with mandatory=true when below minRequiredVersion',
-        () {
-      final local = SemVer.parse('0.29.0+1');
-      const remote = RemoteVersion(
-        latestVersion: '0.32.0',
-        buildNumber: 1,
-        minRequiredVersion: '0.30.0',
-        hasNativeChanges: false,
-        apkUrl: 'https://example.com/arm64.apk',
-        releaseNotes: 'Breaking update',
-      );
+      'returns UpdateFullApk with mandatory=true when below minRequiredVersion',
+      () {
+        final local = SemVer.parse('0.29.0+1');
+        const remote = RemoteVersion(
+          latestVersion: '0.32.0',
+          buildNumber: 1,
+          minRequiredVersion: '0.30.0',
+          hasNativeChanges: false,
+          apkUrl: 'https://example.com/arm64.apk',
+          releaseNotes: 'Breaking update',
+        );
 
-      final decision = versionService.evaluateUpdate(local, remote);
-      expect(decision, isA<UpdateFullApk>());
-      final fullApk = decision as UpdateFullApk;
-      expect(fullApk.mandatory, isTrue);
-    });
-
-    test(
-        'returns UpdateShorebirdPatch when pure patch bump without native changes and Shorebird is available',
-        () {
-      final local = SemVer.parse('0.31.0+7');
-      const remote = RemoteVersion(
-        latestVersion: '0.31.1',
-        buildNumber: 8,
-        minRequiredVersion: '0.30.0',
-        hasNativeChanges: false,
-        apkUrl: '',
-        releaseNotes: 'Bug fixes',
-      );
-
-      final decision = versionService.evaluateUpdate(
-        local,
-        remote,
-        isShorebirdAvailable: true,
-      );
-      expect(decision, isA<UpdateShorebirdPatch>());
-    });
+        final decision = versionService.evaluateUpdate(local, remote);
+        expect(decision, isA<UpdateFullApk>());
+        final fullApk = decision as UpdateFullApk;
+        expect(fullApk.mandatory, isTrue);
+      },
+    );
 
     test(
-        'falls back to UpdateFullApk when Shorebird is unavailable on the device',
-        () {
-      final local = SemVer.parse('0.31.0+7');
-      const remote = RemoteVersion(
-        latestVersion: '0.31.1',
-        buildNumber: 8,
-        minRequiredVersion: '0.30.0',
-        hasNativeChanges: false,
-        apkUrl: 'https://example.com/app.apk',
-        releaseNotes: 'Bug fixes',
-      );
+      'returns UpdateShorebirdPatch when pure patch bump without native changes and Shorebird is available',
+      () {
+        final local = SemVer.parse('0.31.0+7');
+        const remote = RemoteVersion(
+          latestVersion: '0.31.1',
+          buildNumber: 8,
+          minRequiredVersion: '0.30.0',
+          hasNativeChanges: false,
+          apkUrl: '',
+          releaseNotes: 'Bug fixes',
+        );
 
-      final decision = versionService.evaluateUpdate(
-        local,
-        remote,
-        isShorebirdAvailable: false,
-      );
-      expect(decision, isA<UpdateFullApk>());
-    });
+        final decision = versionService.evaluateUpdate(
+          local,
+          remote,
+          isShorebirdAvailable: true,
+        );
+        expect(decision, isA<UpdateShorebirdPatch>());
+      },
+    );
+
+    test(
+      'falls back to UpdateFullApk when Shorebird is unavailable on the device',
+      () {
+        final local = SemVer.parse('0.31.0+7');
+        const remote = RemoteVersion(
+          latestVersion: '0.31.1',
+          buildNumber: 8,
+          minRequiredVersion: '0.30.0',
+          hasNativeChanges: false,
+          apkUrl: 'https://example.com/app.apk',
+          releaseNotes: 'Bug fixes',
+        );
+
+        final decision = versionService.evaluateUpdate(
+          local,
+          remote,
+          isShorebirdAvailable: false,
+        );
+        expect(decision, isA<UpdateFullApk>());
+      },
+    );
   });
 }

@@ -1,0 +1,166 @@
+test_build_drift_fails (test_ci.VersionGateTests.test_build_drift_fails) ... ok
+test_constants_drift_fails (test_ci.VersionGateTests.test_constants_drift_fails) ... ok
+test_missing_build_fails (test_ci.VersionGateTests.test_missing_build_fails) ... ok
+test_semver_drift_fails_without_repair (test_ci.VersionGateTests.test_semver_drift_fails_without_repair) ... ok
+test_synchronized_triad_passes (test_ci.VersionGateTests.test_synchronized_triad_passes) ... ok
+test_confirmed_cleared_fixture_pack (test_content_inventory.ContentInventoryAndQuarantineTests.test_confirmed_cleared_fixture_pack)
+Confirmed-cleared fixture pack must exist, have valid images, and be marked cleared. ... ok
+test_duplicate_detection_finds_exact_hashes_and_names (test_content_inventory.ContentInventoryAndQuarantineTests.test_duplicate_detection_finds_exact_hashes_and_names)
+Detects known exact binary duplicates and cross-pack name collisions. ... ok
+test_exact_counts_reconcile_to_disk_files (test_content_inventory.ContentInventoryAndQuarantineTests.test_exact_counts_reconcile_to_disk_files)
+Inventory counts must reconcile exactly to disk source files. ... ok
+test_export_is_deterministic_and_byte_reproducible (test_content_inventory.ContentInventoryAndQuarantineTests.test_export_is_deterministic_and_byte_reproducible)
+Multiple independent inventory export passes must produce identical output. ... ok
+test_fixture_directory_option_cannot_clear_legacy_assets (test_content_inventory.ContentInventoryAndQuarantineTests.test_fixture_directory_option_cannot_clear_legacy_assets)
+Selecting a legacy directory as fixtures must not fabricate rights. ... ok
+test_fixture_export_preserves_declared_provenance (test_content_inventory.ContentInventoryAndQuarantineTests.test_fixture_export_preserves_declared_provenance) ... ok
+test_fixture_pack_and_card_require_explicit_strict_clearance (test_content_inventory.ContentInventoryAndQuarantineTests.test_fixture_pack_and_card_require_explicit_strict_clearance) ... ok
+test_missing_malformed_and_duplicate_fixture_metadata_stays_quarantined (test_content_inventory.ContentInventoryAndQuarantineTests.test_missing_malformed_and_duplicate_fixture_metadata_stays_quarantined) ... ok
+test_proposed_stable_id_deterministic_uuidv5 (test_content_inventory.ContentInventoryAndQuarantineTests.test_proposed_stable_id_deterministic_uuidv5)
+Proposed stable IDs must be deterministic RFC 4122 UUIDv5 scoped by entity hierarchy. ... ok
+test_quarantine_export_excludes_unverified_assets_by_default (test_content_inventory.ContentInventoryAndQuarantineTests.test_quarantine_export_excludes_unverified_assets_by_default)
+Exporting for public test publishing must exclude all unverified assets. ... ok
+test_technical_importability_separated_from_permission_to_publish (test_content_inventory.ContentInventoryAndQuarantineTests.test_technical_importability_separated_from_permission_to_publish)
+Technical importability must be separated from permission to publish. ... ok
+test_undeclared_images_and_duplicate_card_declarations_do_not_gain_clearance (test_content_inventory.ContentInventoryAndQuarantineTests.test_undeclared_images_and_duplicate_card_declarations_do_not_gain_clearance) ... ok
+test_command_extraction_understands_current_and_legacy_shapes (test_hooks.HookTests.test_command_extraction_understands_current_and_legacy_shapes) ... ok
+test_legacy_safe_command_retains_allow_and_native_takes_precedence (test_hooks.HookTests.test_legacy_safe_command_retains_allow_and_native_takes_precedence) ... ok
+test_missing_and_malformed_events_are_json_noops (test_hooks.HookTests.test_missing_and_malformed_events_are_json_noops) ... ok
+test_nested_cwd_and_cd_cannot_delete_source_roots (test_hooks.HookTests.test_nested_cwd_and_cd_cannot_delete_source_roots) ... ok
+test_obvious_destructive_operations_are_denied (test_hooks.HookTests.test_obvious_destructive_operations_are_denied) ... ok
+test_one_line_event_does_not_wait_for_stdin_eof (test_hooks.HookTests.test_one_line_event_does_not_wait_for_stdin_eof) ... ok
+test_ordinary_commands_and_quoted_text_remain_allowed (test_hooks.HookTests.test_ordinary_commands_and_quoted_text_remain_allowed) ... ok
+test_session_and_stop_only_report_context_without_source_mutation (test_hooks.HookTests.test_session_and_stop_only_report_context_without_source_mutation) ... ok
+test_version_check_accepts_synced_triad_comments_and_both_dart_quotes (test_hooks.HookTests.test_version_check_accepts_synced_triad_comments_and_both_dart_quotes) ... ok
+test_version_check_rejects_ambiguous_or_malformed_versions (test_hooks.HookTests.test_version_check_rejects_ambiguous_or_malformed_versions) ... ok
+test_version_check_rejects_malformed_manifests_and_build_types (test_hooks.HookTests.test_version_check_rejects_malformed_manifests_and_build_types) ... ok
+test_version_check_rejects_missing_or_duplicate_constants (test_hooks.HookTests.test_version_check_rejects_missing_or_duplicate_constants) ... ok
+test_version_check_reports_each_drift_without_modifying_files (test_hooks.HookTests.test_version_check_reports_each_drift_without_modifying_files) ... ok
+test_check_fails_for_unreadable_images_or_missing_requested_folders (test_inventory_review.InventoryReviewTests.test_check_fails_for_unreadable_images_or_missing_requested_folders) ... ok
+test_empty_and_invalid_shapes_reports_do_not_fabricate_clearance (test_inventory_review.InventoryReviewTests.test_empty_and_invalid_shapes_reports_do_not_fabricate_clearance) ... ok
+test_fixture_records_cannot_hide_missing_source_records (test_inventory_review.InventoryReviewTests.test_fixture_records_cannot_hide_missing_source_records) ... ok
+test_incorrect_image_extension_is_rejected (test_inventory_review.InventoryReviewTests.test_incorrect_image_extension_is_rejected) ... ok
+test_missing_pillow_cannot_verify_a_header_as_an_image (test_inventory_review.InventoryReviewTests.test_missing_pillow_cannot_verify_a_header_as_an_image) ... ok
+test_proposed_id_collision_is_reported (test_inventory_review.InventoryReviewTests.test_proposed_id_collision_is_reported) ... ok
+test_public_export_cannot_escape_with_fixture_labels (test_inventory_review.InventoryReviewTests.test_public_export_cannot_escape_with_fixture_labels) ... ok
+test_public_export_omits_corrupt_cleared_images (test_inventory_review.InventoryReviewTests.test_public_export_omits_corrupt_cleared_images) ... ok
+test_public_export_refuses_reused_destination (test_inventory_review.InventoryReviewTests.test_public_export_refuses_reused_destination) ... ok
+test_public_export_rejects_changed_bytes_before_writing (test_inventory_review.InventoryReviewTests.test_public_export_rejects_changed_bytes_before_writing) ... ok
+test_archive_is_reproducible_despite_order_mtimes_and_location (test_pack_export.PackExportTests.test_archive_is_reproducible_despite_order_mtimes_and_location) ... ok
+test_changed_metadata_revision_or_image_changes_output (test_pack_export.PackExportTests.test_changed_metadata_revision_or_image_changes_output) ... ok
+test_cli_bad_input_leaves_no_output (test_pack_export.PackExportTests.test_cli_bad_input_leaves_no_output) ... ok
+test_cli_hashes_match_archive_and_existing_output_is_preserved (test_pack_export.PackExportTests.test_cli_hashes_match_archive_and_existing_output_is_preserved) ... ok
+test_corrupt_truncated_and_mislabeled_images_fail (test_pack_export.PackExportTests.test_corrupt_truncated_and_mislabeled_images_fail) ... ok
+test_duplicate_json_keys_and_non_json_numbers_fail (test_pack_export.PackExportTests.test_duplicate_json_keys_and_non_json_numbers_fail) ... ok
+test_invalid_source_records_fail (test_pack_export.PackExportTests.test_invalid_source_records_fail) ... ok
+test_legacy_preserves_names_and_is_explicitly_development_only (test_pack_export.PackExportTests.test_legacy_preserves_names_and_is_explicitly_development_only) ... ok
+test_manifest_rejects_missing_extra_duplicate_and_tampered_objects (test_pack_export.PackExportTests.test_manifest_rejects_missing_extra_duplicate_and_tampered_objects) ... ok
+test_offline_archive_has_every_asset_and_valid_hash (test_pack_export.PackExportTests.test_offline_archive_has_every_asset_and_valid_hash) ... ok
+test_shared_image_is_stored_once_without_conflating_cards (test_pack_export.PackExportTests.test_shared_image_is_stored_once_without_conflating_cards) ... ok
+test_symlink_cannot_escape_source (test_pack_export.PackExportTests.test_symlink_cannot_escape_source) ... ok
+test_credentials_are_gitignored (test_release_configuration.ReleaseConfigurationTests.test_credentials_are_gitignored)
+Both root and android .gitignore must ignore key.properties and keystore files. ... ok
+test_example_key_properties_exists_and_complete (test_release_configuration.ReleaseConfigurationTests.test_example_key_properties_exists_and_complete)
+android/key.properties.example must exist with required property keys. ... ok
+test_no_keystores_or_secrets_tracked_in_git (test_release_configuration.ReleaseConfigurationTests.test_no_keystores_or_secrets_tracked_in_git)
+Git index must not track any keystores, private keys, or properties containing secrets. ... ok
+test_release_linting_is_not_bypassed (test_release_configuration.ReleaseConfigurationTests.test_release_linting_is_not_bypassed)
+Android lint configuration must not bypass release error checks. ... ok
+test_release_signing_never_uses_debug_key (test_release_configuration.ReleaseConfigurationTests.test_release_signing_never_uses_debug_key)
+Release buildType in android/app/build.gradle.kts must not use debug signing config. ... ok
+test_validate_release_signing_gradle_task_exists (test_release_configuration.ReleaseConfigurationTests.test_validate_release_signing_gradle_task_exists)
+Gradle task validateReleaseSigning must be runnable and succeed in unconfigured mode. ... ok
+test_context_failure_does_not_skip_later_gate_evidence (test_script_safety.BaselineEvidenceTests.test_context_failure_does_not_skip_later_gate_evidence) ... ok
+test_analyzer_and_test_failures_stop_before_build (test_script_safety.BuildValidationTests.test_analyzer_and_test_failures_stop_before_build) ... ok
+test_requested_shorebird_never_silently_falls_back_to_flutter (test_script_safety.BuildValidationTests.test_requested_shorebird_never_silently_falls_back_to_flutter) ... ok
+test_child_failure_reaches_direct_task_exit_code (test_script_safety.MenuSafetyTests.test_child_failure_reaches_direct_task_exit_code) ... ok
+test_invalid_release_or_build_selection_never_launches_a_command (test_script_safety.MenuSafetyTests.test_invalid_release_or_build_selection_never_launches_a_command) ... ok
+test_ordinary_build_choices_do_not_register_shorebird_releases (test_script_safety.MenuSafetyTests.test_ordinary_build_choices_do_not_register_shorebird_releases) ... ok
+test_complete_abi_set_is_deduplicated_and_excludes_universal_and_debug (test_script_safety.ReleaseArtifactTests.test_complete_abi_set_is_deduplicated_and_excludes_universal_and_debug) ... ok
+test_draft_branch_guard_requires_named_preparation_branch (test_script_safety.ReleaseArtifactTests.test_draft_branch_guard_requires_named_preparation_branch) ... ok
+test_failed_github_creation_does_not_overwrite_existing_release_assets (test_script_safety.ReleaseArtifactTests.test_failed_github_creation_does_not_overwrite_existing_release_assets) ... ok
+test_fresh_secondary_artifact_can_replace_stale_primary_candidate (test_script_safety.ReleaseArtifactTests.test_fresh_secondary_artifact_can_replace_stale_primary_candidate) ... ok
+test_incomplete_binary_hash_input_cannot_replace_existing_manifest (test_script_safety.ReleaseArtifactTests.test_incomplete_binary_hash_input_cannot_replace_existing_manifest) ... ok
+test_manifest_hashes_match_each_actual_abi_binary_and_pinned_version_urls (test_script_safety.ReleaseArtifactTests.test_manifest_hashes_match_each_actual_abi_binary_and_pinned_version_urls) ... ok
+test_metadata_only_sync_keeps_hashes_only_for_same_version_and_build (test_script_safety.ReleaseArtifactTests.test_metadata_only_sync_keeps_hashes_only_for_same_version_and_build) ... ok
+test_missing_empty_or_stale_abi_is_rejected_even_with_universal_apk (test_script_safety.ReleaseArtifactTests.test_missing_empty_or_stale_abi_is_rejected_even_with_universal_apk) ... ok
+test_source_guard_rejects_changed_or_untracked_inputs_and_git_errors (test_script_safety.ReleaseArtifactTests.test_source_guard_rejects_changed_or_untracked_inputs_and_git_errors) ... ok
+test_active_manifest_is_pushed_only_after_successful_artifact_upload (test_script_safety.ReleaseSafetyTests.test_active_manifest_is_pushed_only_after_successful_artifact_upload) ... ok
+test_dirty_source_refusal_precedes_version_writes_and_publishing (test_script_safety.ReleaseSafetyTests.test_dirty_source_refusal_precedes_version_writes_and_publishing) ... ok
+test_draft_branch_refusal_precedes_version_writes_and_publishing (test_script_safety.ReleaseSafetyTests.test_draft_branch_refusal_precedes_version_writes_and_publishing) ... ok
+test_drafts_and_prereleases_tag_build_source_without_pushing_active_manifest (test_script_safety.ReleaseSafetyTests.test_drafts_and_prereleases_tag_build_source_without_pushing_active_manifest) ... ok
+test_dry_run_has_no_commands_or_file_mutations_in_every_release_mode (test_script_safety.ReleaseSafetyTests.test_dry_run_has_no_commands_or_file_mutations_in_every_release_mode) ... ok
+test_failed_patch_validation_never_publishes_or_updates_metadata (test_script_safety.ReleaseSafetyTests.test_failed_patch_validation_never_publishes_or_updates_metadata) ... ok
+test_failed_release_preflight_never_runs_a_build (test_script_safety.ReleaseSafetyTests.test_failed_release_preflight_never_runs_a_build) ... ok
+test_failed_retargeted_patch_restores_exact_original_version_files (test_script_safety.ReleaseSafetyTests.test_failed_retargeted_patch_restores_exact_original_version_files) ... ok
+test_patch_git_failures_are_reported_without_later_git_operations (test_script_safety.ReleaseSafetyTests.test_patch_git_failures_are_reported_without_later_git_operations) ... ok
+test_retargeting_does_not_change_versions_before_native_or_validation_checks (test_script_safety.ReleaseSafetyTests.test_retargeting_does_not_change_versions_before_native_or_validation_checks) ... ok
+test_active_tree_includes_agent_and_backend_but_excludes_archives (test_sidecars.SidecarTests.test_active_tree_includes_agent_and_backend_but_excludes_archives) ... ok
+test_once_works_from_other_directory_and_cache_does_not_feed_itself (test_sidecars.SidecarTests.test_once_works_from_other_directory_and_cache_does_not_feed_itself) ... ok
+test_oversized_file_is_reported_without_indexing_content (test_sidecars.SidecarTests.test_oversized_file_is_reported_without_indexing_content) ... ok
+test_process_locks_prevent_duplicate_sidecars (test_sidecars.SidecarTests.test_process_locks_prevent_duplicate_sidecars) ... ok
+test_snapshot_detects_add_modify_delete_for_both_sidecars (test_sidecars.SidecarTests.test_snapshot_detects_add_modify_delete_for_both_sidecars) ... ok
+test_symbols_include_dart_modifiers_and_multiline_providers (test_sidecars.SidecarTests.test_symbols_include_dart_modifiers_and_multiline_providers) ... ok
+test_symlinked_sources_are_not_read (test_sidecars.SidecarTests.test_symlinked_sources_are_not_read) ... ok
+test_test_runner_forwards_targets_cwd_and_failure (test_sidecars.SidecarTests.test_test_runner_forwards_targets_cwd_and_failure) ... ok
+test_test_runner_timeout_stops_child (test_sidecars.SidecarTests.test_test_runner_timeout_stops_child) ... ok
+test_algiers_date_and_deterministic_override (test_version_git.VersionGitTests.test_algiers_date_and_deterministic_override) ... ok
+test_clean_selected_scope_is_a_true_noop (test_version_git.VersionGitTests.test_clean_selected_scope_is_a_true_noop) ... ok
+test_concurrent_triad_edit_before_mutation_is_preserved (test_version_git.VersionGitTests.test_concurrent_triad_edit_before_mutation_is_preserved) ... ok
+test_containing_directory_authorizes_constants_content (test_version_git.VersionGitTests.test_containing_directory_authorizes_constants_content) ... ok
+test_dry_run_writes_nothing (test_version_git.VersionGitTests.test_dry_run_writes_nothing) ... ok
+test_explicit_all_includes_full_triad_worktree_content (test_version_git.VersionGitTests.test_explicit_all_includes_full_triad_worktree_content) ... ok
+test_explicit_triad_file_includes_authorized_dependency_changes (test_version_git.VersionGitTests.test_explicit_triad_file_includes_authorized_dependency_changes) ... ok
+test_explicit_version_only_change_can_be_committed (test_version_git.VersionGitTests.test_explicit_version_only_change_can_be_committed) ... ok
+test_external_commit_after_baseline_capture_is_detected (test_version_git.VersionGitTests.test_external_commit_after_baseline_capture_is_detected) ... ok
+test_final_symlink_outside_repo_can_be_staged_but_parent_escape_is_refused (test_version_git.VersionGitTests.test_final_symlink_outside_repo_can_be_staged_but_parent_escape_is_refused) ... ok
+test_helper_applies_same_plan_without_replanning (test_version_git.VersionGitTests.test_helper_applies_same_plan_without_replanning) ... ok
+test_invalid_triad_causes_no_partial_writes (test_version_git.VersionGitTests.test_invalid_triad_causes_no_partial_writes) ... ok
+test_leading_zero_versions_are_rejected (test_version_git.VersionGitTests.test_leading_zero_versions_are_rejected) ... ok
+test_literal_metacharacters_never_expand_task_scope (test_version_git.VersionGitTests.test_literal_metacharacters_never_expand_task_scope) ... ok
+test_malformed_json_version_type_is_a_validation_failure (test_version_git.VersionGitTests.test_malformed_json_version_type_is_a_validation_failure) ... ok
+test_preserves_higher_prepared_version_build_and_metadata (test_version_git.VersionGitTests.test_preserves_higher_prepared_version_build_and_metadata) ... ok
+test_scope_required_and_escape_refused (test_version_git.VersionGitTests.test_scope_required_and_escape_refused) ... ok
+test_scoped_commit_preserves_other_staged_work_and_shared_file_edits (test_version_git.VersionGitTests.test_scoped_commit_preserves_other_staged_work_and_shared_file_edits) ... ok
+test_selected_staged_paths_refused_before_any_write (test_version_git.VersionGitTests.test_selected_staged_paths_refused_before_any_write) ... ok
+test_selected_symlink_commits_link_without_selecting_target (test_version_git.VersionGitTests.test_selected_symlink_commits_link_without_selecting_target) ... ok
+test_sync_is_idempotent_and_repairs_stale_constants (test_version_git.VersionGitTests.test_sync_is_idempotent_and_repairs_stale_constants) ... ok
+
+----------------------------------------------------------------------
+Ran 113 tests in 50.827s
+
+OK
+{"dry_run": false, "noop": true, "paths": [".agents"], "version": "1.1.4", "reason": "No task-owned changes"}
+[master b4305e1] 1.2.5 - feat(settings): update constant
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+{
+  "dry_run": true,
+  "paths": [
+    ".agents"
+  ],
+  "version_fields": [
+    "pubspec.yaml",
+    "version.json",
+    "lib/core/constants/app_constants.dart"
+  ],
+  "version": "1.2.5",
+  "commit": "1.2.5 - chore: preview",
+  "push": true
+}
+[master 75c3f6e] 1.2.5 - chore: update selected project
+ 4 files changed, 8 insertions(+), 8 deletions(-)
+[master 81ff7fd] 1.2.5 - chore(deps): update dependency
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+[master 2fa4afe] 1.2.8 - chore: bump version
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+[master dcc8205] 1.2.5 - chore: approve plan
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+[master 1939963] 1.2.5 - chore: add literal names
+ 5 files changed, 6 insertions(+), 4 deletions(-)
+ create mode 100644 task*.md
+ create mode 100644 task[1].md
+[master c31bc27] 1.2.5 - chore(agents): update guidance
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+[master 5a38be5] 1.2.5 - chore: add link
+ 4 files changed, 5 insertions(+), 4 deletions(-)
+ create mode 120000 link.md

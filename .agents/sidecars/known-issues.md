@@ -1,15 +1,14 @@
 # Observed limitations and verification targets
 
-These are source observations, not a severity-ranked tracker or permission to change the product. Reproduce behavior before a fix. Current test/analyzer results belong in the task report, not an evergreen claim here.
+These are source-backed limits, not permission to expand scope. Recheck live code before fixing. Current check results belong in the task report.
 
 | Observation | Evidence and implication |
 | --- | --- |
-| Android release uses debug signing and disables release lint checks | `android/app/build.gradle.kts`: `signingConfigs.getByName("debug")`, `abortOnError = false`, `checkReleaseBuilds = false`. `TODO.md` T04 owns hardening; passing Flutter tests do not prove release readiness. |
-| Startup still performs optional network work | `TopicsScreen.initState` schedules `checkForUpdates(silent: true)` after the first frame. Gameplay draws are local; do not describe the entire app as having zero network requests. `TODO.md` T45 describes the target change. |
-| Updater needs platform verification | `version_service.dart`, `ota_installer_service.dart`, and `update_controller.dart` import `dart:io`; native plugins handle installation/restarts. README platform badges do not prove a working web build. |
-| Settings are session memory | Theme and gameplay controllers use Riverpod defaults with no persistence adapter. Do not promise restored settings after process restart. |
-| New content/session model is a target | Live selection uses image-path lists; canonical Card/Difficulty/GameSession/local SQLite implementations do not exist in `lib/`. Do not report approved target contracts as current behavior. |
-| Record persistence is an isolated scaffold | `CloudDatabaseService` and `GameRecord` have no callers in the screen/round flow. Their test checks parsing/construction, not live persistence. Do not wire scores/winners into gameplay without a compatible explicit request. |
-| Test coverage is partial | [test-map.md](test-map.md) separates existing checks from unverified deck/timer, update-controller, installer, API, and device behavior. Shorebird warnings in ordinary Flutter runs are not evidence of patch delivery. |
+| Native update networking needs platform validation | Imported SQLite content suppresses app-level first-frame checks through `automaticUpdateChecksProvider`; legacy fallback retains them. `shorebird.yaml` does not disable native automatic updates. T18 proves the host engine, while T45 owns the broader update-policy reconciliation. |
+| Release delivery needs external credentials and device proof | `android/app/build.gradle.kts` requires release signing and enables app release lint. Mock/configuration tests do not prove a signed APK installs or that published metadata matches actual release assets. |
+| Settings and sessions are temporary | Theme/legacy settings and `GameSessionNotifier` are in memory. Installed Packs persist; an active round does not resume after process death. |
+| Private storage is not perfect DRM | `PrivatePackImages` packages images in app-private containers; see `docs/migration/PRIVATE_IMAGES.md`. Rooted devices and authorized process access remain outside practical protection guarantees. |
+| Remote content is future work | The local Pack importer/SQLite/session path exists. Public catalog, Studio and remote download/sync remain Phase C onward; `CloudDatabaseService` is an unrelated record scaffold. |
+| Web and native updates have separate support limits | Native startup/storage/updater code imports `dart:io`; platform badges and host tests do not establish a working web build or Android updater. |
 
-See [integrations.md](integrations.md) for asset-script and release-pipeline limitations. `README.md`, older audits, and prior sidecar prose can contain obsolete inventories, versions, architecture names, or completion claims. Verify against source and current commands.
+See [test-map.md](test-map.md) for verification boundaries and [integrations.md](integrations.md) for script/release entry points. Historical baseline reports intentionally describe older commits; current architecture lives in [architecture.md](architecture.md).

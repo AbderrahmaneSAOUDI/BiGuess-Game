@@ -7,6 +7,8 @@
 
 ## How to use this file
 
+**Current status:** Phases A and B have implementations in the live tree. The [Phase A/B review](docs/migration/PHASE_AB_REVIEW.md) records follow-up fixes and verification. The starting audit below describes the older audited commit, not today's dependencies or gameplay. Read the current [source map](.agents/sidecars/file-map.md) for navigation.
+
 Give your coding agent **one numbered ticket at a time**, in ascending order. Each ticket should normally yield one small, reviewable PR. Confirm the acceptance criteria and merge before giving the next ticket. Tickets marked **GATE** require explicit acceptance before continuing.
 
 **Architectural Workstreams Alignment:**
@@ -23,7 +25,7 @@ While this roadmap organizes execution serially for a single-agent workflow, thi
 
 **Quality gates:** `flutter analyze` and `flutter test` must pass when Flutter changes are made, or failures must be identified as baseline failures and resolved in an agreed follow-up. Backend and Studio work needs its own automated tests and local build checks. All new migrations/imports must be idempotent or safely retryable, and new content must be validated before activation. Never hardcode production secrets.
 
-## What the repository actually contains (audit evidence)
+## Historical starting audit (before Phases A and B)
 
 - Current `pubspec.yaml`: `0.36.0+3` with Flutter, Riverpod, and legacy APK/Shorebird update dependencies; **no** SQLite/content-backend stack yet. `version.json` also names `0.36.0` while the latest published GitHub Release is `v0.30.5`; `v0.36.0` is a draft.
 - The latest source already has `TopicsScreen` and `PacksScreen`, and source assets under `assets/images/Anime/<Pack>` and `assets/images/Geography/Flags`. The generated `assets_manifest.dart` drives `TopicPackDataSource`; these are **not** downloadable cloud Packs.
@@ -107,9 +109,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 **Implemented:** `LocalPackStore` validates T09 `.biguesspack` files, stages and verifies images/metadata in private storage, then activates an immutable generation with one atomic pointer rename. Reopening and retry/rollback tests cover malformed, partial, tampered, and storage-failure cases. See [installation API and guarantees](docs/migration/LOCAL_PACK_INSTALL.md). The legacy gameplay path remains playable during migration.
 
-### [ ] T11 — Implement private local image storage and a presentation-safe image loader
+### [x] T11 — Implement private local image storage and a presentation-safe image loader
 **Agent task:** Add an abstraction for asset images (legacy) and locally installed protected Pack images. Use app-private storage and practical protection/packaging, not public gallery paths. Benchmark/limit decoding overhead and caching; avoid claiming perfect DRM.
 **Acceptance:** Locally installed images render correctly offline, no public-gallery pollution, bounded memory for larger Packs, and legacy images still render during migration.
+
+**Implemented:** `LocalPackStore` packages new images in app-private containers, and `ContentImageLoader` resolves both bundled assets and installed images without extracting plaintext files. Older loose private generations remain readable. Decodes fit within 1024×1024; the retained image cache is limited to 32 MiB/32 entries, with two sequential warmup images. Offline pixel/render tests, corruption/retry and storage tests, and a 48-image cache/decoding workload verify the behavior. See [protection limits and benchmark evidence](docs/migration/PRIVATE_IMAGES.md); packaging is not encryption or perfect DRM.
 
 ### [x] T12 — Extract a pure non-repeating Card selection engine
 **Agent task:** Replace image-path-based selection in the **new** domain path with a pure shuffled local deck of Card IDs; apply cumulative difficulty, exclude duplicates until exhausted, reshuffle after exhaustion, and allow separate physical devices to select the same Card. Keep the legacy controller working until UI migration.
@@ -117,9 +121,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 **Implemented:** `CardSelectionEngine` captures unique eligible Card IDs from the supplied local Packs, defaults to Easy, and draws from a shuffled deck without replacement. Empty pools return null; exhausted decks reshuffle from the captured IDs. Seeded tests cover the acceptance cases, reproducibility, shared image/name references, and isolation from later input mutations. Each instance owns its draw history; matching Cards on separate devices and repeats across exhausted deck boundaries are allowed. The legacy `GameRoundNotifier` / `SelectCharacterUseCase` path remains in place until UI migration.
 
-### [ ] T13 — Implement the local GameSession state machine
+### [x] T13 — Implement the local GameSession state machine
 **Agent task:** Model configuration, start, active round index, assigned Card, Next Round, completion, exit, and replay routing. Game state remains temporary/in-memory. Use an immutable snapshot of selected installed content for a running game; no scores, winners, questions, rooms, or authentication. Ensure an active game in progress is never invalidated, modified, or interrupted by remote updates, deletions, or unpublishing. For Free games, completing the final round completes the session; restarting another game requires routing through the Home screen to reset the 10-round counter. Direct 1-tap in-session replay without returning to Home is a Pro capability.
 **Acceptance:** Unit tests prove exact number of rounds, transitions, safe exit, round-limit reset on return to Home, and complete isolation of the active game snapshot against background content updates or deletions.
+
+**Implemented:** [Local GameSession contract](docs/migration/GAME_SESSION.md), immutable `GameSessionConfiguration` / `GameContentSnapshot` / `GameSession`, and `gameSessionProvider` model setup, assigned Cards, exact round completion, safe exit and replay routing entirely in memory. Free replay requests Home without resetting until Home is reached; Pro replay immediately reuses the frozen configuration/content. Thirty unit/integration tests cover transitions, Free counts 1–10, Pro counts above ten, Home reset, provider/input isolation, SQLite updates/unpublishing/tombstones and retained image-generation bytes after Pack replacement. T13-only checkout verification passes all 171 Flutter tests, analysis and tooling checks; UI migration remains T16/T17.
 
 ### [x] T14 — Build the Game Configuration UI with validation
 **Agent task:** Add a short setup step after Pack selection for cumulative Difficulty (Easy default) and number of rounds. Enforce the Free-tier limit of up to **10 rounds per game**. Freeze settings on Start; validate nonempty eligible pools and at least one downloaded Pack.
@@ -134,9 +140,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 **Implemented:** `PacksScreen` retains selection by Topic/Pack IDs, supports single/multiple/random selection, and labels download-required and unavailable Packs. Random count starts at one and is adjustable within the locally playable pool. Selection validates installed snapshots and merges all selected Cards before setup; setup rechecks availability at Start and freezes the chosen IDs. Unit, SQLite, and widget tests cover all modes, Topic isolation, empty random pools, renamed labels, merged content, and local removal during setup or gameplay.
 
-### [ ] T16 — Migrate the Identity Screen to the new GameSession and local images
+### [x] T16 — Migrate the Identity Screen to the new GameSession and local images
 **Agent task:** Reuse current theme, animations, and widgets while migrating the Identity Screen to the new GameSession and local images. The removal or simplification of the existing Mystery Box tap, countdown animation, and related UI controls is a **design proposal subject to human product/UX approval** during this ticket; if preferred, the playful reveal animation can be retained in a faster, more responsive form. Ensure the outward-facing Card shows its identity name and image reliably. Keep motion purposeful and fast.
 **Acceptance:** Widget tests verify identity display after game start; no timer or per-question UI; UX transitions (whether immediate display or playful reveal) receive explicit sign-off; loading, missing image, orientation, accessibility, and accidental-tap behavior are handled.
+
+**Implemented:** [Identity screen and explicit UX sign-off](docs/migration/IDENTITY_SCREEN.md). On 2026-11-06 the user approved immediate reveal after Start, with a 250 ms entrance and no motion when reduced motion is enabled. Configured games render the session-assigned Card's canonical name and local image through the existing themed Card widget. Names stay visible and image/name taps are inert; session settings omit legacy countdown, algorithm and hint controls. Ten focused widget tests cover Start, shared-image Card identities, local private image pixels, loading/errors, orientation, large text, semantics, reduced motion and duplicate action dispatch. The legacy reveal remains available during migration.
 
 ### [x] T17 — Add game-complete and replay flow
 **Agent task:** Display `Round X of Y`, a clean completion state after the configured final round (up to 10 in Free).
@@ -147,9 +155,11 @@ Do not infer or display a digital winner.
 
 **Implemented:** Configured games now use the local `GameSession` engine, display `Round X of Y`, and advance immediately from Start through Next Round without repeated countdowns. Finish Game completes the final displayed round without drawing another Card. Free completion returns through Packs before a fresh game resets the counter; Pro/test replay instantly reuses the exact frozen configuration and content. Widget tests cover 1/3/10-round Free sessions, Pro replay above ten rounds, changed content/access rules, stale taps, Back, hint reset, and compact completion layout. T16 identity-screen UX sign-off remains separate.
 
-### [ ] T18 — GATE: Prove entirely offline local-Pack gameplay
+### [x] T18 — GATE: Prove entirely offline local-Pack gameplay
 **Agent task:** Wire game screens to the local SQL/content repository with an imported fixture Pack. Disable connectivity, kill/restart the app, and prove Topic → Pack → Config → Card → all rounds works without any API/auth/image requests. Preserve a functioning legacy fallback until the subsequent cloud path is verified.
 **Acceptance:** Repeatable automated/instrumented or documented manual offline test passes; no network dependency or database corruption; developer can demo it without cloud infrastructure.
+
+**Implemented and verified (2026-11-06):** Startup binds verified imported generations to a separate transactional SQLite projection; empty/error storage retains the bundled fallback and an explicit legacy rollback switch. Local-Pack navigation suppresses automatic update requests. The [offline gate and Android demo](docs/migration/OFFLINE_GAMEPLAY_GATE.md) include a repeatable network-namespace runner: it SIGKILLs the actual Flutter test app during a rendered round, removes the import source, then restarts against the same storage and completes ten plus three rounds with private images, canonical names, zero HTTP-client attempts, and passing SQL integrity/foreign-key checks. [Execution evidence](docs/migration/evidence/2026-11-06-t18/summary.json) records the host-engine result; physical-device and published OTA-engine validation are not claimed. T16 UX sign-off and subsequent cloud-path verification remain separate gates.
 
 # PHASE C — Shared content API and cloud foundation
 

@@ -16,8 +16,8 @@ class CharacterAlgorithmNotifier extends Notifier<CharacterAlgorithm> {
 
 final characterAlgorithmProvider =
     NotifierProvider<CharacterAlgorithmNotifier, CharacterAlgorithm>(
-  CharacterAlgorithmNotifier.new,
-);
+      CharacterAlgorithmNotifier.new,
+    );
 
 /// Countdown duration in seconds notifier
 class CountdownDurationNotifier extends Notifier<int> {
@@ -31,8 +31,8 @@ class CountdownDurationNotifier extends Notifier<int> {
 
 final countdownDurationProvider =
     NotifierProvider<CountdownDurationNotifier, int>(
-  CountdownDurationNotifier.new,
-);
+      CountdownDurationNotifier.new,
+    );
 
 /// Show character name hint notifier
 class ShowCharacterNameHintNotifier extends Notifier<bool> {
@@ -50,5 +50,5 @@ class ShowCharacterNameHintNotifier extends Notifier<bool> {
 
 final showCharacterNameHintProvider =
     NotifierProvider<ShowCharacterNameHintNotifier, bool>(
-  ShowCharacterNameHintNotifier.new,
-);
+      ShowCharacterNameHintNotifier.new,
+    );

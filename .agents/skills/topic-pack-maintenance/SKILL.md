@@ -15,7 +15,7 @@ python3 scripts/generate_manifest.py --check
 ```
 
 - Disk layout is `assets/images/<Topic>/<Pack>/<Display Name>.webp`. Names, spaces, case, and accents become lookup keys and displayed character names; preserve them deliberately.
-- `TopicPackDataSource` reads the static `topicPackAssets` map. `topicsProvider`, `packsProvider`, and `packAssetsProvider` expose it to the screens. A folder alone does not make content available in a built app.
+- `TopicPackDataSource` reads the static `topicPackAssets` map through the bundled repository adapter. Compatibility providers expose that repository to the legacy flow; configured gameplay can also use verified imported Packs. A folder alone does not make bundled content available in a built app.
 - The generator scans files directly inside each pack, ignores hidden entries, accepts WebP/PNG/JPG/JPEG, and normalizes filename strings to NFC. Prefer the project's WebP format and ensure actual disk names match NFC strings.
 
 ## Apply the requested content change
@@ -54,6 +54,6 @@ Review the diff in `lib/assets_manifest.dart` and the `flutter.assets` section o
 
 The manifest check compares generated Dart only; `--check --sync-pubspec` does not validate pubspec. The auditor returns failure for missing/corrupt images, but oversized/orphan/naming findings still require reading the report. Without Pillow it skips image decoding. Preview empty packs and changed name labels in the app when relevant.
 
-## Current script limitation
+## Filename normalization
 
-`normalize_filenames.py` previews renames by default and applies with `--apply`. Its `--sync-manifest` branch imports obsolete generator names. Until repaired, run normalization without that flag and regenerate separately with `generate_manifest.py --sync-pubspec`.
+`normalize_filenames.py` previews renames by default and applies with `--apply`. Add `--sync-manifest` to synchronize the generated image list and pubspec asset paths after applying changes; it uses the current manifest generator API.

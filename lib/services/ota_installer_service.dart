@@ -43,13 +43,14 @@ class OtaInstallerService {
   CancelToken? _cancelToken;
 
   OtaInstallerService({Dio? dio})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(minutes: 5),
-              ),
-            );
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(minutes: 5),
+            ),
+          );
 
   // ---------------------------------------------------------------------------
   // Cache cleanup & Inspection
@@ -158,13 +159,15 @@ class OtaInstallerService {
 
         final fraction = total > 0 ? (received / total).clamp(0.0, 1.0) : 0.0;
 
-        onProgress?.call(DownloadProgress(
-          received: received,
-          total: total,
-          fraction: fraction,
-          speedText: _formatSpeed(avgSpeed),
-          etaText: etaSeconds > 0 ? '~${etaSeconds}s left' : '',
-        ));
+        onProgress?.call(
+          DownloadProgress(
+            received: received,
+            total: total,
+            fraction: fraction,
+            speedText: _formatSpeed(avgSpeed),
+            etaText: etaSeconds > 0 ? '~${etaSeconds}s left' : '',
+          ),
+        );
       },
     );
 

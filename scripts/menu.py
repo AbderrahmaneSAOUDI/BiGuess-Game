@@ -23,6 +23,8 @@ MAGENTA = "\033[95m"
 BOLD = "\033[1m"
 DIM = "\033[2m"
 RESET = "\033[0m"
+if not sys.stdout.isatty() or os.environ.get("NO_COLOR"):
+    GREEN = YELLOW = RED = BLUE = CYAN = MAGENTA = BOLD = DIM = RESET = ""
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPTS_DIR.parent
@@ -38,17 +40,23 @@ class NavigationBack(Exception):
     pass
 
 
+class ScriptFailed(Exception):
+    """A tool failed; preserve its exit status for command-line callers."""
+
+    def __init__(self, returncode: int):
+        self.returncode = returncode if returncode > 0 else 128 - returncode
+
+
 def clear_screen() -> None:
     """Clear terminal screen."""
-    os.system("cls" if os.name == "nt" else "clear")
+    if sys.stdout.isatty():
+        os.system("cls" if os.name == "nt" else "clear")
 
 
 def print_banner() -> None:
     """Print BiGuess header banner."""
-    print(f"{BOLD}{CYAN}╔══════════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{BOLD}{CYAN}║                 🎮  BIGUESS GAME TOOLBOX                     ║{RESET}")
-    print(f"{BOLD}{CYAN}║             Developer Utilities & Asset Automation           ║{RESET}")
-    print(f"{BOLD}{CYAN}╚══════════════════════════════════════════════════════════════╝{RESET}\n")
+    print(f"{BOLD}{CYAN}BiGuess developer tools{RESET}")
+    print("Check the app, manage content, or prepare a build.\n")
 
 
 def read_line_with_esc(prompt_text: str) -> str:
@@ -151,7 +159,7 @@ def prompt_input(prompt: str, default: str = "", is_main_menu: bool = False) -> 
     Pressing [Esc], entering '0', 'back', 'cancel', 'q', or 'exit' triggers backward navigation.
     """
     def_str = f" [{default}]" if default else ""
-    hint_str = f" {DIM}(0/Esc to back){RESET}" if not is_main_menu else f" {DIM}(0/Esc to exit){RESET}"
+    hint_str = f" {DIM}(0/Esc: back){RESET}" if not is_main_menu else f" {DIM}(0/Esc: exit){RESET}"
     prompt_text = f"{BOLD}{prompt}{def_str}{hint_str}:{RESET} "
 
     try:
@@ -165,19 +173,25 @@ def prompt_input(prompt: str, default: str = "", is_main_menu: bool = False) -> 
         return val if val else default
 
     # In sub-menus and task prompts:
-    if val in ("0", "q", "exit", "back", "cancel"):
+    if val.lower() in ("0", "q", "exit", "back", "cancel"):
         raise NavigationBack()
 
     return val if val else default
 
 
-def run_script(script_name: str, args: list) -> None:
-    """Execute a python script within scripts/."""
-    cmd = [PYTHON, str(SCRIPTS_DIR / script_name)] + args
+def run_command(cmd: list) -> None:
+    """Run one tool and preserve failures."""
     try:
-        subprocess.run(cmd, cwd=str(REPO_ROOT))
+        result = subprocess.run(cmd, cwd=str(REPO_ROOT))
+        if result.returncode:
+            raise ScriptFailed(result.returncode)
     except KeyboardInterrupt:
-        print(f"\n{YELLOW}⚠️  Operation cancelled by user.{RESET}")
+        raise ScriptFailed(130)
+
+
+def run_script(script_name: str, args: list) -> None:
+    """Execute a Python script within scripts/."""
+    run_command([PYTHON, str(SCRIPTS_DIR / script_name)] + args)
 
 
 # =============================================================================
@@ -189,10 +203,34 @@ def task_manage_topics() -> None:
     run_script("manage_topics.py", [])
 
 
+def task_baseline() -> None:
+    print("Check the app and save a log for every check.")
+    full = prompt_input("Include Android debug build and SDK diagnostics? (y/n)", "n").lower() == "y"
+    output = prompt_input("Log folder (blank uses .agents/cache/baseline)")
+    args = [] if full else ["--fast"]
+    if output:
+        args.append(output)
+    run_command(["bash", str(SCRIPTS_DIR / "baseline_check.sh"), *args])
+
+
+def task_export_pack() -> None:
+    print("Create an offline .biguesspack file from a cleared test fixture.")
+    source = prompt_input("Fixture metadata file", "test/fixtures/cleared_shapes/pack.json")
+    output = prompt_input("New output file", ".agents/cache/shapes.biguesspack")
+    run_script("export_pack.py", ["fixture", source, "--output", output])
+
+
+def task_offline_gate() -> None:
+    print("Test gameplay after a forced app restart with external networking disabled.")
+    print("Requires Linux network namespaces and the Flutter SDK.")
+    evidence = prompt_input("Save logs to folder (blank uses temporary storage)")
+    run_script("check_offline_gameplay.py", ["--evidence", evidence] if evidence else [])
+
+
 def task_convert_images() -> None:
     """Task 2: Convert & Compress Images."""
-    print(f"\n{BOLD}{BLUE}▶ Convert & Compress Images to WebP{RESET}")
-    print(f"{DIM}Target can be assets/images, a specific category, or a single file.{RESET}")
+    print(f"\n{BOLD}{BLUE}Resize and compress images{RESET}")
+    print(f"{DIM}Choose the full image folder, one Pack folder, or a single image.{RESET}")
 
     target = prompt_input("Target path", "assets/images")
     quality = prompt_input("Quality (1-100)", "82")
@@ -213,7 +251,7 @@ def task_convert_images() -> None:
 
 def task_generate_manifest() -> None:
     """Task 2: Generate / Sync Manifest."""
-    print(f"\n{BOLD}{BLUE}▶ Generate & Sync assets_manifest.dart{RESET}")
+    print(f"\n{BOLD}{BLUE}Update the bundled image list{RESET}")
     sync_pubspec = prompt_input("Also check/sync pubspec.yaml asset paths? (y/n)", "y").lower() == "y"
 
     args = []
@@ -225,7 +263,7 @@ def task_generate_manifest() -> None:
 
 def task_audit_assets() -> None:
     """Task 3: Audit Assets."""
-    print(f"\n{BOLD}{BLUE}▶ Audit Asset Health & Integrity{RESET}")
+    print(f"\n{BOLD}{BLUE}Check image files{RESET}")
     gen_report = prompt_input("Save report to Markdown file? (y/n)", "n").lower() == "y"
 
     args = []
@@ -238,7 +276,7 @@ def task_audit_assets() -> None:
 
 def task_normalize_filenames() -> None:
     """Task 4: Normalize & Clean Filenames."""
-    print(f"\n{BOLD}{BLUE}▶ Normalize Character Image Filenames{RESET}")
+    print(f"\n{BOLD}{BLUE}Clean image filenames{RESET}")
     print(f"  {CYAN}[1]{RESET} Preview changes (Dry Run)")
     print(f"  {CYAN}[2]{RESET} Apply changes and sync manifest")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
@@ -252,11 +290,11 @@ def task_normalize_filenames() -> None:
 
 def task_character_stats() -> None:
     """Task 5: Character Stats & Similarity."""
-    print(f"\n{BOLD}{BLUE}▶ Character Analytics & Typo Detector{RESET}")
-    print(f"  {CYAN}[1]{RESET} View Character Statistics Summary")
-    print(f"  {CYAN}[2]{RESET} Check for Potential Typos / Near-Duplicates")
+    print(f"\n{BOLD}{BLUE}Browse names and possible duplicates{RESET}")
+    print(f"  {CYAN}[1]{RESET} Show counts by Topic and Pack")
+    print(f"  {CYAN}[2]{RESET} Find similar names and possible duplicates")
     print(f"  {CYAN}[3]{RESET} Search for a Character Name")
-    print(f"  {CYAN}[4]{RESET} Export Dataset to JSON and CSV")
+    print(f"  {CYAN}[4]{RESET} Export names and counts as JSON and CSV")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select option", "1")
@@ -278,17 +316,20 @@ def task_build_app() -> None:
     """Task 6: Build Game."""
     print(f"\n{BOLD}{BLUE}▶ Build BiGuess Flutter App{RESET}")
     print(f"  {CYAN}[1]{RESET} 📦 Android Split APKs (arm64-v8a, armeabi-v7a, x86_64)")
-    print(f"  {CYAN}[2]{RESET} 🐦 Android App Bundle with Shorebird (AAB - for Google Play)")
+    print(f"  {CYAN}[2]{RESET} Android App Bundle (.aab)")
     print(f"  {CYAN}[3]{RESET} 🌐 Web Build")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select build target", "1")
     target_map = {
         "1": (["apk"], "Android Split APKs"),
-        "2": (["appbundle", "--shorebird"], "Android App Bundle (Shorebird)"),
+        "2": (["appbundle"], "Android App Bundle"),
         "3": (["web"], "Web"),
     }
-    args, label = target_map.get(choice, (["apk"], "Android Split APKs"))
+    if choice not in target_map:
+        print("Choose 1, 2, or 3.")
+        return
+    args, label = target_map[choice]
 
     clean_first = prompt_input("Run flutter clean first? (y/n)", "n").lower() == "y"
     if clean_first:
@@ -327,11 +368,11 @@ def task_clean_project() -> None:
 
 def task_shorebird_patch() -> None:
     """Direct Shorebird OTA Patch task."""
-    print(f"\n{BOLD}{BLUE}▶ Shorebird Instant OTA Patch{RESET}")
-    print(f"{DIM}Pushes pure Dart/UI/asset updates to players over the air without APK download/reinstall.{RESET}\n")
+    print(f"\n{BOLD}{BLUE}Publish a Shorebird patch{RESET}")
+    print(f"{DIM}Publishes a patch for a compatible existing Shorebird base release.{RESET}\n")
     notes = prompt_input("Patch description / Release notes", "Bug fixes and improvements.")
     args = ["--patch", "--notes", notes]
-    dry_run = prompt_input("Dry run only? (validate without publishing) (y/n)", "n").lower() == "y"
+    dry_run = prompt_input("Preview the plan only? (y/n)", "n").lower() == "y"
     if dry_run:
         args.append("--dry-run")
     run_script("release.py", args)
@@ -341,11 +382,11 @@ def task_content_inventory() -> None:
     """Run content inventory and rights quarantine check."""
     clear_screen()
     print_banner()
-    print(f"{BOLD}{CYAN}             📦  BiGuess Content Inventory & Rights Gate               {RESET}\n")
-    print(f"  {CYAN}[1]{RESET} Run complete inventory check and reconciliation")
-    print(f"  {CYAN}[2]{RESET} Check export reproducibility (byte-for-byte)")
+    print(f"{BOLD}{CYAN}             Content counts and publication rights               {RESET}\n")
+    print(f"  {CYAN}[1]{RESET} Check image counts and integrity")
+    print(f"  {CYAN}[2]{RESET} Check that repeated exports are identical")
     print(f"  {CYAN}[3]{RESET} Export JSON and Markdown reports (with fixtures)")
-    print(f"  {CYAN}[4]{RESET} Test public test export quarantine")
+    print(f"  {CYAN}[4]{RESET} Export only cleared test images to temporary storage")
     print(f"  {CYAN}[0]{RESET} Back to Main Menu\n")
 
     choice = prompt_input("Select an option", "1")
@@ -369,13 +410,13 @@ def task_content_inventory() -> None:
 def task_release_pipeline() -> None:
     """Task 8: Full Release Pipeline."""
     print(f"\n{BOLD}{BLUE}▶ Release Pipeline{RESET}")
-    print(f"  {GREEN}{BOLD}[1]{RESET} ⚡ {BOLD}Auto Release Pipeline{RESET} (Auto-selects: Pure Dart → Shorebird Patch, Native → Full Release)")
-    print(f"  {CYAN}[2]{RESET} 🚀 Force Shorebird OTA Patch (Push instant Dart/UI patch over the air)")
-    print(f"  {CYAN}[3]{RESET} 📦 Force Full Base Release (Version bump → Build Shorebird Split APKs → GitHub Release → Push)")
-    print(f"  {CYAN}[4]{RESET} 🔨 Build & Release without bump (Shorebird APKs → GitHub Release)")
-    print(f"  {CYAN}[5]{RESET} 🌐 GitHub Release Only (upload existing APKs to GitHub)")
-    print(f"  {CYAN}[6]{RESET} 🐦 Shorebird Doctor (Diagnose Shorebird setup)")
-    print(f"  {CYAN}[7]{RESET} 🔍 Check Remote Manifest & OTA Update Status")
+    print(f"  {GREEN}{BOLD}[1]{RESET} Choose patch or base release automatically")
+    print(f"  {CYAN}[2]{RESET} Publish a Shorebird patch")
+    print(f"  {CYAN}[3]{RESET} Build and publish a base release with a version bump")
+    print(f"  {CYAN}[4]{RESET} Build and publish using the current version")
+    print(f"  {CYAN}[5]{RESET} Publish existing APKs to GitHub")
+    print(f"  {CYAN}[6]{RESET} Check the Shorebird installation")
+    print(f"  {CYAN}[7]{RESET} Check the published update manifest")
     print(f"  {CYAN}[0]{RESET} ↩️  Back to main menu\n")
 
     choice = prompt_input("Select mode", "1")
@@ -393,7 +434,7 @@ def task_release_pipeline() -> None:
         notes = prompt_input("Patch description / Release notes", "Bug fixes and improvements.")
         if notes:
             args.extend(["--notes", notes])
-        dry_run = prompt_input("Dry run only? (validate without publishing) (y/n)", "n").lower() == "y"
+        dry_run = prompt_input("Preview the plan only? (y/n)", "n").lower() == "y"
         if dry_run:
             args.append("--dry-run")
 
@@ -416,7 +457,10 @@ def task_release_pipeline() -> None:
             args.extend(["--set-version", manual_ver])
         else:
             bump_map = {"1": "patch", "2": "minor", "3": "major"}
-            args.extend(["--bump", bump_map.get(ver_choice, "patch")])
+            if ver_choice not in bump_map:
+                print("Choose a version option from 1 to 4.")
+                return
+            args.extend(["--bump", bump_map[ver_choice]])
 
         notes = prompt_input("Release notes", "Bug fixes and improvements.")
         args.extend(["--notes", notes])
@@ -444,9 +488,12 @@ def task_release_pipeline() -> None:
 
     elif choice == "7":
         args.append("--check-update")
+    else:
+        print("Choose a release option from 1 to 7.")
+        return
 
     if choice in ("1", "2", "3", "4", "5"):
-        verbose = prompt_input("Enable verbose upload logs & byte stats? (y/n)", "n").lower() == "y"
+        verbose = prompt_input("Show detailed upload logs? (y/n)", "n").lower() == "y"
         if verbose:
             args.append("-v")
 
@@ -473,8 +520,10 @@ def task_version_management() -> None:
         print(f"  {CYAN}[0]{RESET} ↩️  Back\n")
         bump_choice = prompt_input("Select", "1")
         bump_map = {"1": "patch", "2": "minor", "3": "major"}
-
-        args = ["--version-only", "--bump", bump_map.get(bump_choice, "patch")]
+        if bump_choice not in bump_map:
+            print("Choose a version option from 1 to 3.")
+            return
+        args = ["--version-only", "--bump", bump_map[bump_choice]]
 
         notes = prompt_input("Release notes (optional)", "")
         if notes:
@@ -576,83 +625,118 @@ TASK_MAP = {
     "11": task_content_inventory,
     "inventory": task_content_inventory,
     "quarantine": task_content_inventory,
+    "12": task_baseline,
+    "baseline": task_baseline,
+    "13": task_export_pack,
+    "export": task_export_pack,
+    "14": task_offline_gate,
+    "offline": task_offline_gate,
 }
 
 
-def run_single_task(task_key: str) -> None:
+TOOL_GROUPS = [
+    ("Check the app", [
+        ("12", "baseline", "Run all checks and save logs", "baseline_check.sh"),
+        ("4", "audit", "Find missing or damaged images", "audit_assets.py"),
+        ("11", "inventory", "Count content and check publication rights", "content_inventory.py"),
+        ("14", "offline", "Test offline play across an app restart", "check_offline_gameplay.py"),
+    ]),
+    ("Manage content", [
+        ("1", "topics", "Add, rename, or remove Topics and Packs", "manage_topics.py"),
+        ("3", "manifest", "Update the bundled image list", "generate_manifest.py"),
+        ("2", "convert", "Resize and compress images", "convert_and_optimize.py"),
+        ("5", "normalize", "Preview or clean image filenames", "normalize_filenames.py"),
+        ("6", "stats", "Browse names, counts, and possible duplicates", "character_stats.py"),
+        ("13", "export", "Create an offline test Pack", "export_pack.py"),
+    ]),
+    ("Build and maintain", [
+        ("7", "build", "Build APKs, an App Bundle, or the web app", "build_app.py"),
+        ("10", "version", "View or synchronize version files", "release.py --version-only"),
+        ("8", "clean", "Remove generated caches and temporary files", "menu.py clean"),
+        ("9", "release", "Publish a base release or OTA patch", "release.py"),
+    ]),
+]
+
+
+def print_tool_tree(show_files: bool = False) -> None:
+    for group, entries in TOOL_GROUPS:
+        print(f"\n{BOLD}{group}{RESET}")
+        for number, shortcut, description, script in entries:
+            suffix = f" ({script})" if show_files else ""
+            print(f"  [{number:>2}] {shortcut:<10} {description}{suffix}")
+    print("\n  [ 0] Exit\n")
+
+
+def run_single_task(task_key: str) -> int:
     """Execute a single task directly and exit."""
     task_func = TASK_MAP.get(task_key.lower().strip())
     if not task_func:
         print(f"{RED}Unknown task: '{task_key}'{RESET}")
         print(f"Available tasks: {', '.join(sorted(set(TASK_MAP.keys())))}")
-        sys.exit(1)
+        return 1
 
     print_banner()
     try:
         task_func()
     except NavigationBack:
         print(f"\n{YELLOW}↩️  Cancelled.{RESET}\n")
-        return
+        return 0
+    except ScriptFailed as error:
+        print(f"Tool failed (exit {error.returncode}). Read its output above.", file=sys.stderr)
+        return error.returncode
     print()
+    return 0
 
 
-def main() -> None:
+def main() -> int:
     """Main interactive menu loop or direct task runner."""
     if len(sys.argv) > 1:
         arg = sys.argv[1].strip()
-        if arg in ("-h", "--help"):
+        if arg in ("-h", "--help", "--list", "help"):
             print_banner()
             print(f"{BOLD}Usage:{RESET}")
-            print("  ./scripts/run.sh [task_name]")
-            print("\nAvailable tasks:")
-            print("  topics, convert, manifest, audit, normalize, stats, inventory, build, clean, release, version")
-            print("Or run without arguments for the full interactive menu.")
-            return
-        run_single_task(arg)
-        return
+            print("  ./scripts/run.sh                     Open the menu")
+            print("  ./scripts/run.sh <tool>              Open one tool")
+            print("  ./scripts/run.sh <tool> <arguments>  Run a command directly")
+            print_tool_tree(show_files=True)
+            print("Use ./scripts/run.sh <tool> --help for that tool's options.")
+            print("Additional release shortcuts: patch, doctor, check-update.")
+            return 0
+        return run_single_task(arg)
 
     while True:
         clear_screen()
         print_banner()
 
-        print(f"{BOLD}Choose a task:{RESET}")
-        print(f"  {MAGENTA}[1]{RESET} 📂  Manage Topics & Packs (CRUD, add, rename, delete)")
-        print(f"  {CYAN}[2]{RESET} 🖼️   Convert & Compress Images to WebP")
-        print(f"  {CYAN}[3]{RESET} 📋  Generate / Sync assets_manifest.dart & pubspec.yaml")
-        print(f"  {CYAN}[4]{RESET} 🔍  Audit Asset Health (Missing, Broken, Orphans)")
-        print(f"  {CYAN}[5]{RESET} ✏️   Normalize & Clean Character Filenames")
-        print(f"  {CYAN}[6]{RESET} 📊  Character Analytics & Typo/Duplicate Checker")
-        print(f"  {CYAN}[7]{RESET} 🚀  Build Game (APK, App Bundle, Web, Desktop)")
-        print(f"  {CYAN}[8]{RESET} 🧹  Clean Cache & Temporary Files")
-        print(f"  {MAGENTA}[9]{RESET} 📦  Release Pipeline (build → publish → push)")
-        print(f"  {MAGENTA}[10]{RESET} 🏷️   Version Management (bump, sync, view)")
-        print(f"  {CYAN}[11]{RESET} 📦  Content Inventory & Rights Quarantine Gate")
-        print(f"  {CYAN}[0]{RESET} 🚪  Exit\n")
+        print_tool_tree()
 
         choice = prompt_input("Enter selection", "1", is_main_menu=True)
 
         if choice == "0" or choice.lower() in ("q", "exit", "back", "cancel"):
-            print(f"\n{GREEN}👋 Goodbye! Happy coding.{RESET}\n")
+            print("Goodbye.")
             break
 
-        task_func = TASK_MAP.get(choice)
+        task_func = TASK_MAP.get(choice.lower())
         if task_func:
             try:
                 task_func()
             except NavigationBack:
                 print(f"\n{YELLOW}↩️  Returning to menu...{RESET}")
+            except ScriptFailed as error:
+                print(f"Tool failed (exit {error.returncode}). Read its output above.")
         else:
-            print(f"{RED}Invalid option. Please choose 0-9.{RESET}")
+            print("Choose a listed number or tool name.")
 
         try:
             prompt_input("\nPress Enter to return to menu...", is_main_menu=False)
         except NavigationBack:
             pass
+    return 0
 
 
 if __name__ == "__main__":
     try:
-        main()
+        sys.exit(main())
     except (KeyboardInterrupt, EOFError):
         print(f"\n\n{GREEN}👋 Goodbye!{RESET}\n")
         sys.exit(0)

@@ -15,25 +15,25 @@ final class Topic {
     this.published = false,
     this.deleted = false,
     int revision = 1,
-  })  : id = ContentValidation.id(id, 'id'),
-        name = ContentValidation.text(name, 'name'),
-        revision = ContentValidation.revision(revision);
+  }) : id = ContentValidation.id(id, 'id'),
+       name = ContentValidation.text(name, 'name'),
+       revision = ContentValidation.revision(revision);
 
   factory Topic.fromJson(Map<String, dynamic> json) => Topic(
-        id: ContentValidation.readString(json, 'id'),
-        name: ContentValidation.readString(json, 'name'),
-        published: ContentValidation.readBool(json, 'published'),
-        deleted: ContentValidation.readBool(json, 'deleted'),
-        revision: ContentValidation.readRevision(json),
-      );
+    id: ContentValidation.readString(json, 'id'),
+    name: ContentValidation.readString(json, 'name'),
+    published: ContentValidation.readBool(json, 'published'),
+    deleted: ContentValidation.readBool(json, 'deleted'),
+    revision: ContentValidation.readRevision(json),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'published': published,
-        'deleted': deleted,
-        'revision': revision,
-      };
+    'id': id,
+    'name': name,
+    'published': published,
+    'deleted': deleted,
+    'revision': revision,
+  };
 
   @override
   bool operator ==(Object other) =>

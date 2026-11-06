@@ -10,26 +10,29 @@ import 'package:path_provider/path_provider.dart';
 import '../../domain/models/card.dart';
 import '../../domain/models/entitlement.dart';
 import 'local_pack_file.dart';
+import 'private_pack_images.dart';
 
 /// An immutable installed revision. Its directory remains available to readers
 /// after an update, so existing snapshots can finish using their original files.
 final class InstalledLocalPack {
   final LocalPackManifest manifest;
   final Directory directory;
-  final List<Card> cards;
+  late final List<Card> cards;
 
-  InstalledLocalPack._(this.manifest, this.directory)
-    : cards = List.unmodifiable(
-        manifest.cards.map(
-          (card) => Card(
-            id: card.id,
-            packId: card.packId,
-            name: card.name,
-            imageReference: p.join(directory.path, card.imageReference),
-            difficulty: card.difficulty,
-          ),
+  InstalledLocalPack._(this.manifest, this.directory) {
+    final references = PrivatePackImages.references(manifest, directory);
+    cards = List.unmodifiable(
+      manifest.cards.map(
+        (card) => Card(
+          id: card.id,
+          packId: card.packId,
+          name: card.name,
+          imageReference: references[card.imageReference]!,
+          difficulty: card.difficulty,
         ),
-      );
+      ),
+    );
+  }
 }
 
 /// The write boundary, also allowing deterministic storage-failure tests.
@@ -93,8 +96,8 @@ final class LocalPackStore {
     }
     final cardIds = manifest.cards.map((card) => card.id).toSet();
     final installedPacks = await readAllInstalled();
-    // Counting and activation share the writer lock. Revisions and retries
-    // of an existing Pack do not consume a new slot.
+    // Counting and activation share the writer lock. Revisions and retries of
+    // an existing Pack do not consume a new slot.
     if (previous == null && !entitlement.allowsNewPack(installedPacks.length)) {
       throw StateError('Free storage allows up to 5 downloaded Packs');
     }
@@ -117,12 +120,11 @@ final class LocalPackStore {
     final pending = File(p.join(packDirectory.path, 'active.pending'));
     var activated = false;
     try {
-      await Directory(p.join(staged.path, 'objects')).create();
-      for (final image in manifest.images) {
-        final file = File(p.join(staged.path, image.path));
-        await _io.write(file, archive.objects[image.path]!);
-        image.verify(await _readBounded(file, limit: image.size));
-      }
+      await _io.write(
+        File(p.join(staged.path, PrivatePackImages.fileName)),
+        PrivatePackImages.encode(manifest, archive.objects),
+      );
+      await PrivatePackImages.verify(manifest, staged);
       final metadata = File(p.join(staged.path, 'manifest.json'));
       await _io.write(metadata, manifest.metadataBytes);
       if (sha256.convert(await _readBounded(metadata)).toString() !=
@@ -202,14 +204,7 @@ final class LocalPackStore {
     if (sha256.convert(bytes).toString() != manifest.digest) {
       throw const FormatException('Installed metadata integrity check failed');
     }
-    for (final image in manifest.images) {
-      image.verify(
-        await _readBounded(
-          File(p.join(directory.path, image.path)),
-          limit: image.size,
-        ),
-      );
-    }
+    await PrivatePackImages.verify(manifest, directory);
     return InstalledLocalPack._(manifest, directory);
   }
 
@@ -241,8 +236,9 @@ final class LocalPackStore {
     await previous;
     RandomAccessFile? lock;
     try {
-      lock = await File(p.join(key, '.install.lock'))
-          .open(mode: FileMode.append);
+      lock = await File(
+        p.join(key, '.install.lock'),
+      ).open(mode: FileMode.append);
       await lock.lock(FileLock.blockingExclusive);
       return await operation();
     } finally {

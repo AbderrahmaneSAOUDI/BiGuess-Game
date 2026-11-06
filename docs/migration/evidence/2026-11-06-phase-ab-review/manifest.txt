@@ -1,0 +1,22 @@
+
+[1m[96m══════════════════════════════════════════════════════════════[0m
+[1m[96m         📋  BiGuess Topic & Pack Manifest Generator           [0m
+[1m[96m══════════════════════════════════════════════════════════════[0m
+📁 Scanning:    /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/assets/images
+📄 Output:      /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/lib/assets_manifest.dart
+[96m──────────────────────────────────────────────────────────────[0m
+
+  📂 [1mAnime[0m (6 packs, 922 items):
+     • Attack on Titan          :  131 items
+     • Black Clover             :   67 items
+     • Demon Slayer             :   43 items
+     • Hunter X Hunter          :  135 items
+     • Naruto                   :   80 items
+     • One Piece                :  466 items
+  📂 [1mGeography[0m (1 packs, 252 items):
+     • Flags                    :  252 items
+
+📊 Total: [1m2[0m topics, [1m7[0m packs, [1m1174[0m images.
+
+[92m✅ Manifest is completely in sync with on-disk assets![0m
+

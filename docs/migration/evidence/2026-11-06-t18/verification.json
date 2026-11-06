@@ -1,0 +1,29 @@
+{
+  "flutter_test": {
+    "exit_code": 1,
+    "passed": 238,
+    "failed": 2,
+    "failures": [
+      "identity_card_test: canonical identity and accessible name survive image/name taps",
+      "identity_card_test: identity name and loading semantics remain until an image frame arrives"
+    ],
+    "scope": "concurrently added identity-screen work; T18 tests passed"
+  },
+  "flutter_analyze": {
+    "exit_code": 0,
+    "result": "No issues found"
+  },
+  "agent_setup": {
+    "exit_code": 0,
+    "checks": 929
+  },
+  "agent_unittests": {
+    "exit_code": 0,
+    "tests": 78
+  },
+  "t18_focused_tests": {
+    "exit_code": 0,
+    "tests": 7
+  },
+  "git_lifecycle": "Not run: required full-suite gate failed; preserve concurrent work"
+}

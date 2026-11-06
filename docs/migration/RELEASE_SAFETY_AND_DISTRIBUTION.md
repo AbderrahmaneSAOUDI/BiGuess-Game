@@ -2,6 +2,12 @@
 
 This document formalizes the release safety architecture, vulnerability audit findings, and intended distribution policy established in milestone **T04** (`GATE: Repair Android release safety without shipping`).
 
+The [Phase A/B follow-up review](PHASE_AB_REVIEW.md) also fixes release tooling:
+failed checks stop builds/patches, `--dry-run` is a read-only plan, APK URLs are
+tag-pinned, and APK upload precedes the active branch manifest push. Draft and
+prerelease operations do not push that manifest. Mocked regression tests exercise
+these paths; no release or patch was published during the review.
+
 ---
 
 ## 1. Executive Summary
@@ -116,8 +122,13 @@ lint {
 - **Hazard Analysis:**
   If Step 6 encounters an error (e.g. GitHub token expiration, rate limit, upload failure, network disconnection), `version.json` has **already been pushed to `main`**.
   Active client apps polling `raw.githubusercontent.com/.../main/version.json` will immediately announce an update whose download binaries do not exist, causing 404 download errors for all users.
-- **Required Pipeline Mitigation:**
-  Production release tooling must stage and verify GitHub release assets (e.g. via draft release or dry-run validation) *before* committing and pushing the public `version.json` update manifest to the `main` branch.
+- **Implemented Pipeline Mitigation:**
+  The script prepares a local source commit/tag and pushes only the tag first.
+  It uploads the complete GitHub release before pushing the branch containing
+  the active `version.json`. Upload failure stops that branch push. Draft and
+  prerelease operations never push the active branch manifest. Existing staged
+  changes stop release commits so unrelated work is not included. `--dry-run`
+  only prints a plan; it performs no validation, builds or mutations.
 
 ### 4.4 Shorebird vs Date-Based Versioning Divergence
 - **Vulnerability:** In BiGuess, minor version is calculated from elapsed days since base date `2025-05-27`:
@@ -132,7 +143,11 @@ lint {
   ```
   Because minor version advances daily, **any release issued on a subsequent day is classified as a minor version bump**, causing `hasNewerMajorOrMinor` to evaluate to `true`.
 - **Impact:**
-  Shorebird OTA code patches can only be delivered on the **exact same calendar day** as the base release. Any subsequent patch published on a later date automatically forces client devices down the `UpdateFullApk` path.
+  A manifest advertising a newer date-based minor selects the full-APK path.
+  This does not prevent patches against an unchanged base version:
+  `UpdateController` independently checks Shorebird before evaluating the remote
+  version manifest. Patch compatibility and actual device delivery still require
+  release-specific validation.
 - **Policy:**
   When planning Shorebird hot-patches, teams must either:
   a) Maintain the base release's minor version in Shorebird patch metadata, or

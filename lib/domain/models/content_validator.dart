@@ -23,7 +23,8 @@ class ContentValidator {
       _addId(packIds, pack.id, 'Pack');
       if (!topicIds.contains(pack.topicId)) {
         throw ArgumentError(
-            'Pack ${pack.id} has unknown Topic ${pack.topicId}');
+          'Pack ${pack.id} has unknown Topic ${pack.topicId}',
+        );
       }
     }
     final cardIds = <String>{};
@@ -46,12 +47,14 @@ class ContentValidator {
       _addId(cardIds, card.id, 'Card');
       if (card.packId != pack.id) {
         throw ArgumentError(
-            'Card ${card.id} does not belong to Pack ${pack.id}');
+          'Card ${card.id} does not belong to Pack ${pack.id}',
+        );
       }
     }
     if (cardIds.length < 2) {
       throw ArgumentError(
-          'Pack ${pack.id} needs at least 2 Cards to be playable');
+        'Pack ${pack.id} needs at least 2 Cards to be playable',
+      );
     }
   }
 

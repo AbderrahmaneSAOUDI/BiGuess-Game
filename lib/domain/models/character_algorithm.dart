@@ -1,5 +1,2 @@
 /// Selection algorithm for character rotation during gameplay
-enum CharacterAlgorithm {
-  random,
-  nonRepeating,
-}
+enum CharacterAlgorithm { random, nonRepeating }

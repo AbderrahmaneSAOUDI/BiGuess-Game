@@ -36,10 +36,7 @@ class _AnimatedGlassAppBarBackgroundState
     );
 
     _shimmerAnimation = Tween<double>(begin: -0.5, end: 1.5).animate(
-      CurvedAnimation(
-        parent: _shimmerController,
-        curve: Curves.easeInOutCubic,
-      ),
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOutCubic),
     );
 
     if (widget.showShimmerBorder) {
@@ -95,10 +92,7 @@ class _AnimatedGlassAppBarBackgroundState
                   stops: const [0.0, 0.6, 1.0],
                 ),
                 border: Border(
-                  bottom: BorderSide(
-                    color: borderColor,
-                    width: 1.0,
-                  ),
+                  bottom: BorderSide(color: borderColor, width: 1.0),
                 ),
               ),
             ),

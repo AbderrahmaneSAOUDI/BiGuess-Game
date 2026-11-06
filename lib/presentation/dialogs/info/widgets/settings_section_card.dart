@@ -40,11 +40,7 @@ class SettingsSectionCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      icon,
-                      size: 20,
-                      color: theme.colorScheme.primary,
-                    ),
+                    Icon(icon, size: 20, color: theme.colorScheme.primary),
                     const SizedBox(width: 10),
                     Text(
                       title,

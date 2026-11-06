@@ -1,0 +1,32 @@
+BiGuess developer tools
+Check the app, manage content, or prepare a build.
+
+Usage:
+  ./scripts/run.sh                     Open the menu
+  ./scripts/run.sh <tool>              Open one tool
+  ./scripts/run.sh <tool> <arguments>  Run a command directly
+
+Check the app
+  [12] baseline   Run all checks and save logs (baseline_check.sh)
+  [ 4] audit      Find missing or damaged images (audit_assets.py)
+  [11] inventory  Count content and check publication rights (content_inventory.py)
+  [14] offline    Test offline play across an app restart (check_offline_gameplay.py)
+
+Manage content
+  [ 1] topics     Add, rename, or remove Topics and Packs (manage_topics.py)
+  [ 3] manifest   Update the bundled image list (generate_manifest.py)
+  [ 2] convert    Resize and compress images (convert_and_optimize.py)
+  [ 5] normalize  Preview or clean image filenames (normalize_filenames.py)
+  [ 6] stats      Browse names, counts, and possible duplicates (character_stats.py)
+  [13] export     Create an offline test Pack (export_pack.py)
+
+Build and maintain
+  [ 7] build      Build APKs, an App Bundle, or the web app (build_app.py)
+  [10] version    View or synchronize version files (release.py --version-only)
+  [ 8] clean      Remove generated caches and temporary files (menu.py clean)
+  [ 9] release    Publish a base release or OTA patch (release.py)
+
+  [ 0] Exit
+
+Use ./scripts/run.sh <tool> --help for that tool's options.
+Additional release shortcuts: patch, doctor, check-update.

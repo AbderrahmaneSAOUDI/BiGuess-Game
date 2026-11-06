@@ -19,27 +19,29 @@ final class Card {
     required String name,
     required String imageReference,
     required this.difficulty,
-  })  : id = ContentValidation.id(id, 'id'),
-        packId = ContentValidation.id(packId, 'packId'),
-        name = ContentValidation.text(name, 'name'),
-        imageReference =
-            ContentValidation.text(imageReference, 'imageReference');
+  }) : id = ContentValidation.id(id, 'id'),
+       packId = ContentValidation.id(packId, 'packId'),
+       name = ContentValidation.text(name, 'name'),
+       imageReference = ContentValidation.text(
+         imageReference,
+         'imageReference',
+       );
 
   factory Card.fromJson(Map<String, dynamic> json) => Card(
-        id: ContentValidation.readString(json, 'id'),
-        packId: ContentValidation.readString(json, 'packId'),
-        name: ContentValidation.readString(json, 'name'),
-        imageReference: ContentValidation.readString(json, 'imageReference'),
-        difficulty: Difficulty.fromJson(json['difficulty']),
-      );
+    id: ContentValidation.readString(json, 'id'),
+    packId: ContentValidation.readString(json, 'packId'),
+    name: ContentValidation.readString(json, 'name'),
+    imageReference: ContentValidation.readString(json, 'imageReference'),
+    difficulty: Difficulty.fromJson(json['difficulty']),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'packId': packId,
-        'name': name,
-        'imageReference': imageReference,
-        'difficulty': difficulty.toJson(),
-      };
+    'id': id,
+    'packId': packId,
+    'name': name,
+    'imageReference': imageReference,
+    'difficulty': difficulty.toJson(),
+  };
 
   @override
   bool operator ==(Object other) =>

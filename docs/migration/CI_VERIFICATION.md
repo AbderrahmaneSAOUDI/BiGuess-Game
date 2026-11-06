@@ -64,7 +64,8 @@ lifecycle after passing checks.
 [Baseline summary](evidence/2026-11-06-t01-t03/summary.tsv) and
 [baseline report](BASELINE.md) record passing local positive gates: 35 Flutter tests,
 43 Python tests, analyzer, formatting, inventory, version and setup checks. Local
-Python was 3.15.0; hosted Python 3.11/Ubuntu behavior remains to be verified.
+Python was 3.15.0; scoped hosted Python 3.11/Ubuntu results are recorded in the
+completed hosted acceptance section below.
 `flutter doctor` exited 0 but had Android/network diagnostic timeouts, so it is not
 recorded as healthy. The debug APK built successfully; debug builds are part of
 the extended baseline, not this fast CI job.

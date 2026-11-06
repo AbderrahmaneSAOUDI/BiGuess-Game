@@ -1,0 +1,222 @@
+{
+  "date": "2026-11-06",
+  "starting_head": "dbc78b8c24fc27c039a4901a63f5cb968c40ad20",
+  "scope": "Live worktree Phase A/B and developer scripts; local host verification",
+  "starting_tests": {
+    "flutter": 241,
+    "python": 78
+  },
+  "initial_formatting_files": 37,
+  "final_flutter_tests": 244,
+  "checks": [
+    {
+      "check": "dependencies",
+      "command": [
+        "flutter",
+        "pub",
+        "get"
+      ],
+      "exit_code": 0,
+      "seconds": 2.17,
+      "log": "dependencies.txt"
+    },
+    {
+      "check": "format",
+      "command": [
+        "dart",
+        "format",
+        "--output=none",
+        "--set-exit-if-changed",
+        "lib",
+        "test"
+      ],
+      "exit_code": 0,
+      "seconds": 1.56,
+      "log": "format.txt"
+    },
+    {
+      "check": "analyze",
+      "command": [
+        "flutter",
+        "analyze"
+      ],
+      "exit_code": 0,
+      "seconds": 5.5,
+      "log": "analyze.txt"
+    },
+    {
+      "check": "tests",
+      "command": [
+        "flutter",
+        "test",
+        "--reporter",
+        "expanded"
+      ],
+      "exit_code": 0,
+      "seconds": 35.32,
+      "log": "tests.txt"
+    },
+    {
+      "check": "manifest",
+      "command": [
+        "python3",
+        "scripts/generate_manifest.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.08,
+      "log": "manifest.txt"
+    },
+    {
+      "check": "assets",
+      "command": [
+        "python3",
+        "scripts/audit_assets.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.61,
+      "log": "assets.txt"
+    },
+    {
+      "check": "debug_build",
+      "command": [
+        "flutter",
+        "build",
+        "apk",
+        "--debug"
+      ],
+      "exit_code": 0,
+      "log": "debug-build.txt"
+    },
+    {
+      "check": "ci_negative_controls",
+      "command": [
+        "python3",
+        "scripts/check_ci_failure_detection.py"
+      ],
+      "exit_code": 0,
+      "log": "negative-controls.txt"
+    },
+    {
+      "check": "offline_restart",
+      "command": [
+        "python3",
+        "scripts/check_offline_gameplay.py",
+        "--evidence",
+        "/tmp/biguess-review-offline"
+      ],
+      "exit_code": 0,
+      "log": "offline-summary.json"
+    },
+    {
+      "check": "inventory",
+      "command": [
+        "python3",
+        "scripts/content_inventory.py",
+        "--include-fixtures",
+        "--check",
+        "--check-reproducible",
+        "--output",
+        "docs/migration/content_inventory.json",
+        "--markdown",
+        "docs/migration/CONTENT_INVENTORY_AND_RIGHTS.md"
+      ],
+      "exit_code": 0,
+      "log": "inventory.txt"
+    },
+    {
+      "check": "setup",
+      "command": [
+        "python3",
+        ".agents/scripts/validate_setup.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.18,
+      "log": "setup.txt"
+    },
+    {
+      "check": "python_tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        ".agents/tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "seconds": 51.11,
+      "log": "python_tests.txt"
+    },
+    {
+      "check": "python_syntax",
+      "command": [
+        "python3",
+        "-m",
+        "compileall",
+        "-q",
+        "scripts",
+        ".agents/hooks"
+      ],
+      "exit_code": 0,
+      "seconds": 0.09,
+      "log": "python_syntax.txt"
+    },
+    {
+      "check": "shell_syntax",
+      "command": [
+        "bash",
+        "-n",
+        "scripts/run.sh",
+        "scripts/baseline_check.sh",
+        "scripts/update_version.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.0,
+      "log": "shell_syntax.txt"
+    },
+    {
+      "check": "whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.16,
+      "log": "whitespace.txt"
+    },
+    {
+      "check": "release_preview",
+      "command": [
+        "bash",
+        "scripts/run.sh",
+        "release",
+        "--full-release",
+        "--bump",
+        "patch",
+        "--dry-run"
+      ],
+      "exit_code": 0,
+      "triad_unchanged": true,
+      "log": "release-preview.txt"
+    },
+    {
+      "check": "version_triad",
+      "command": [
+        "python3",
+        ".agents/hooks/project_check.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "version": "1.528.84+29"
+    }
+  ],
+  "limits": [
+    "No physical-device test or signed release installation",
+    "No published Shorebird-engine or cloud synchronization validation",
+    "Release failure paths use mocked services; nothing published"
+  ],
+  "final_python_tests": 113
+}

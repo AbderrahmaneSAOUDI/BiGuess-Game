@@ -1,0 +1,8 @@
+Release plan only: no commands will run and no files will change.
+Mode: full release
+Current version: 1.528.83+28
+Requested version: 1.528.84+29
+Validation during execution: flutter analyze and flutter test
+Build, upload, version writes, Git commit, tag, and push are all skipped.
+
+Triad hashes unchanged: true

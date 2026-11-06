@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/datasources/topic_pack_data_source.dart';
+import '../data/local/local_content_runtime.dart';
 import '../data/repositories/legacy_manifest_content_repository.dart';
 import '../domain/models/card.dart';
 import '../domain/models/game_setup.dart';
@@ -10,8 +11,22 @@ final topicPackDataSourceProvider = Provider<TopicPackDataSource>((ref) {
   return const TopicPackDataSource();
 });
 
+/// main supplies the opened runtime and closes it when its root scope ends.
+final localContentRuntimeProvider = Provider<LocalContentRuntime?>(
+  (ref) => null,
+);
+
+/// Local-Pack play and the explicit offline demo never start update requests.
+/// Manual update actions remain available outside the gameplay flow.
+final automaticUpdateChecksProvider = Provider<bool>((ref) {
+  return !const bool.fromEnvironment('biguessOfflineDemo') &&
+      !(ref.watch(localContentRuntimeProvider)?.usesSqlite ?? false);
+});
+
 /// Override this binding to swap local content sources without screen changes.
 final contentRepositoryProvider = Provider<ContentRepository>((ref) {
+  final local = ref.watch(localContentRuntimeProvider);
+  if (local != null) return local.repository;
   return LegacyManifestContentRepository(
     dataSource: ref.watch(topicPackDataSourceProvider),
   );

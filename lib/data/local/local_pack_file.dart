@@ -235,9 +235,9 @@ final class LocalPackImage {
           'image/png': 'png',
           'image/jpeg': 'jpg',
         }.entries.any(
-              (entry) =>
-                  media == entry.key && path == 'objects/$hash.${entry.value}',
-            )) {
+          (entry) =>
+              media == entry.key && path == 'objects/$hash.${entry.value}',
+        )) {
       throw const FormatException(
         'Invalid object key, size, hash or media type',
       );

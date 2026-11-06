@@ -8,40 +8,40 @@ import 'package:gdg_guess_game/domain/models/pack.dart';
 import 'package:gdg_guess_game/domain/models/topic.dart';
 
 Map<String, dynamic> topicJson() => {
-      'id': 'topic-01',
-      'name': 'Original shapes',
-      'published': true,
-      'deleted': false,
-      'revision': 3,
-    };
+  'id': 'topic-01',
+  'name': 'Original shapes',
+  'published': true,
+  'deleted': false,
+  'revision': 3,
+};
 
 Map<String, dynamic> packJson() => {
-      'id': 'pack-01',
-      'topicId': 'topic-01',
-      'name': 'Paper shapes',
-      'published': true,
-      'deleted': false,
-      'revision': 2,
-    };
+  'id': 'pack-01',
+  'topicId': 'topic-01',
+  'name': 'Paper shapes',
+  'published': true,
+  'deleted': false,
+  'revision': 2,
+};
 
 Map<String, dynamic> cardJson() => {
-      'id': 'card-01',
-      'packId': 'pack-01',
-      'name': 'Étoile 紙',
-      'imageReference': 'assets/Original shapes/Étoile 紙.webp',
-      'difficulty': 2,
-    };
+  'id': 'card-01',
+  'packId': 'pack-01',
+  'name': 'Étoile 紙',
+  'imageReference': 'assets/Original shapes/Étoile 紙.webp',
+  'difficulty': 2,
+};
 
 Map<String, dynamic> roundTrip(Map<String, dynamic> json) =>
     jsonDecode(jsonEncode(json)) as Map<String, dynamic>;
 
 domain.Card card(String id, {String packId = 'pack-01'}) => domain.Card(
-      id: id,
-      packId: packId,
-      name: 'Paper shape',
-      imageReference: 'images/$id.webp',
-      difficulty: Difficulty.easy,
-    );
+  id: id,
+  packId: packId,
+  name: 'Paper shape',
+  imageReference: 'images/$id.webp',
+  difficulty: Difficulty.easy,
+);
 
 void main() {
   group('Canonical serialization and value equality', () {
@@ -60,10 +60,11 @@ void main() {
       expect({pack, packCopy}, hasLength(1));
     });
 
-    test('Card round trip has only ID and the four canonical product fields',
-        () {
-      final original = domain.Card.fromJson(cardJson());
-      expect(
+    test(
+      'Card round trip has only ID and the four canonical product fields',
+      () {
+        final original = domain.Card.fromJson(cardJson());
+        expect(
           original.toJson().keys,
           unorderedEquals([
             'id',
@@ -71,15 +72,17 @@ void main() {
             'name',
             'imageReference',
             'difficulty',
-          ]));
-      expect(original.toJson(), cardJson());
-      final copy = domain.Card.fromJson(roundTrip(original.toJson()));
-      expect(copy, original);
-      expect(copy.hashCode, original.hashCode);
-      expect({original, copy}, hasLength(1));
-      expect(copy.name, 'Étoile 紙');
-      expect(copy.imageReference, 'assets/Original shapes/Étoile 紙.webp');
-    });
+          ]),
+        );
+        expect(original.toJson(), cardJson());
+        final copy = domain.Card.fromJson(roundTrip(original.toJson()));
+        expect(copy, original);
+        expect(copy.hashCode, original.hashCode);
+        expect({original, copy}, hasLength(1));
+        expect(copy.name, 'Étoile 紙');
+        expect(copy.imageReference, 'assets/Original shapes/Étoile 紙.webp');
+      },
+    );
 
     test('every field participates in equality', () {
       final topic = Topic.fromJson(topicJson());
@@ -92,9 +95,11 @@ void main() {
         'deleted': true,
         'revision': 4,
       }.entries) {
-        expect(Topic.fromJson({...topicJson(), entry.key: entry.value}),
-            isNot(topic),
-            reason: entry.key);
+        expect(
+          Topic.fromJson({...topicJson(), entry.key: entry.value}),
+          isNot(topic),
+          reason: entry.key,
+        );
       }
       for (final entry in <String, dynamic>{
         'id': 'other-pack',
@@ -105,8 +110,10 @@ void main() {
         'revision': 4,
       }.entries) {
         expect(
-            Pack.fromJson({...packJson(), entry.key: entry.value}), isNot(pack),
-            reason: entry.key);
+          Pack.fromJson({...packJson(), entry.key: entry.value}),
+          isNot(pack),
+          reason: entry.key,
+        );
       }
       for (final entry in <String, dynamic>{
         'id': 'other-card',
@@ -115,9 +122,11 @@ void main() {
         'imageReference': 'other.webp',
         'difficulty': 3,
       }.entries) {
-        expect(domain.Card.fromJson({...cardJson(), entry.key: entry.value}),
-            isNot(originalCard),
-            reason: entry.key);
+        expect(
+          domain.Card.fromJson({...cardJson(), entry.key: entry.value}),
+          isNot(originalCard),
+          reason: entry.key,
+        );
       }
       expect(topic == Object(), isFalse);
       expect(pack == Object(), isFalse);
@@ -159,73 +168,132 @@ void main() {
         expect(difficulty.toJson(), value);
         expect(Difficulty.fromJson(jsonDecode(jsonEncode(value))), difficulty);
         expect(
-            domain.Card.fromJson({...cardJson(), 'difficulty': value})
-                .difficulty,
-            difficulty);
+          domain.Card.fromJson({...cardJson(), 'difficulty': value}).difficulty,
+          difficulty,
+        );
       }
     });
 
     test('rejects out-of-range levels', () {
       for (final value in [-100, -1, 0, 4, 100]) {
         expect(() => Difficulty.fromValue(value), throwsRangeError);
-        expect(() => domain.Card.fromJson({...cardJson(), 'difficulty': value}),
-            throwsRangeError);
+        expect(
+          () => domain.Card.fromJson({...cardJson(), 'difficulty': value}),
+          throwsRangeError,
+        );
       }
     });
 
     test('rejects missing, fractional, string and boolean difficulty', () {
       for (final value in [null, 1.0, 1.5, '1', 'easy', true]) {
         expect(() => Difficulty.fromJson(value), throwsFormatException);
-        expect(() => domain.Card.fromJson({...cardJson(), 'difficulty': value}),
-            throwsFormatException);
+        expect(
+          () => domain.Card.fromJson({...cardJson(), 'difficulty': value}),
+          throwsFormatException,
+        );
       }
-      expect(() => domain.Card.fromJson(cardJson()..remove('difficulty')),
-          throwsFormatException);
+      expect(
+        () => domain.Card.fromJson(cardJson()..remove('difficulty')),
+        throwsFormatException,
+      );
     });
   });
 
   group('Field validation at construction and deserialization', () {
-    test('invalid IDs and parent IDs are rejected without relying on asserts',
-        () {
-      for (final id in [
-        '',
-        ' ',
-        ' topic',
-        'topic ',
-        'a b',
-        'a\tb',
-        'a\nb',
-        'a\u0000b',
-        'a\u007fb'
-      ]) {
-        expect(() => Topic(id: id, name: 'Shapes'), throwsArgumentError);
-        expect(() => Pack(id: id, topicId: 'topic-01', name: 'Shapes'),
-            throwsArgumentError);
-        expect(() => Pack(id: 'pack-01', topicId: id, name: 'Shapes'),
-            throwsArgumentError);
-        expect(() => card(id), throwsArgumentError);
-        expect(() => card('card-01', packId: id), throwsArgumentError);
-        expect(() => Topic.fromJson({...topicJson(), 'id': id}),
-            throwsArgumentError);
-        expect(() => Pack.fromJson({...packJson(), 'topicId': id}),
-            throwsArgumentError);
-        expect(() => domain.Card.fromJson({...cardJson(), 'packId': id}),
-            throwsArgumentError);
-      }
-    });
-
-    test('names and image references must be nonempty and trimmed', () {
-      for (final value in ['', ' ', ' Leading', 'Trailing ']) {
-        expect(() => Topic.fromJson({...topicJson(), 'name': value}),
-            throwsArgumentError);
-        expect(() => Pack.fromJson({...packJson(), 'name': value}),
-            throwsArgumentError);
-        for (final field in ['name', 'imageReference']) {
-          expect(() => domain.Card.fromJson({...cardJson(), field: value}),
-              throwsArgumentError);
+    test(
+      'invalid IDs and parent IDs are rejected without relying on asserts',
+      () {
+        for (final id in [
+          '',
+          ' ',
+          ' topic',
+          'topic ',
+          'a b',
+          'a\tb',
+          'a\nb',
+          'a\u0000b',
+          'a\u007fb',
+          'a\ud800b',
+          'a\udfffb',
+        ]) {
+          expect(() => Topic(id: id, name: 'Shapes'), throwsArgumentError);
+          expect(
+            () => Pack(id: id, topicId: 'topic-01', name: 'Shapes'),
+            throwsArgumentError,
+          );
+          expect(
+            () => Pack(id: 'pack-01', topicId: id, name: 'Shapes'),
+            throwsArgumentError,
+          );
+          expect(() => card(id), throwsArgumentError);
+          expect(() => card('card-01', packId: id), throwsArgumentError);
+          expect(
+            () => Topic.fromJson({...topicJson(), 'id': id}),
+            throwsArgumentError,
+          );
+          expect(
+            () => Pack.fromJson({...packJson(), 'topicId': id}),
+            throwsArgumentError,
+          );
+          expect(
+            () => domain.Card.fromJson({...cardJson(), 'packId': id}),
+            throwsArgumentError,
+          );
         }
-      }
-    });
+      },
+    );
+
+    test(
+      'names and image references require trimmed UTF-8 without controls',
+      () {
+        for (final value in [
+          '',
+          ' ',
+          ' Leading',
+          'Trailing ',
+          'a\u0000b',
+          'a\nb',
+          'a\tb',
+          'a\u007fb',
+          'a\ud800b',
+          'a\udfffb',
+        ]) {
+          expect(
+            () => Topic.fromJson({...topicJson(), 'name': value}),
+            throwsArgumentError,
+          );
+          expect(
+            () => Pack.fromJson({...packJson(), 'name': value}),
+            throwsArgumentError,
+          );
+          for (final field in ['name', 'imageReference']) {
+            expect(
+              () => domain.Card.fromJson({...cardJson(), field: value}),
+              throwsArgumentError,
+            );
+          }
+        }
+      },
+    );
+
+    test(
+      'valid surrogate pairs and multilingual text round trip unchanged',
+      () {
+        const value = 'Étoile 紙 \ud83c\udf1f';
+        final original = domain.Card.fromJson({
+          ...cardJson(),
+          'id': 'card-\ud83c\udf1f',
+          'name': value,
+          'imageReference': 'assets/$value.webp',
+        });
+        final copy = domain.Card.fromJson(
+          jsonDecode(utf8.decode(utf8.encode(jsonEncode(original.toJson()))))
+              as Map<String, dynamic>,
+        );
+        expect(copy, original);
+        expect(copy.name, value);
+      },
+    );
 
     test('required strings reject missing and wrong JSON types', () {
       final cases = [
@@ -234,7 +302,7 @@ void main() {
         (
           cardJson(),
           domain.Card.fromJson,
-          ['id', 'packId', 'name', 'imageReference']
+          ['id', 'packId', 'name', 'imageReference'],
         ),
       ];
       for (final (json, parse, fields) in cases) {
@@ -257,12 +325,9 @@ void main() {
       }
       expect(Topic.fromJson({'id': topic.id, 'name': topic.name}), topic);
       expect(
-          Pack.fromJson({
-            'id': pack.id,
-            'topicId': topic.id,
-            'name': pack.name,
-          }),
-          pack);
+        Pack.fromJson({'id': pack.id, 'topicId': topic.id, 'name': pack.name}),
+        pack,
+      );
     });
 
     test('publication and deletion remain independent state', () {
@@ -296,16 +361,22 @@ void main() {
         }
         for (final value in [null, '1', 1.0, true]) {
           expect(
-              () => parse({...json, 'revision': value}), throwsFormatException);
+            () => parse({...json, 'revision': value}),
+            throwsFormatException,
+          );
         }
         for (final value in [0, -1]) {
           expect(() => parse({...json, 'revision': value}), throwsRangeError);
         }
       }
       expect(
-          () => Topic(id: 't', name: 'Shapes', revision: 0), throwsRangeError);
-      expect(() => Pack(id: 'p', topicId: 't', name: 'Paper', revision: -1),
-          throwsRangeError);
+        () => Topic(id: 't', name: 'Shapes', revision: 0),
+        throwsRangeError,
+      );
+      expect(
+        () => Pack(id: 'p', topicId: 't', name: 'Paper', revision: -1),
+        throwsRangeError,
+      );
     });
   });
 
@@ -316,81 +387,119 @@ void main() {
 
     test('accepts a complete hierarchy, regardless of input order', () {
       ContentValidator.validateRelations(
-          topics: [topic], packs: [pack], cards: cards.reversed);
+        topics: [topic],
+        packs: [pack],
+        cards: cards.reversed,
+      );
       ContentValidator.validatePlayablePack(pack: pack, cards: cards);
     });
 
     test('rejects orphaned Pack and Card relationships', () {
       expect(
-          () => ContentValidator.validateRelations(
-              topics: [], packs: [pack], cards: []),
-          throwsArgumentError);
+        () => ContentValidator.validateRelations(
+          topics: [],
+          packs: [pack],
+          cards: [],
+        ),
+        throwsArgumentError,
+      );
       expect(
-          () => ContentValidator.validateRelations(
-              topics: [topic], packs: [], cards: cards),
-          throwsArgumentError);
+        () => ContentValidator.validateRelations(
+          topics: [topic],
+          packs: [],
+          cards: cards,
+        ),
+        throwsArgumentError,
+      );
       expect(
-          () => ContentValidator.validateRelations(
-              topics: [Topic(id: 'other', name: 'Other')],
-              packs: [pack],
-              cards: cards),
-          throwsArgumentError);
+        () => ContentValidator.validateRelations(
+          topics: [Topic(id: 'other', name: 'Other')],
+          packs: [pack],
+          cards: cards,
+        ),
+        throwsArgumentError,
+      );
       expect(
-          () => ContentValidator.validateRelations(
-              topics: [topic],
-              packs: [pack],
-              cards: [card('c', packId: 'other')]),
-          throwsArgumentError);
+        () => ContentValidator.validateRelations(
+          topics: [topic],
+          packs: [pack],
+          cards: [card('c', packId: 'other')],
+        ),
+        throwsArgumentError,
+      );
     });
 
     test('rejects duplicate IDs within each entity type', () {
       expect(
-          () => ContentValidator.validateRelations(topics: [
-                topic,
-                Topic.fromJson({...topicJson(), 'name': 'Other'})
-              ], packs: [
-                pack
-              ], cards: cards),
-          throwsArgumentError);
+        () => ContentValidator.validateRelations(
+          topics: [
+            topic,
+            Topic.fromJson({...topicJson(), 'name': 'Other'}),
+          ],
+          packs: [pack],
+          cards: cards,
+        ),
+        throwsArgumentError,
+      );
       expect(
-          () => ContentValidator.validateRelations(
-              topics: [topic],
-              packs: [pack, Pack.fromJson(packJson())],
-              cards: cards),
-          throwsArgumentError);
+        () => ContentValidator.validateRelations(
+          topics: [topic],
+          packs: [pack, Pack.fromJson(packJson())],
+          cards: cards,
+        ),
+        throwsArgumentError,
+      );
       expect(
-          () => ContentValidator.validateRelations(
-              topics: [topic],
-              packs: [pack],
-              cards: [...cards, card('card-01')]),
-          throwsArgumentError);
+        () => ContentValidator.validateRelations(
+          topics: [topic],
+          packs: [pack],
+          cards: [...cards, card('card-01')],
+        ),
+        throwsArgumentError,
+      );
     });
 
     test('empty or one-Card drafts are valid records but not playable', () {
       for (final count in [0, 1]) {
         final draftCards = cards.take(count);
         ContentValidator.validateRelations(
-            topics: [topic], packs: [pack], cards: draftCards);
+          topics: [topic],
+          packs: [pack],
+          cards: draftCards,
+        );
         expect(
-            () => ContentValidator.validatePlayablePack(
-                pack: pack, cards: draftCards),
-            throwsArgumentError);
+          () => ContentValidator.validatePlayablePack(
+            pack: pack,
+            cards: draftCards,
+          ),
+          throwsArgumentError,
+        );
       }
     });
 
     test('minimum counts distinct IDs belonging to the correct Pack', () {
       expect(
-          () => ContentValidator.validatePlayablePack(
-              pack: pack, cards: [cards.first, cards.first]),
-          throwsArgumentError);
+        () => ContentValidator.validatePlayablePack(
+          pack: pack,
+          cards: [cards.first, cards.first],
+        ),
+        throwsArgumentError,
+      );
       expect(
-          () => ContentValidator.validatePlayablePack(
-              pack: pack,
-              cards: [cards.first, card('other', packId: 'other-pack')]),
-          throwsArgumentError);
+        () => ContentValidator.validatePlayablePack(
+          pack: pack,
+          cards: [
+            cards.first,
+            card('other', packId: 'other-pack'),
+          ],
+        ),
+        throwsArgumentError,
+      );
       ContentValidator.validatePlayablePack(pack: pack, cards: cards);
       ContentValidator.validatePlayablePack(
-          pack: pack, cards: [...cards, card('card-03')]);
+        pack: pack,
+        cards: [...cards, card('card-03')],
+      );
     });
   });
 }

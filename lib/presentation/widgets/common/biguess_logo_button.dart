@@ -5,10 +5,7 @@ import '../../../core/constants/app_constants.dart';
 class BiGuessLogoButton extends StatefulWidget {
   final double size;
 
-  const BiGuessLogoButton({
-    super.key,
-    this.size = 36.0,
-  });
+  const BiGuessLogoButton({super.key, this.size = 36.0});
 
   @override
   State<BiGuessLogoButton> createState() => _BiGuessLogoButtonState();
@@ -45,10 +42,7 @@ class _BiGuessLogoButtonState extends State<BiGuessLogoButton>
       onTap: _triggerSpin,
       child: RotationTransition(
         turns: Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(
-            parent: _spinController,
-            curve: Curves.easeOutCubic,
-          ),
+          CurvedAnimation(parent: _spinController, curve: Curves.easeOutCubic),
         ),
         child: Container(
           width: widget.size,
@@ -57,10 +51,9 @@ class _BiGuessLogoButtonState extends State<BiGuessLogoButton>
             borderRadius: BorderRadius.circular(widget.size * 0.25),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.2),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.2),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),

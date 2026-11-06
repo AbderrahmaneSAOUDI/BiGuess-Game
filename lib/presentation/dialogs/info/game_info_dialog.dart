@@ -14,12 +14,14 @@ class GameInfoDialog extends StatefulWidget {
   final GameInfoTab initialTab;
   final CharacterAlgorithm? algorithm;
   final ValueChanged<CharacterAlgorithm>? onAlgorithmChanged;
+  final bool showLegacyGameSettings;
 
   const GameInfoDialog({
     super.key,
     this.initialTab = GameInfoTab.settings,
     this.algorithm,
     this.onAlgorithmChanged,
+    this.showLegacyGameSettings = true,
   });
 
   static Future<void> show(
@@ -27,16 +29,20 @@ class GameInfoDialog extends StatefulWidget {
     GameInfoTab initialTab = GameInfoTab.settings,
     CharacterAlgorithm? algorithm,
     ValueChanged<CharacterAlgorithm>? onAlgorithmChanged,
+    bool showLegacyGameSettings = true,
   }) {
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Game Info Dialog',
-      transitionDuration: const Duration(milliseconds: 320),
+      transitionDuration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 320),
       pageBuilder: (context, anim1, anim2) => GameInfoDialog(
         initialTab: initialTab,
         algorithm: algorithm,
         onAlgorithmChanged: onAlgorithmChanged,
+        showLegacyGameSettings: showLegacyGameSettings,
       ),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
         final curve = CurvedAnimation(
@@ -45,10 +51,7 @@ class GameInfoDialog extends StatefulWidget {
         );
         return ScaleTransition(
           scale: Tween<double>(begin: 0.9, end: 1.0).animate(curve),
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+          child: FadeTransition(opacity: animation, child: child),
         );
       },
     );
@@ -108,18 +111,18 @@ class _GameInfoDialogState extends State<GameInfoDialog>
     final mediaQuery = MediaQuery.of(context);
     final isCompact = mediaQuery.size.width < 500;
 
-    final dialogWidth =
-        mediaQuery.size.width > 680 ? 640.0 : mediaQuery.size.width * 0.92;
-    final dialogHeight =
-        mediaQuery.size.height > 720 ? 620.0 : mediaQuery.size.height * 0.88;
+    final dialogWidth = mediaQuery.size.width > 680
+        ? 640.0
+        : mediaQuery.size.width * 0.92;
+    final dialogHeight = mediaQuery.size.height > 720
+        ? 620.0
+        : mediaQuery.size.height * 0.88;
 
     return Dialog(
       backgroundColor: theme.colorScheme.surface,
       surfaceTintColor: theme.colorScheme.surfaceTint,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
       elevation: 6,
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
@@ -128,9 +131,7 @@ class _GameInfoDialogState extends State<GameInfoDialog>
         child: Column(
           children: [
             // Top Bar
-            InfoDialogHeader(
-              onClose: () => Navigator.of(context).pop(),
-            ),
+            InfoDialogHeader(onClose: () => Navigator.of(context).pop()),
 
             // Tab Bar
             Container(
@@ -138,16 +139,18 @@ class _GameInfoDialogState extends State<GameInfoDialog>
                 color: theme.colorScheme.surface,
                 border: Border(
                   bottom: BorderSide(
-                    color:
-                        theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.3,
+                    ),
                   ),
                 ),
               ),
               child: TabBar(
                 controller: _tabController,
                 isScrollable: isCompact,
-                tabAlignment:
-                    isCompact ? TabAlignment.start : TabAlignment.fill,
+                tabAlignment: isCompact
+                    ? TabAlignment.start
+                    : TabAlignment.fill,
                 indicatorSize: TabBarIndicatorSize.tab,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 12),
                 labelStyle: const TextStyle(
@@ -174,6 +177,7 @@ class _GameInfoDialogState extends State<GameInfoDialog>
                 controller: _tabController,
                 children: [
                   SettingsTab(
+                    showLegacyGameSettings: widget.showLegacyGameSettings,
                     algorithm: widget.algorithm,
                     onAlgorithmChanged: widget.onAlgorithmChanged,
                   ),
@@ -195,11 +199,7 @@ class _TabItem {
   final IconData icon;
   final GameInfoTab tab;
 
-  const _TabItem({
-    required this.label,
-    required this.icon,
-    required this.tab,
-  });
+  const _TabItem({required this.label, required this.icon, required this.tab});
 }
 
 /// Backward compatibility alias wrappers
@@ -233,8 +233,6 @@ class RulesContactDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GameInfoDialog(
-      initialTab: initialTab,
-    );
+    return GameInfoDialog(initialTab: initialTab);
   }
 }

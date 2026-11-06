@@ -33,9 +33,14 @@ widgets and the gameplay switch remain with later tickets.
    pointer over `active`. This last rename publishes metadata and images together.
    No operation deletes or overwrites the previous active generation.
 4. Reopen reads only the active pointer, validates metadata and hashes, and
-   returns immutable Cards with local absolute image references. Selection can
+   returns immutable Cards with opaque private image references. Selection can
    use this snapshot in memory; storage reads and integrity checks do not belong
    in the per-draw gameplay path.
+
+T11 packages newly installed images in one private `images.bgpack` container;
+older loose generations are still supported. Use `ContentImageLoader` to render
+installed references rather than treating them as absolute file paths. See
+[private storage, decode/cache bounds and benchmarks](PRIVATE_IMAGES.md).
 
 The active generation's `manifest.json` is the installation metadata authority.
 There is no dual commit between a filesystem pointer and the separate T08 catalog

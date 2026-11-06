@@ -1,0 +1,301 @@
+00:00 +0: loading /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart
+00:00 +0: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource returns only Anime and Geography topics
+00:00 +1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource returns all anime packs
+00:00 +2: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource returns flags pack under Geography
+00:00 +3: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource all packs contain assets
+00:00 +4: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource geography flags count is 252
+00:00 +5: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AssetLoader.extractCharacterName extracts flag names without file extension
+00:00 +6: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AssetLoader.extractCharacterName extracts anime character names properly
+00:00 +7: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AppConstants Dynamic Theme & Icons known topics return configured colors
+00:00 +8: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AppConstants Dynamic Theme & Icons future custom topics dynamically receive valid colors
+00:00 +9: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AppConstants Dynamic Theme & Icons future custom topics dynamically receive contextual icons
+00:00 +10: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons parses version with build number
+00:00 +11: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons parses version without build number
+00:00 +12: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +13: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +14: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +15: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +16: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +17: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +18: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +19: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +20: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +21: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions returns UpdateFullApk on major or minor bump
+00:00 +22: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model deserializes from JSON correctly
+00:00 +23: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions returns UpdateFullApk with mandatory=true when below minRequiredVersion
+00:00 +24: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions returns UpdateFullApk with mandatory=true when below minRequiredVersion
+00:00 +25: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: CloudDatabaseService initializes with default endpoint
+00:00 +26: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: CloudDatabaseService initializes with default endpoint
+00:00 +27: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: CloudDatabaseService initializes with default endpoint
+00:00 +28: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Canonical serialization and value equality Topic and Pack preserve operational state
+00:00 +29: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Canonical serialization and value equality Card round trip has only ID and the four canonical product fields
+00:00 +30: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Canonical serialization and value equality every field participates in equality
+00:00 +31: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Canonical serialization and value equality input and serialized map mutations cannot change models
+00:00 +32: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Canonical serialization and value equality opaque IDs survive renames and are not derived from topic names
+00:00 +33: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Difficulty has exactly Easy=1, Medium=2, Hard=3 with integer round trips
+00:00 +34: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Difficulty rejects out-of-range levels
+00:00 +35: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Difficulty rejects missing, fractional, string and boolean difficulty
+00:00 +36: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Field validation at construction and deserialization invalid IDs and parent IDs are rejected without relying on asserts
+00:01 +37: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Field validation at construction and deserialization names and image references require trimmed UTF-8 without controls
+00:01 +38: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Field validation at construction and deserialization valid surrogate pairs and multilingual text round trip unchanged
+00:01 +39: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Field validation at construction and deserialization required strings reject missing and wrong JSON types
+00:01 +40: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +41: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +42: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +43: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +44: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +45: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +46: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +47: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack.json exists and contains valid JSON
+00:01 +48: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_models_test.dart: Content relationships and playable Pack minimum minimum counts distinct IDs belonging to the correct Pack
+00:01 +49: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) pack has valid hierarchy, metadata, and cleared rights
+00:01 +50: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) fixture pack satisfies playable pack constraints (>= 2 cards)
+00:01 +51: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cleared_fixture_pack_test.dart: Confirmed-Cleared Fixture Pack (T05) rights quarantine invariant: unverified assets are not cleared
+00:01 +52: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_repository_test.dart: Legacy manifest adapter preserves both topics, all seven packs, order, labels and images
+00:02 +53: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_repository_test.dart: Legacy manifest adapter unknown IDs return empty lists and all results are immutable
+00:02 +54: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_repository_test.dart: Legacy manifest adapter IDs are deterministic, scoped, and independent of source order
+00:02 +55: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_repository_test.dart: Legacy manifest adapter empty legacy packs remain representable
+00:02 +56: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/content_repository_test.dart: Repository-backed compatibility providers default providers match all existing manifest lookups and counts
+00:02 +57: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +58: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +59: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +60: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +61: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +62: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +63: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +64: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +65: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +66: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +67: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +68: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +69: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +70: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +71: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +72: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +73: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: T09 exported fixture installs and survives restart without source files
+00:02 +74: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: new installs package images without loose gallery files
+00:02 +75: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: pre-T11 loose generations reopen without rewriting their images
+00:02 +76: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: tampered private payload fails reopening and direct loading
+00:02 +77: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: private reader rejects traversal, URLs, bounds and symlink escapes
+00:02 +78: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: valid retry reuses generation; tampered retry still fails
+00:02 +79: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/game_session_test.dart: Configuration starts at Home and keeps configuration separate from play
+00:02 +80: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +81: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +82: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +83: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +84: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +85: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +86: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +87: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +88: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +89: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +90: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +91: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +92: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: update is invisible until activation and retains previous snapshot files
+00:02 +93: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/game_session_test.dart: Round transitions Free game assigns exactly 8 rounds, then completes
+00:02 +94: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unsupported format is rejected without changing installed Pack
+00:02 +95: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unsupported format is rejected without changing installed Pack
+00:02 +96: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unsupported format is rejected without changing installed Pack
+00:02 +97: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unsupported format is rejected without changing installed Pack
+00:02 +98: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unsupported format is rejected without changing installed Pack
+00:02 +99: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unsupported format is rejected without changing installed Pack
+00:02 +100: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unsupported format is rejected without changing installed Pack
+00:02 +101: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/game_session_test.dart: Exit and replay routing Pro replay immediately reuses frozen configuration and content
+00:02 +102: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong kind is rejected without changing installed Pack
+00:02 +103: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong kind is rejected without changing installed Pack
+00:02 +104: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong kind is rejected without changing installed Pack
+00:03 +105: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong kind is rejected without changing installed Pack
+00:03 +106: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong kind is rejected without changing installed Pack
+00:03 +107: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong kind is rejected without changing installed Pack
+00:03 +108: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong kind is rejected without changing installed Pack
+00:03 +109: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/game_session_test.dart: Snapshot and lifecycle isolation state survives route listener gaps but never a new ProviderScope
+00:03 +110: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unknown fields is rejected without changing installed Pack
+00:03 +111: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing revision is rejected without changing installed Pack
+00:03 +112: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong topic is rejected without changing installed Pack
+00:03 +113: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong Pack is rejected without changing installed Pack
+00:03 +114: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: duplicate Card is rejected without changing installed Pack
+00:03 +115: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unplayable Pack is rejected without changing installed Pack
+00:03 +116: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: invalid difficulty is rejected without changing installed Pack
+00:03 +117: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing object is rejected without changing installed Pack
+00:03 +118: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: duplicate object is rejected without changing installed Pack
+00:03 +119: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: unreferenced object is rejected without changing installed Pack
+00:03 +120: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/game_setup_test.dart: Free is the default; release ignores internal Pro environment define
+00:03 +121: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/game_setup_test.dart: Free is the default; release ignores internal Pro environment define
+00:03 +122: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong hash is rejected without changing installed Pack
+00:03 +123: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong hash is rejected without changing installed Pack
+00:03 +124: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong hash is rejected without changing installed Pack
+00:03 +125: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/game_setup_test.dart: Pro removes limits and Start detaches settings/content from input
+00:03 +126: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: wrong media type is rejected without changing installed Pack
+00:03 +127: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: path traversal is rejected without changing installed Pack
+00:03 +128: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: absolute path is rejected without changing installed Pack
+00:03 +129: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: Windows path is rejected without changing installed Pack
+00:03 +130: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing provenance is rejected without changing installed Pack
+00:03 +131: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_selection_test.dart: single resolves IDs despite duplicate labels and captures all local Cards
+00:03 +132: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: false clearance is rejected without changing installed Pack
+00:03 +133: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_selection_test.dart: multiple merges exactly the selected Packs, retaining all difficulties
+00:03 +134: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: control in name is rejected without changing installed Pack
+00:03 +135: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: control in name is rejected without changing installed Pack
+00:03 +136: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: control in name is rejected without changing installed Pack
+00:03 +137: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: control in name is rejected without changing installed Pack
+00:03 +138: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_selection_test.dart: availability distinguishes download-required and unavailable local Packs
+00:03 +139: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +140: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +141: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +142: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +143: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +144: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +145: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +146: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +147: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +148: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: missing, partial and extra image entries are rejected
+00:03 +149: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_selection_test.dart: controller prunes unavailable and missing IDs without changing another Topic
+00:03 +150: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_selection_test.dart: controller prunes unavailable and missing IDs without changing another Topic
+00:03 +151: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: symlinks and duplicate JSON keys are rejected
+00:03 +152: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_selection_test.dart: controller preserves single/multiple mode rules and isolates Topics
+00:03 +153: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: duplicate ZIP filenames are rejected before archive deduplication
+00:04 +154: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: truncated ZIP and bounded input limits preserve previous Pack
+00:04 +155: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/local_pack_store_test.dart: container write failure rolls back and allows retry
+00:04 +156: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +157: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +158: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +159: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +160: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +161: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +162: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +163: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +164: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:04 +165: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:05 +166: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:05 +167: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:05 +168: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:05 +169: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: Free rejects sixth Pack; retries and revisions preserve five slots
+00:05 +170: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/pack_entitlement_test.dart: concurrent imports cannot exceed the last Free storage slot
+00:05 +171: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_screen_test.dart: AnimatedCharacterCard mounts and renders without layout errors
+00:06 +171: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+-------------------------------------------------------------------------------
+The Shorebird Updater is unavailable in the current environment.
+-------------------------------------------------------------------------------
+This occurs when using pkg:shorebird_code_push in an app that does not
+contain the Shorebird Engine. Most commonly this is due to building with
+`flutter build` or `flutter run` instead of `shorebird release` or `shorebird preview`.
+It can also occur when running on an unsupported platform (e.g. web).
+
+00:07 +172: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_screen_test.dart: AnimatedCharacterCard mounts and renders without layout errors
+00:07 +173: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_screen_test.dart: AnimatedCharacterCard mounts and renders without layout errors
+00:07 +174: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:07 +175: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:07 +176: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:07 +177: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:07 +178: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:08 +179: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:08 +180: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:08 +181: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:08 +181: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_image_loader_test.dart: 48 large images preserve aspect ratio and stay within the cache budget
+Private images (host debug): cold median 23.399 ms, p95 26.237 ms; warm 4.418 ms; retained 33554432 bytes / 16 images
+00:08 +182: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: duplicate labels retain their own counts and selected IDs
+00:09 +183: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_configuration_screen_test.dart: Pack → setup defaults → Start → game → back to Packs
+00:09 +183: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: both bundled topics navigate through all seven packs to gameplay
+-------------------------------------------------------------------------------
+The Shorebird Updater is unavailable in the current environment.
+-------------------------------------------------------------------------------
+This occurs when using pkg:shorebird_code_push in an app that does not
+contain the Shorebird Engine. Most commonly this is due to building with
+`flutter build` or `flutter run` instead of `shorebird release` or `shorebird preview`.
+It can also occur when running on an unsupported platform (e.g. web).
+
+00:10 +184: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_image_loader_test.dart: reveal renders a private image and handles a missing image
+00:10 +185: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: both bundled topics navigate through all seven packs to gameplay
+00:12 +186: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: both bundled topics navigate through all seven packs to gameplay
+00:12 +187: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: both bundled topics navigate through all seven packs to gameplay
+00:12 +188: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: both bundled topics navigate through all seven packs to gameplay
+00:13 +189: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: returning from the game refreshes retained Pack availability
+00:13 +189: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: repository swap drives existing screens, empty state and reveal
+-------------------------------------------------------------------------------
+The Shorebird Updater is unavailable in the current environment.
+-------------------------------------------------------------------------------
+This occurs when using pkg:shorebird_code_push in an app that does not
+contain the Shorebird Engine. Most commonly this is due to building with
+`flutter build` or `flutter run` instead of `shorebird release` or `shorebird preview`.
+It can also occur when running on an unsupported platform (e.g. web).
+
+00:14 +190: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: returning from the game refreshes retained Pack availability
+00:14 +191: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: returning from the game refreshes retained Pack availability
+00:14 +192: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: returning from the game refreshes retained Pack availability
+00:14 +193: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: returning from the game refreshes retained Pack availability
+00:14 +194: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/content_navigation_test.dart: repository swap drives existing screens, empty state and reveal
+00:14 +195: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/identity_card_test.dart: installed private identity renders locally after source removal
+00:14 +196: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: Start rechecks every selected Pack after local removal
+00:14 +197: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: Start rechecks every selected Pack after local removal
+00:15 +198: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: Start rechecks every selected Pack after local removal
+00:15 +199: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: Start rechecks every selected Pack after local removal
+00:15 +200: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/pack_selection_screen_test.dart: single mode opens setup with the selected ID
+00:16 +201: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:16 +202: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:17 +203: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:17 +204: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:17 +204: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget_test.dart: BiGuessApp smoke test renders topics screen
+-------------------------------------------------------------------------------
+The Shorebird Updater is unavailable in the current environment.
+-------------------------------------------------------------------------------
+This occurs when using pkg:shorebird_code_push in an app that does not
+contain the Shorebird Engine. Most commonly this is due to building with
+`flutter build` or `flutter run` instead of `shorebird release` or `shorebird preview`.
+It can also occur when running on an unsupported platform (e.g. web).
+
+00:18 +205: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +206: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +207: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +208: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +209: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +210: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +211: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +212: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +213: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +214: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +215: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +216: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:19 +217: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:20 +218: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 1 rounds and resets only through Packs
+00:20 +219: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/session_identity_screen_test.dart: orientation changes and large text retain the current identity
+00:20 +220: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:20 +221: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:20 +222: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:20 +223: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:20 +224: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:20 +225: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:21 +226: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:21 +227: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 3 rounds and resets only through Packs
+00:21 +228: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 10 rounds and resets only through Packs
+00:21 +229: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 10 rounds and resets only through Packs
+00:22 +230: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Free completes 10 rounds and resets only through Packs
+00:23 +231: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/integration/local_content_runtime_test.dart: verified private files project into SQL and reopen without import
+00:23 +232: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/integration/local_content_identity_test.dart: installed IDs remain distinct when Topic and Pack names repeat
+00:23 +233: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/integration/local_content_identity_test.dart: installed IDs remain distinct when Topic and Pack names repeat
+00:23 +234: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/integration/local_content_identity_test.dart: installed IDs remain distinct when Topic and Pack names repeat
+00:23 +235: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Pro test replay instantly reuses frozen settings and content
+00:23 +236: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Pro test replay instantly reuses frozen settings and content
+00:23 +237: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Pro test replay instantly reuses frozen settings and content
+00:23 +238: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_completion_test.dart: Pro test replay instantly reuses frozen settings and content
+00:24 +239: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/offline/local_pack_gameplay_test.dart: offline imported SQL Pack survives restart and all rounds
+00:24 +240: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/offline/local_pack_gameplay_test.dart: offline imported SQL Pack survives restart and all rounds
+-------------------------------------------------------------------------------
+The Shorebird Updater is unavailable in the current environment.
+-------------------------------------------------------------------------------
+This occurs when using pkg:shorebird_code_push in an app that does not
+contain the Shorebird Engine. Most commonly this is due to building with
+`flutter build` or `flutter run` instead of `shorebird release` or `shorebird preview`.
+It can also occur when running on an unsupported platform (e.g. web).
+
+00:25 +241: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/offline/local_pack_gameplay_test.dart: offline imported SQL Pack survives restart and all rounds
+00:25 +242: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/offline/local_pack_gameplay_test.dart: offline imported SQL Pack survives restart and all rounds
+00:26 +243: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/offline/local_pack_gameplay_test.dart: offline imported SQL Pack survives restart and all rounds
+-------------------------------------------------------------------------------
+The Shorebird Updater is unavailable in the current environment.
+-------------------------------------------------------------------------------
+This occurs when using pkg:shorebird_code_push in an app that does not
+contain the Shorebird Engine. Most commonly this is due to building with
+`flutter build` or `flutter run` instead of `shorebird release` or `shorebird preview`.
+It can also occur when running on an unsupported platform (e.g. web).
+
+OFFLINE GATE PASS: SQL/private images, 10 + 3 rounds, zero HTTP clients, integrity ok
+00:28 +244: All tests passed!

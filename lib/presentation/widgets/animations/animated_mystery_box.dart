@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 class AnimatedMysteryBox extends StatefulWidget {
   final VoidCallback? onTap;
 
-  const AnimatedMysteryBox({
-    super.key,
-    this.onTap,
-  });
+  const AnimatedMysteryBox({super.key, this.onTap});
 
   @override
   State<AnimatedMysteryBox> createState() => _AnimatedMysteryBoxState();
@@ -108,10 +105,12 @@ class _AnimatedMysteryBoxState extends State<AnimatedMysteryBox>
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
                               colors: [
-                                theme.colorScheme.primary
-                                    .withValues(alpha: 0.25),
-                                theme.colorScheme.primary
-                                    .withValues(alpha: 0.0),
+                                theme.colorScheme.primary.withValues(
+                                  alpha: 0.25,
+                                ),
+                                theme.colorScheme.primary.withValues(
+                                  alpha: 0.0,
+                                ),
                               ],
                             ),
                           ),
@@ -132,8 +131,9 @@ class _AnimatedMysteryBoxState extends State<AnimatedMysteryBox>
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary
-                                .withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
@@ -163,10 +163,7 @@ class _OrbitingSparklesPainter extends CustomPainter {
   final double progress;
   final Color color;
 
-  _OrbitingSparklesPainter({
-    required this.progress,
-    required this.color,
-  });
+  _OrbitingSparklesPainter({required this.progress, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {

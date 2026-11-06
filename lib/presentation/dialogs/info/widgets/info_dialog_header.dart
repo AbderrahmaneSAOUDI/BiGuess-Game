@@ -5,10 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 class InfoDialogHeader extends StatelessWidget {
   final VoidCallback onClose;
 
-  const InfoDialogHeader({
-    super.key,
-    required this.onClose,
-  });
+  const InfoDialogHeader({super.key, required this.onClose});
 
   @override
   Widget build(BuildContext context) {

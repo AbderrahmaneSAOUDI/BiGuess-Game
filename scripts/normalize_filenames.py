@@ -156,11 +156,12 @@ def main() -> int:
 
     if not is_dry_run and args.sync_manifest and count > 0:
         print(f"\n{CYAN}🔄 Synchronizing lib/assets_manifest.dart...{RESET}")
-        from generate_manifest import default_dart_out, default_images, generate_dart_content, scan_assets
+        from generate_manifest import generate_dart_content, scan_topic_pack_assets
 
-        manifest = scan_assets(default_images)
+        repo_root = Path(__file__).resolve().parents[1]
+        manifest = scan_topic_pack_assets(repo_root / "assets/images")
         dart_code = generate_dart_content(manifest)
-        with open(default_dart_out, "w", encoding="utf-8") as f:
+        with open(repo_root / "lib/assets_manifest.dart", "w", encoding="utf-8") as f:
             f.write(dart_code)
         print(f"{GREEN}✅ Manifest updated successfully!{RESET}")
 

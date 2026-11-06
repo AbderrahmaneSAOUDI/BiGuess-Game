@@ -29,6 +29,7 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !ref.read(automaticUpdateChecksProvider)) return;
       ref.read(updateControllerProvider.notifier).checkForUpdates(silent: true);
     });
   }
@@ -38,7 +39,8 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
     ref.listen<UpdateState>(updateControllerProvider, (previous, next) {
       if (!mounted) return;
       if (next is UpdateAvailable) {
-        final isMandatory = next.decision is UpdateFullApk &&
+        final isMandatory =
+            next.decision is UpdateFullApk &&
             (next.decision as UpdateFullApk).mandatory;
 
         if (isMandatory) {
@@ -74,7 +76,8 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
       }
     });
 
-    final topics = ref.watch(contentRepositoryProvider).getTopics();
+    final repository = ref.watch(contentRepositoryProvider);
+    final topics = repository.getTopics();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final themeMode = ref.watch(themeNotifierProvider);
@@ -95,13 +98,15 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
                   radius: 1.3,
                   colors: isDark
                       ? [
-                          theme.colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.35),
+                          theme.colorScheme.surfaceContainerHighest.withValues(
+                            alpha: 0.35,
+                          ),
                           theme.scaffoldBackgroundColor,
                         ]
                       : [
-                          theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.25),
+                          theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.25,
+                          ),
                           theme.scaffoldBackgroundColor,
                         ],
                 ),
@@ -113,9 +118,14 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
               padding: EdgeInsets.fromLTRB(20, topPadding, 20, 32),
               itemCount: topics.length,
               itemBuilder: (context, index) {
-                final topic = topics[index].name;
-                final totalAssets = ref.watch(topicAssetCountProvider(topic));
-                final packs = ref.watch(packsProvider(topic));
+                final selectedTopic = topics[index];
+                final topic = selectedTopic.name;
+                final packs = repository.getPacksForTopic(selectedTopic.id);
+                final totalAssets = packs.fold<int>(
+                  0,
+                  (total, pack) =>
+                      total + repository.getCardsForPack(pack.id).length,
+                );
                 final accentColor = AppConstants.getTopicColor(topic);
                 final icon = AppConstants.getTopicIcon(topic);
 
@@ -130,12 +140,17 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 18.0),
                         child: _TopicCard(
+                          key: ValueKey('topic-${selectedTopic.id}'),
                           topic: topic,
                           icon: icon,
                           accent: accentColor,
                           packCount: packs.length,
                           totalAssets: totalAssets,
-                          onTap: () => _navigateToPacks(context, topic, topics[index].id),
+                          onTap: () => _navigateToPacks(
+                            context,
+                            topic,
+                            selectedTopic.id,
+                          ),
                         ),
                       ),
                     ),
@@ -162,13 +177,16 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
               curve: Curves.easeOutCubic,
             ),
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.05, 0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0.05, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             ),
           );
@@ -189,6 +207,7 @@ class _TopicCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _TopicCard({
+    super.key,
     required this.topic,
     required this.icon,
     required this.accent,
@@ -282,8 +301,9 @@ class _TopicCard extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 18,
-                color:
-                    theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
               ),
             ],
           ),
@@ -297,10 +317,7 @@ class _MetadataChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _MetadataChip({
-    required this.icon,
-    required this.label,
-  });
+  const _MetadataChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -394,7 +411,8 @@ class _TopicsAppBar extends ConsumerWidget implements PreferredSizeWidget {
               tooltip: 'Update v${updateState.latestVersion} Available',
               onPressed: () => UpdateDialog.show(
                 context,
-                isMandatory: updateState.decision is UpdateFullApk &&
+                isMandatory:
+                    updateState.decision is UpdateFullApk &&
                     (updateState.decision as UpdateFullApk).mandatory,
               ),
             ),
@@ -405,10 +423,7 @@ class _TopicsAppBar extends ConsumerWidget implements PreferredSizeWidget {
             iconData: Icons.settings_rounded,
             tooltip: 'Settings',
             onPressed: () {
-              GameInfoDialog.show(
-                context,
-                initialTab: GameInfoTab.settings,
-              );
+              GameInfoDialog.show(context, initialTab: GameInfoTab.settings);
             },
           ),
         ),
@@ -418,10 +433,7 @@ class _TopicsAppBar extends ConsumerWidget implements PreferredSizeWidget {
             iconData: Icons.info_outline_rounded,
             tooltip: 'Rules & About',
             onPressed: () {
-              GameInfoDialog.show(
-                context,
-                initialTab: GameInfoTab.howToPlay,
-              );
+              GameInfoDialog.show(context, initialTab: GameInfoTab.howToPlay);
             },
           ),
         ),
