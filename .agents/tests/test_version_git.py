@@ -183,6 +183,91 @@ class VersionGitTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 version.parse_version(value)
 
+    def test_selected_symlink_commits_link_without_selecting_target(self):
+        self.write(".agents/task.md", "unrelated target edit\n")
+        (self.root / "link.md").symlink_to(".agents/task.md")
+        helper.commit_selected(self.root, "chore: add link", ["link.md"],
+                               push=False, today=self.today)
+        self.assertEqual(self.git("show", "HEAD:link.md"), ".agents/task.md")
+        self.assertTrue(self.git("ls-tree", "HEAD", "link.md").startswith("120000"))
+        self.assertEqual(self.git("show", "HEAD:.agents/task.md"), "original task\n")
+        self.assertEqual((self.root / ".agents/task.md").read_text(), "unrelated target edit\n")
+
+    def test_final_symlink_outside_repo_can_be_staged_but_parent_escape_is_refused(self):
+        with tempfile.TemporaryDirectory() as outside:
+            (self.root / "outside-link").symlink_to(outside, target_is_directory=True)
+            self.assertEqual(helper.checked_paths(self.root, ["outside-link"]), ["outside-link"])
+            with self.assertRaises(ValueError):
+                helper.checked_paths(self.root, ["outside-link/file.md"])
+
+    def test_literal_metacharacters_never_expand_task_scope(self):
+        for name in ("task*.md", "task-secret.md", "task[1].md", "task1.md"):
+            self.write(name, f"content for {name}\n")
+        helper.commit_selected(self.root, "chore: add literal names", ["task*.md", "task[1].md"],
+                               push=False, today=self.today)
+        tracked = set(self.git("ls-tree", "--name-only", "HEAD").splitlines())
+        self.assertIn("task*.md", tracked)
+        self.assertIn("task[1].md", tracked)
+        self.assertNotIn("task-secret.md", tracked)
+        self.assertNotIn("task1.md", tracked)
+        self.assertEqual(set(self.git("ls-files", "--others", "--exclude-standard").splitlines()),
+                         {"task-secret.md", "task1.md"})
+
+    def test_external_commit_after_baseline_capture_is_detected(self):
+        self.write(".agents/task.md", "task change\n")
+        original_run = helper.run
+        injected = False
+
+        def race_run(root, *args, **kwargs):
+            nonlocal injected
+            output = original_run(root, *args, **kwargs)
+            if args == ("rev-parse", "HEAD") and not injected:
+                injected = True
+                version.sync_triad(self.root, self.today)
+                self.git("add", *version.TRIAD)
+                self.git("commit", "-qm", "external version commit")
+            return output
+
+        with patch.object(helper, "run", side_effect=race_run):
+            with self.assertRaisesRegex(ValueError, "HEAD changed"):
+                helper.commit_selected(self.root, "chore: race", [".agents"],
+                                       push=False, today=self.today)
+        self.assertEqual(self.git("rev-list", "--count", "HEAD").strip(), "2")
+        self.assertEqual(version.pubspec_version((self.root / "pubspec.yaml").read_text()), (1, 2, 5, 6))
+        self.assertEqual(self.git("show", "HEAD:.agents/task.md"), "original task\n")
+
+    def test_concurrent_triad_edit_before_mutation_is_preserved(self):
+        self.write(".agents/task.md", "task change\n")
+        original_run = helper.run
+        staged_checks = 0
+
+        def race_run(root, *args, **kwargs):
+            nonlocal staged_checks
+            output = original_run(root, *args, **kwargs)
+            if args[:3] == ("diff", "--cached", "--name-only"):
+                staged_checks += 1
+                if staged_checks == 2:
+                    self.write("version.json", (self.root / "version.json").read_text().replace("original", "concurrent notes"))
+            return output
+
+        with patch.object(helper, "run", side_effect=race_run):
+            with self.assertRaisesRegex(ValueError, "Version files changed"):
+                helper.commit_selected(self.root, "chore: race", [".agents"],
+                                       push=False, today=self.today)
+        self.assertEqual(self.git("rev-list", "--count", "HEAD").strip(), "1")
+        self.assertIn("concurrent notes", (self.root / "version.json").read_text())
+        self.assertEqual(version.pubspec_version((self.root / "pubspec.yaml").read_text()), (1, 1, 4, 5))
+
+    def test_helper_applies_same_plan_without_replanning(self):
+        self.write(".agents/task.md", "task change\n")
+        original_plan = helper.plan_triad
+        with patch.object(helper, "plan_triad", wraps=original_plan) as planner:
+            helper.commit_selected(self.root, "chore: approve plan", [".agents"],
+                                   push=False, today=self.today)
+        self.assertEqual(planner.call_count, 1)
+        self.assertIn("baseline_ref", planner.call_args.kwargs)
+        self.assertEqual(self.git("show", "HEAD:pubspec.yaml"), (self.root / "pubspec.yaml").read_text())
+
 
 if __name__ == "__main__":
     unittest.main()
