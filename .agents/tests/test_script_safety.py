@@ -38,15 +38,13 @@ ABI_APKS = {
 }
 
 
-def make_abi_files(root, directory="build/app/outputs/flutter-apk"):
+def make_release_files(root, directory="build/app/outputs/flutter-apk"):
     folder = root / directory
     folder.mkdir(parents=True, exist_ok=True)
-    paths = []
-    for abi, name in ABI_APKS.items():
-        path = folder / name
-        path.write_bytes(f"fixture APK for {abi}; no SDK involved".encode())
-        paths.append(path)
-    return paths
+    path = folder / "app-release.apk"
+    path.write_bytes(b"fixture universal APK; no SDK involved")
+    return [path]
+
 
 
 class QuietTests(unittest.TestCase):
@@ -81,8 +79,58 @@ class BuildValidationTests(QuietTests):
             self.assertNotEqual(build.main(), 0)
             run.assert_not_called()
 
+    def test_shorebird_build_reports_only_universal_apk_with_managed_flutter(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            commands = []
+
+            def step(title, command, cwd):
+                commands.append(command)
+                if command[0] == 'shorebird':
+                    make_release_files(root)
+                return True
+
+            with patch.object(sys, 'argv', ['build_app.py', 'apk', '--shorebird', '--skip-checks']), \
+                    patch.object(build, '__file__', str(root / 'scripts/build_app.py')), \
+                    patch.object(build, 'find_flutter_bin', return_value='flutter'), \
+                    patch.object(build, 'find_shorebird_bin', return_value='shorebird'), \
+                    patch.object(build, 'run_step', side_effect=step):
+                self.assertEqual(build.main(), 0)
+            self.assertEqual(commands[-1], ['shorebird', 'release', 'android', '--artifact', 'apk'])
+            self.assertIn('app-release.apk', self.output.getvalue())
+            self.assertNotIn('Split-per-ABI', self.output.getvalue())
+
 
 class ReleaseSafetyTests(QuietTests):
+    def test_split_release_flags_stop_without_commands_or_metadata_writes(self):
+        for flag in ('--split-apk', '--split-per-abi'):
+            with self.subTest(flag=flag), \
+                    patch.object(sys, 'argv', ['release.py', '--full-release', flag]), \
+                    patch.object(release, 'run') as run, \
+                    patch.object(release, 'sync_version_json') as metadata:
+                with self.assertRaises(SystemExit) as error:
+                    release.main()
+                self.assertEqual(error.exception.code, 2)
+                run.assert_not_called()
+                metadata.assert_not_called()
+
+    def test_explicit_standard_flutter_never_auto_selects_an_ota_patch(self):
+        args = self.full_args(no_shorebird=True)
+        with patch.object(release, 'pipeline_full_release', return_value=0) as full, \
+                patch.object(release, 'pipeline_patch_release') as ota, \
+                patch.object(release, 'run') as run:
+            self.assertEqual(release.pipeline_auto_release(args), 0)
+            full.assert_called_once_with(args)
+            ota.assert_not_called()
+            run.assert_not_called()
+
+    def test_standard_flutter_preview_reports_full_release_without_ota(self):
+        with patch.object(sys, 'argv', ['release.py', '--no-shorebird', '--dry-run']), \
+                patch.object(release, 'read_pubspec_version', return_value='1.2.3+4'):
+            self.assertEqual(release.main(), 0)
+        self.assertIn('Mode: full release', self.output.getvalue())
+        self.assertIn('without Shorebird OTA', self.output.getvalue())
+
     def test_dry_run_has_no_commands_or_file_mutations_in_every_release_mode(self):
         forbidden = (
             "run", "write_pubspec_version", "sync_version_json", "update_app_constants",
@@ -120,6 +168,15 @@ class ReleaseSafetyTests(QuietTests):
                 for operation in operations:
                     operation.assert_not_called()
 
+    def test_patch_with_unknown_base_metadata_stops_before_publication(self):
+        with ExitStack() as patches:
+            sync = self.patch_fixtures(patches)
+            patches.enter_context(patch.object(release, 'read_patch_apk_metadata', side_effect=ValueError('Base required')))
+            run = patches.enter_context(patch.object(release, 'run'))
+            self.assertNotEqual(release.pipeline_patch_release(self.patch_args()), 0)
+            run.assert_not_called()
+            sync.assert_not_called()
+
     def test_signing_preflight_is_required_even_when_app_checks_are_skipped(self):
         with patch.object(release, "ensure_committed_app_source", return_value=True), \
                 patch.object(release, "check_android_release_signing", return_value=False) as signing, \
@@ -145,10 +202,10 @@ class ReleaseSafetyTests(QuietTests):
                 self.assertEqual(run.call_args.kwargs, {'capture': True, 'timeout': 90})
         self.assertNotIn('private', self.output.getvalue())
 
-    def test_incompatible_shorebird_artifacts_stop_before_build_or_metadata_changes(self):
+    def test_missing_shorebird_stops_before_build_or_metadata_changes(self):
         with patch.object(release, 'ensure_committed_app_source', return_value=True), \
                 patch.object(release, 'check_android_release_signing', return_value=True), \
-                patch.object(release, 'find_shorebird_bin', return_value='shorebird'), \
+                patch.object(release, 'find_shorebird_bin', return_value=None), \
                 patch.object(release, 'run') as run, \
                 patch.object(release, 'sync_version_json') as metadata, \
                 patch.object(release, 'build_apks') as build:
@@ -158,9 +215,9 @@ class ReleaseSafetyTests(QuietTests):
         metadata.assert_not_called()
         build.assert_not_called()
 
-    def test_explicit_flutter_split_build_is_allowed_without_shorebird_lookup(self):
+    def test_explicit_flutter_universal_build_is_allowed_without_shorebird_lookup(self):
         with patch.object(release, 'find_shorebird_bin') as shorebird:
-            self.assertTrue(release.check_split_apk_builder(False))
+            self.assertTrue(release.check_shorebird_builder(False))
         shorebird.assert_not_called()
 
     def test_failed_release_preflight_never_runs_a_build(self):
@@ -190,6 +247,10 @@ class ReleaseSafetyTests(QuietTests):
     def patch_fixtures(self, stack):
         stack.enter_context(patch.object(release, "ensure_committed_app_source", return_value=True))
         stack.enter_context(patch.object(release, "check_android_release_signing", return_value=True))
+        stack.enter_context(patch.object(release, "read_patch_apk_metadata", return_value={
+            "apk_url": "fixture-base.apk", "apk_urls": {"universal": "fixture-base.apk"},
+            "sha256": "a" * 64, "sha256_hashes": {"universal": "a" * 64},
+        }))
         stack.enter_context(patch.object(release, "find_shorebird_bin", return_value="shorebird"))
         stack.enter_context(patch.object(release, "read_pubspec_version", return_value="1.2.3+4"))
         stack.enter_context(patch.object(release, "get_shorebird_active_releases", return_value=["1.2.3+4"]))
@@ -293,7 +354,7 @@ class ReleaseSafetyTests(QuietTests):
             with self.subTest(failure=failure), ExitStack() as patches:
                 temporary = patches.enter_context(tempfile.TemporaryDirectory())
                 root = Path(temporary)
-                make_abi_files(root)
+                make_release_files(root)
                 patches.enter_context(patch.object(release, "REPO_ROOT", root))
                 patches.enter_context(patch.object(release, "ensure_committed_app_source", return_value=True))
                 patches.enter_context(patch.object(release, "ensure_draft_branch", return_value=True))
@@ -334,7 +395,7 @@ class ReleaseSafetyTests(QuietTests):
             with self.subTest(option=option), ExitStack() as patches:
                 temporary = patches.enter_context(tempfile.TemporaryDirectory())
                 root = Path(temporary)
-                make_abi_files(root)
+                make_release_files(root)
                 patches.enter_context(patch.object(release, "REPO_ROOT", root))
                 patches.enter_context(patch.object(release, "ensure_committed_app_source", return_value=True))
                 patches.enter_context(patch.object(release, "ensure_draft_branch", return_value=True))
@@ -409,81 +470,70 @@ class ReleaseArtifactTests(QuietTests):
                 with patch.object(release, "run", side_effect=results):
                     self.assertEqual(release.ensure_committed_app_source(), expected)
 
-    def test_complete_abi_set_is_deduplicated_and_excludes_universal_and_debug(self):
+    def test_universal_artifact_is_deduplicated_and_excludes_split_and_debug(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            expected = make_abi_files(root)
-            make_abi_files(root, "build/app/outputs/apk/release")
+            expected = make_release_files(root)
+            make_release_files(root, "build/app/outputs/apk/release")
             folder = expected[0].parent
-            (folder / "app-release.apk").write_bytes(b"universal APK")
-            (folder / "app-debug.apk").write_bytes(b"debug APK")
+            for name in [*ABI_APKS.values(), 'app-debug.apk']:
+                (folder / name).write_bytes(b"unrelated or stale APK")
             with patch.object(release, "REPO_ROOT", root):
-                actual = release.find_release_apks()
-            self.assertEqual(set(actual), set(expected))
-            self.assertEqual(len(actual), 3)
+                self.assertEqual(release.find_release_apks(), expected)
 
-    def test_missing_empty_or_stale_abi_is_rejected_even_with_universal_apk(self):
+    def test_missing_empty_or_stale_universal_is_not_replaced_by_split_apks(self):
         for state in ("missing", "empty", "stale"):
-            for filename in ABI_APKS.values():
-                with self.subTest(state=state, filename=filename), tempfile.TemporaryDirectory() as temporary:
-                    root = Path(temporary)
-                    paths = make_abi_files(root)
-                    for path in paths:
-                        os.utime(path, (1001, 1001))
-                    victim = paths[0].parent / filename
-                    if state == "missing":
-                        victim.unlink()
-                    elif state == "empty":
-                        victim.write_bytes(b"")
-                    else:
-                        os.utime(victim, (998, 998))
-                    (paths[0].parent / "app-release.apk").write_bytes(b"universal is not a replacement")
-                    with patch.object(release, "REPO_ROOT", root):
-                        self.assertEqual(release.find_release_apks(built_after=1000), [])
+            with self.subTest(state=state), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                paths = make_release_files(root)
+                victim = paths[0]
+                if state == "missing":
+                    victim.unlink()
+                elif state == "empty":
+                    victim.write_bytes(b"")
+                else:
+                    os.utime(victim, (998, 998))
+                for name in ABI_APKS.values():
+                    path = victim.parent / name
+                    path.write_bytes(b"ABI APK cannot replace the universal artifact")
+                    os.utime(path, (1001, 1001))
+                with patch.object(release, "REPO_ROOT", root):
+                    self.assertEqual(release.find_release_apks(built_after=1000), [])
 
     def test_fresh_secondary_artifact_can_replace_stale_primary_candidate(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            expected = make_abi_files(root)
-            for path in expected:
-                os.utime(path, (1001, 1001))
-            os.utime(expected[0], (998, 998))
-            secondary = root / "build/app/outputs/apk/release" / expected[0].name
-            secondary.parent.mkdir(parents=True)
-            secondary.write_bytes(b"fresh ABI APK")
+            primary = make_release_files(root)[0]
+            os.utime(primary, (998, 998))
+            secondary = make_release_files(root, "build/app/outputs/apk/release")[0]
             os.utime(secondary, (1001, 1001))
             with patch.object(release, "REPO_ROOT", root):
-                actual = release.find_release_apks(built_after=1000)
-            self.assertEqual(set(actual), {secondary, *expected[1:]})
+                self.assertEqual(release.find_release_apks(built_after=1000), [secondary])
 
-    def test_manifest_hashes_match_each_actual_abi_binary_and_pinned_version_urls(self):
+    def test_manifest_hash_matches_universal_binary_and_pinned_version_url(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            paths = make_abi_files(root)
+            paths = make_release_files(root)
             manifest = root / "version.json"
             with patch.object(release, "VERSION_JSON", manifest):
                 payload = release.sync_version_json("1.2.3+4", has_native_changes=False, apk_files=paths)
-            expected = {
-                abi: hashlib.sha256((paths[0].parent / name).read_bytes()).hexdigest()
-                for abi, name in ABI_APKS.items()
-            }
-            self.assertEqual(payload["sha256_hashes"], expected)
-            self.assertEqual(payload["sha256"], expected["arm64-v8a"])
+            digest = hashlib.sha256(paths[0].read_bytes()).hexdigest()
+            self.assertEqual(payload["sha256_hashes"], {"universal": digest})
+            self.assertEqual(payload["sha256"], digest)
             self.assertEqual(json.loads(manifest.read_text()), payload)
-            for abi, name in ABI_APKS.items():
-                self.assertTrue(payload["apk_urls"][abi].endswith(f"/releases/download/v1.2.3/{name}"))
-            self.assertEqual(payload["apk_url"], payload["apk_urls"]["arm64-v8a"])
+            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.2.3/app-release.apk'
+            self.assertEqual(payload["apk_urls"], {"universal": url})
+            self.assertEqual(payload["apk_url"], url)
 
-    def test_metadata_only_sync_keeps_hashes_only_for_same_version_and_build(self):
+    def test_metadata_only_sync_keeps_hash_only_for_same_version_build_and_artifact(self):
         with tempfile.TemporaryDirectory() as temporary:
             manifest = Path(temporary) / "version.json"
-            hashes = {
-                "sha256_hashes": {"arm64-v8a": "a" * 64}, "sha256": "a" * 64,
-                "apk_hashes": {"x86_64": "b" * 64}, "apk_sha256": "c" * 64,
-            }
+            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.2.3/app-release.apk'
+            hashes = {"sha256_hashes": {"universal": "a" * 64}, "sha256": "a" * 64}
             for version in ("1.2.3+4", "1.2.3+5", "1.2.4+4"):
                 with self.subTest(version=version):
-                    manifest.write_text(json.dumps({"latest_version": "1.2.3", "build_number": 4, **hashes}))
+                    manifest.write_text(json.dumps({"latest_version": "1.2.3", "build_number": 4,
+                        "apk_url": url, "apk_urls": {"universal": url}, **hashes}))
                     with patch.object(release, "VERSION_JSON", manifest):
                         payload = release.sync_version_json(version, has_native_changes=False)
                     for key, value in hashes.items():
@@ -492,16 +542,88 @@ class ReleaseArtifactTests(QuietTests):
                         else:
                             self.assertNotIn(key, payload)
 
-    def test_incomplete_binary_hash_input_cannot_replace_existing_manifest(self):
+    def test_switching_split_manifest_to_universal_discards_old_checksums(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            paths = make_abi_files(root)
-            manifest = root / "version.json"
-            manifest.write_bytes(b'{"latest_version":"1.0.0","build_number":1}\n')
-            before = manifest.read_bytes()
-            with patch.object(release, "VERSION_JSON", manifest), self.assertRaises(ValueError):
-                release.sync_version_json("1.2.3+4", has_native_changes=False, apk_files=paths[:2])
-            self.assertEqual(manifest.read_bytes(), before)
+            manifest = Path(temporary) / "version.json"
+            manifest.write_text(json.dumps({"latest_version": "1.2.3", "build_number": 4,
+                "apk_url": 'https://example.com/arm64.apk',
+                "apk_urls": {'arm64-v8a': 'https://example.com/arm64.apk'},
+                "sha256": 'a' * 64, "sha256_hashes": {'arm64-v8a': 'a' * 64}}))
+            with patch.object(release, "VERSION_JSON", manifest):
+                payload = release.sync_version_json('1.2.3+4', has_native_changes=False)
+            self.assertEqual(set(payload['apk_urls']), {'universal'})
+            self.assertNotIn('sha256', payload)
+            self.assertNotIn('sha256_hashes', payload)
+
+    def test_patch_keeps_known_base_url_and_hash_after_local_version_bumps(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            manifest = Path(temporary) / 'version.json'
+            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.2.3/app-release.apk'
+            base = {'apk_url': url, 'apk_urls': {'universal': url}, 'sha256': 'a' * 64,
+                    'sha256_hashes': {'universal': 'a' * 64}}
+            manifest.write_text(json.dumps({'latest_version': '1.2.4', 'build_number': 5, **base}))
+            with patch.object(release, 'VERSION_JSON', manifest):
+                captured = release.read_patch_apk_metadata('1.2.3+4')
+                payload = release.sync_version_json('1.2.3+4', has_native_changes=False,
+                                                    base_apk_metadata=captured)
+            for key, value in base.items():
+                self.assertEqual(payload[key], value)
+
+    def test_patch_refuses_missing_or_different_base_artifact_metadata(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            manifest = Path(temporary) / 'version.json'
+            for content in ('not JSON', '{}', json.dumps({'apk_url': 'https://example.com/old.apk'})):
+                manifest.write_text(content)
+                with self.subTest(content=content), patch.object(release, 'VERSION_JSON', manifest), \
+                        self.assertRaisesRegex(ValueError, 'universal Shorebird base'):
+                    release.read_patch_apk_metadata('1.2.3+4')
+
+    def test_invalid_binary_input_cannot_replace_existing_manifest(self):
+        for state in ('empty-list', 'split', 'mixed', 'duplicate', 'missing', 'empty-file'):
+            with self.subTest(state=state), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                paths = make_release_files(root)
+                split = paths[0].parent / ABI_APKS['arm64-v8a']
+                split.write_bytes(b"split APK")
+                if state == 'empty-list': paths = []
+                elif state == 'split': paths = [split]
+                elif state == 'mixed': paths.append(split)
+                elif state == 'duplicate': paths = paths * 2
+                elif state == 'missing': paths[0].unlink()
+                else: paths[0].write_bytes(b'')
+                manifest = root / "version.json"
+                manifest.write_bytes(b'{"latest_version":"1.0.0","build_number":1}\n')
+                before = manifest.read_bytes()
+                with patch.object(release, "VERSION_JSON", manifest), self.assertRaises(ValueError):
+                    release.sync_version_json("1.2.3+4", has_native_changes=False, apk_files=paths)
+                self.assertEqual(manifest.read_bytes(), before)
+
+    def test_builders_request_one_universal_apk_without_abi_splitting(self):
+        for shorebird in (True, False):
+            with self.subTest(shorebird=shorebird), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                commands = []
+                def run(command, **kwargs):
+                    commands.append(command)
+                    if command[0] == 'shorebird' or command[:3] == ['flutter', 'build', 'apk']:
+                        make_release_files(root)
+                    return subprocess.CompletedProcess(command, 0)
+                with patch.object(release, 'REPO_ROOT', root), \
+                        patch.object(release, 'find_shorebird_bin', return_value='shorebird'), \
+                        patch.object(release, 'run', side_effect=run):
+                    paths = release.build_apks(skip_checks=True, use_shorebird=shorebird)
+                self.assertEqual([path.name for path in paths], ['app-release.apk'])
+                self.assertTrue(all('--split-per-abi' not in command for command in commands))
+                if shorebird:
+                    self.assertEqual(commands[-1], ['shorebird', 'release', 'android', '--artifact', 'apk'])
+                else:
+                    self.assertEqual(commands[-1], ['flutter', 'build', 'apk', '--release'])
+
+    def test_requested_missing_shorebird_does_not_fall_back_to_flutter(self):
+        with patch.object(release, 'find_shorebird_bin', return_value=None), \
+                patch.object(release, 'run') as run:
+            self.assertEqual(release.build_apks(use_shorebird=True), [])
+        run.assert_not_called()
 
     def test_failed_github_creation_does_not_overwrite_existing_release_assets(self):
         with patch.object(release, "run", return_value=subprocess.CompletedProcess([], 7)) as run:

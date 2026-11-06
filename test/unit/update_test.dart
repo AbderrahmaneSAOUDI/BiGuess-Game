@@ -110,6 +110,31 @@ void main() {
       );
     });
 
+    test('universal release URL and checksum work for every device ABI', () {
+      const url = 'https://example.com/releases/v1.2.3/app-release.apk';
+      const hash = 'universal-release-sha256';
+      final remote = RemoteVersion.fromJson({
+        'latest_version': '1.2.3',
+        'build_number': 4,
+        'has_native_changes': true,
+        'apk_url': url,
+        'apk_urls': {'universal': url},
+        'sha256': hash,
+        'sha256_hashes': {'universal': hash},
+      });
+
+      for (final abis in [
+        ['arm64-v8a', 'armeabi-v7a'],
+        ['armeabi-v7a'],
+        ['x86_64'],
+        ['unknown'],
+        <String>[],
+      ]) {
+        expect(remote.resolveApkUrl(abis), url);
+        expect(remote.resolveSha256(abis), hash);
+      }
+    });
+
     test('resolves targeted ABI SHA-256 checksum correctly', () {
       const remote = RemoteVersion(
         latestVersion: '0.32.0',

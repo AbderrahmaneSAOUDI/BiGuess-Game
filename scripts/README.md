@@ -162,15 +162,20 @@ environment variables. A missing/invalid configuration stops immediately and
 prints setup instructions. Publishing existing APKs with `--skip-build` does not
 require the build machine's private keystore. Release previews remain read-only.
 
-The current release format requires three ABI-specific APKs. The installed
-Shorebird CLI produces a universal APK and rejects ABI splitting, so this
-combination is refused before builds or Shorebird registration. Explicit
-`--no-shorebird` uses standard Flutter for the existing three-APK format.
-Switching to a universal OTA-enabled APK requires a separate distribution choice.
+Published base releases use **one universal APK with Shorebird OTA**:
+`app-release.apk` supports ARMv7, ARM64, and x86_64. Shorebird uses its
+managed Flutter engine. Missing Shorebird stops
+the release; it never silently switches engines. Explicit `--no-shorebird` builds
+one standard Flutter universal APK without OTA. Local ordinary builds still
+produce separate APKs per architecture through `build_app.py`.
+
+Publish a universal Shorebird base before creating OTA patches. Patches retain
+that base APK's pinned download URL and checksum; they do not publish a new APK.
+The script stops before patch publication if matching base metadata is missing.
 
 Commit app source changes before a release or patch so the release tag matches the built app. Drafts and prereleases require a separate named release-preparation branch; the script refuses `main`, `master`, or detached HEAD. Their metadata commit stays on that branch and only the release tag is pushed. Merging or pushing the preparation branch is a separate deliberate action.
 
-New APK builds must produce all three architecture files during that build; old or duplicate outputs cannot fill a missing architecture. Release metadata includes the SHA-256 hash of each selected APK. `--skip-build` deliberately reuses existing files: verify their version and signing identity before publishing. A failed GitHub creation/upload stops the pipeline and never overwrites assets on an existing release.
+New release builds must produce a nonempty universal `app-release.apk` during that build; old split APKs cannot replace it. Release metadata includes its SHA-256 hash in both the default and `universal` fields. `--skip-build` deliberately reuses an existing universal APK: verify its version, signing identity, and registered Shorebird base before publishing it as OTA capable. A failed GitHub creation/upload stops the pipeline and never overwrites assets on an existing release.
 
 For the normal task-completion version bump and scoped commit, follow [the Git workflow](../.agents/skills/git-commit-push/SKILL.md). `release.py --version-only` is a separate release-metadata operation and can regenerate APK URLs.
 

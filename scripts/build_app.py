@@ -113,7 +113,7 @@ def main() -> int:
         "--split-per-abi",
         action="store_true",
         default=True,
-        help="Build separate smaller APKs per CPU architecture (always enabled by default for APK builds)",
+        help="Standard Flutter APKs are split per architecture; Shorebird produces one universal APK",
     )
     parser.add_argument(
         "--shorebird",
@@ -146,7 +146,8 @@ def main() -> int:
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         🚀  BiGuess Flutter Build Automation                 {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
-    print(f"🎯 Target:      {args.target.upper()}{' (Split-per-ABI)' if args.target in ('apk', 'all') else ''}")
+    apk_format = " (Universal)" if sb_bin else " (Split-per-ABI)"
+    print(f"🎯 Target:      {args.target.upper()}{apk_format if args.target in ('apk', 'all') else ''}")
     print(f"⚙️  Mode:        {mode.upper()}")
     print(f"🛠️  Engine:      {engine_name}")
     print(f"📁 Repository:  {repo_root}")
@@ -199,8 +200,9 @@ def main() -> int:
     if args.target in ("apk", "all"):
         apk_dir = repo_root / "build" / "app" / "outputs" / "flutter-apk"
         if apk_dir.exists():
-            artifact_paths.extend(path for abi in ("arm64-v8a", "armeabi-v7a", "x86_64")
-                                  if (path := apk_dir / f"app-{abi}-{mode}.apk").is_file())
+            names = (["app-release.apk"] if sb_bin else
+                     [f"app-{abi}-{mode}.apk" for abi in ("arm64-v8a", "armeabi-v7a", "x86_64")])
+            artifact_paths.extend(path for name in names if (path := apk_dir / name).is_file())
     if args.target == "appbundle":
         bundle_dir = repo_root / "build" / "app" / "outputs" / "bundle" / f"{mode}"
         if bundle_dir.exists():
@@ -209,7 +211,7 @@ def main() -> int:
         web_dir = repo_root / "build" / "web"
         if web_dir.exists():
             artifact_paths.append(web_dir)
-    expected_count = 3 if args.target in ("apk", "all") else 1
+    expected_count = 3 if args.target in ("apk", "all") and not sb_bin else 1
     if len(artifact_paths) != expected_count:
         print("Build command finished, but the expected output files are missing.", file=sys.stderr)
         return 1
