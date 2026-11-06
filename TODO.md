@@ -128,9 +128,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 **Implemented:** [Game setup and internal QA access](docs/migration/GAME_SETUP.md) adds cumulative Difficulty (Easy default), round entry (10 default), installed-content/pool validation and an immutable Start snapshot. Free defaults enforce 10 rounds and 5 stored imported Packs; the non-release `isProTestEnabled` define/provider override removes both limits. Configured legacy reveals stop at the requested count and return through Packs; full session/completion UI remains T16/T17. Widget, domain, repository and installer tests cover defaults, navigation, frozen settings/content, invalid combinations, Pro access and concurrent storage limits.
 
-### [ ] T15 — Extend Pack selection to single, multiple, and random within one Topic
+### [x] T15 — Extend Pack selection to single, multiple, and random within one Topic
 **Agent task:** Evolve `PacksScreen` selection without cross-Topic mixes. Random mode draws only from locally available playable Packs; clearly surface download-required and unavailable Packs. Use consistent IDs rather than display names for persisted selection.
 **Acceptance:** Tests verify all three modes, single-topic invariant, no eligible/random Pack case, and correct merged Card pool.
+
+**Implemented:** `PacksScreen` retains selection by Topic/Pack IDs, supports single/multiple/random selection, and labels download-required and unavailable Packs. Random count starts at one and is adjustable within the locally playable pool. Selection validates installed snapshots and merges all selected Cards before setup; setup rechecks availability at Start and freezes the chosen IDs. Unit, SQLite, and widget tests cover all modes, Topic isolation, empty random pools, renamed labels, merged content, and local removal during setup or gameplay.
 
 ### [ ] T16 — Migrate the Identity Screen to the new GameSession and local images
 **Agent task:** Reuse current theme, animations, and widgets while migrating the Identity Screen to the new GameSession and local images. The removal or simplification of the existing Mystery Box tap, countdown animation, and related UI controls is a **design proposal subject to human product/UX approval** during this ticket; if preferred, the playful reveal animation can be retained in a faster, more responsive form. Ensure the outward-facing Card shows its identity name and image reliably. Keep motion purposeful and fast.

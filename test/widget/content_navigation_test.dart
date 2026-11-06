@@ -120,7 +120,7 @@ void main() {
       expect(find.text('2 items'), findsOneWidget);
       await navigateToText(tester, 'Shapes');
       expect(find.text('Paper Shapes'), findsOneWidget);
-      expect(find.text('Coming soon'), findsOneWidget);
+      expect(find.text('Unavailable'), findsOneWidget);
       // Empty drafts retain the disabled navigation behavior.
       await tester.tap(find.text('Empty Draft'));
       await tester.pump(const Duration(milliseconds: 500));

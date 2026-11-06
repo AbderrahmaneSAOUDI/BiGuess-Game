@@ -33,7 +33,9 @@ final class GameSetup {
   }) {
     if (rounds <= 0) return GameSetupError.invalidRounds;
     if (!entitlement.allowsRounds(rounds)) return GameSetupError.freeRoundLimit;
-    if (content == null || content.installedCards == null) {
+    if (content == null ||
+        content.installedCards == null ||
+        content.packs.isEmpty) {
       return GameSetupError.packNotInstalled;
     }
     if (eligibleCards(content.installedCards!).isEmpty) {
@@ -51,13 +53,13 @@ final class GameSetup {
     return GameContentSnapshot.capture(
       configuration: GameSessionConfiguration(
         topicId: content!.topic.id,
-        packIds: [content.pack.id],
+        packIds: content.packs.map((pack) => pack.id).toList(),
         maximumDifficulty: maximumDifficulty,
         rounds: rounds,
         isPro: entitlement.isProTestEnabled,
       ),
       topic: content.topic,
-      installedPacks: [content.pack],
+      installedPacks: content.packs,
       installedCards: content.installedCards!,
     );
   }
@@ -66,14 +68,24 @@ final class GameSetup {
 /// Catalog identity plus the verified installed revision, if one exists.
 final class GameSetupContent {
   final Topic topic;
-  final Pack pack;
+  final List<Pack> packs;
   final List<Card>? installedCards;
+
+  Pack get pack => packs.first;
 
   GameSetupContent({
     required this.topic,
-    required this.pack,
+    required Pack pack,
     required List<Card>? installedCards,
-  }) : installedCards = installedCards == null
+  }) : packs = List.unmodifiable([pack]),
+       installedCards = installedCards == null
            ? null
            : List.unmodifiable(installedCards);
+
+  GameSetupContent.selectedPacks({
+    required this.topic,
+    required Iterable<Pack> packs,
+    required Iterable<Card> installedCards,
+  }) : packs = List.unmodifiable(packs),
+       installedCards = List.unmodifiable(installedCards);
 }

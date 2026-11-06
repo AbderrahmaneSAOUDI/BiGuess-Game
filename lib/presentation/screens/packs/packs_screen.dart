@@ -1,24 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-
 import '../../../core/constants/app_constants.dart';
+import '../../../domain/models/pack_selection.dart';
+import '../../../domain/use_cases/select_packs_use_case.dart';
+import '../../../providers/pack_selection_controller.dart';
 import '../../../providers/topic_pack_providers.dart';
 import '../../widgets/animations/animated_glass_app_bar_background.dart';
 import '../../widgets/animations/interactive_scale_card.dart';
 import '../../widgets/common/glass_icon_button.dart';
 import '../../dialogs/info/game_info_dialog.dart';
-import '../game/game_configuration_screen.dart';
+import 'selected_packs_setup.dart';
+import 'pack_selection_controls.dart';
 
 /// Second screen: Pack selection grid for a chosen topic
-class PacksScreen extends ConsumerWidget {
+class PacksScreen extends ConsumerStatefulWidget {
   final String topicName;
+  final String? topicId;
 
-  const PacksScreen({super.key, required this.topicName});
+  const PacksScreen({super.key, required this.topicName, this.topicId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final packs = ref.watch(packsProvider(topicName));
+  ConsumerState<PacksScreen> createState() => _PacksScreenState();
+}
+
+class _PacksScreenState extends ConsumerState<PacksScreen> {
+  bool _wasCurrent = false;
+  String? _resolvedTopicId;
+
+  String get topicName => widget.topicName;
+  String? get topicId => widget.topicId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final current = ModalRoute.isCurrentOf(context) ?? true;
+    if (current && !_wasCurrent) {
+      // Setup replaces itself with the game route. Refresh when Packs actually
+      // becomes visible again, including after that replacement route exits.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _resolvedTopicId == null) return;
+        ref.invalidate(packOptionsProvider(_resolvedTopicId!));
+      });
+    }
+    _wasCurrent = current;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final topics = ref
+        .watch(contentRepositoryProvider)
+        .getTopics()
+        .where(
+          (topic) =>
+              topicId == null ? topic.name == topicName : topic.id == topicId,
+        );
+    final id = topics.firstOrNull?.id;
+    _resolvedTopicId = id;
+    final packs = id == null
+        ? <PackOption>[]
+        : ref.watch(packOptionsProvider(id));
+    final selection = id == null ? null : ref.watch(packSelectionProvider(id));
+    final controller = id == null
+        ? null
+        : ref.read(packSelectionProvider(id).notifier);
+    final playableCount = packs
+        .where((pack) => pack.availability == PackAvailability.playable)
+        .length;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final accent = AppConstants.getTopicColor(topicName);
@@ -55,44 +103,94 @@ class PacksScreen extends ConsumerWidget {
             ),
           ),
           AnimationLimiter(
-            child: GridView.builder(
-              padding: EdgeInsets.fromLTRB(20, topPadding, 20, 32),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 1.1,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: packs.length,
-              itemBuilder: (context, index) {
-                final pack = packs[index];
-                final assetCount = ref.watch(
-                  packAssetCountProvider((topic: topicName, pack: pack)),
-                );
-                final isAvailable = assetCount > 0;
-
-                return AnimationConfiguration.staggeredGrid(
-                  position: index,
-                  duration: const Duration(milliseconds: 700),
-                  columnCount: 2,
-                  child: SlideAnimation(
-                    verticalOffset: 50.0,
-                    curve: Curves.easeOutCubic,
-                    child: FadeInAnimation(
-                      duration: const Duration(milliseconds: 700),
-                      child: _PackCard(
-                        packName: pack,
-                        accent: accent,
-                        assetCount: assetCount,
-                        isAvailable: isAvailable,
-                        onTap: isAvailable
-                            ? () => _navigateToSetup(context, topicName, pack)
-                            : null,
-                      ),
-                    ),
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20, topPadding, 20, 16),
+                  sliver: SliverToBoxAdapter(
+                    child: selection == null
+                        ? const Text('Topic unavailable.')
+                        : PackSelectionControls(
+                            selection: selection,
+                            playableCount: playableCount,
+                            selectedCount: selection.packIds
+                                .where(
+                                  (id) => packs.any(
+                                    (option) =>
+                                        option.pack.id == id &&
+                                        option.availability ==
+                                            PackAvailability.playable,
+                                  ),
+                                )
+                                .length,
+                            onModeChanged: controller!.setMode,
+                            onRandomCountChanged: controller.setRandomCount,
+                            onContinue: () =>
+                                _navigateToSetup(context, ref, selection),
+                          ),
                   ),
-                );
-              },
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+                  sliver: SliverGrid.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 280,
+                          mainAxisExtent: 184,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
+                    itemCount: packs.length,
+                    itemBuilder: (context, index) {
+                      final option = packs[index];
+                      final pack = option.pack;
+                      final isAvailable =
+                          option.availability == PackAvailability.playable;
+
+                      return AnimationConfiguration.staggeredGrid(
+                        position: index,
+                        duration: const Duration(milliseconds: 700),
+                        columnCount: 2,
+                        child: SlideAnimation(
+                          verticalOffset: 50.0,
+                          curve: Curves.easeOutCubic,
+                          child: FadeInAnimation(
+                            duration: const Duration(milliseconds: 700),
+                            child: _PackCard(
+                              key: ValueKey('pack-${pack.id}'),
+                              packName: pack.name,
+                              accent: accent,
+                              assetCount: option.cards.length,
+                              isAvailable: isAvailable,
+                              availability: option.availability,
+                              selected:
+                                  isAvailable &&
+                                  (selection?.packIds.contains(pack.id) ??
+                                      false),
+                              onTap:
+                                  isAvailable &&
+                                      selection?.mode !=
+                                          PackSelectionMode.random
+                                  ? () {
+                                      controller!.selectPack(pack.id);
+                                      if (selection?.mode ==
+                                          PackSelectionMode.single) {
+                                        _navigateToSetup(
+                                          context,
+                                          ref,
+                                          ref.read(packSelectionProvider(id!)),
+                                        );
+                                      }
+                                    }
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -100,12 +198,25 @@ class PacksScreen extends ConsumerWidget {
     );
   }
 
-  void _navigateToSetup(BuildContext context, String topic, String pack) {
+  void _navigateToSetup(
+    BuildContext context,
+    WidgetRef ref,
+    PackSelection selection,
+  ) {
+    final PackCardPool pool;
+    try {
+      pool = ref.read(selectPacksUseCaseProvider)(selection);
+    } on PackSelectionException catch (error) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
     Navigator.push(
       context,
       PageRouteBuilder<void>(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            GameConfigurationScreen(topicName: topic, packName: pack),
+            SelectedPacksSetup(pool: pool, topicName: topicName),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: CurvedAnimation(
@@ -132,13 +243,18 @@ class _PackCard extends StatelessWidget {
   final Color accent;
   final int assetCount;
   final bool isAvailable;
+  final PackAvailability availability;
+  final bool selected;
   final VoidCallback? onTap;
 
   const _PackCard({
+    super.key,
     required this.packName,
     required this.accent,
     required this.assetCount,
     required this.isAvailable,
+    required this.availability,
+    required this.selected,
     this.onTap,
   });
 
@@ -163,8 +279,10 @@ class _PackCard extends StatelessWidget {
             ],
           ),
           border: Border.all(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
-            width: 1.2,
+            color: selected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+            width: selected ? 2 : 1.2,
           ),
         ),
         child: Stack(
@@ -186,7 +304,9 @@ class _PackCard extends StatelessWidget {
                           : Colors.black.withValues(alpha: 0.04),
                     ),
                     child: Icon(
-                      isAvailable
+                      selected
+                          ? Icons.check_circle_rounded
+                          : isAvailable
                           ? Icons.play_arrow_rounded
                           : Icons.lock_rounded,
                       size: 26,
@@ -214,7 +334,11 @@ class _PackCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   // Asset count
                   Text(
-                    isAvailable ? '$assetCount items' : 'Coming soon',
+                    switch (availability) {
+                      PackAvailability.playable => '$assetCount items',
+                      PackAvailability.downloadRequired => 'Download required',
+                      PackAvailability.unavailable => 'Unavailable',
+                    },
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -303,13 +427,17 @@ class _PacksAppBar extends StatelessWidget implements PreferredSizeWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(width: 8),
-            Text(
-              topicName,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-                letterSpacing: -0.2,
-                color: theme.colorScheme.onSurface,
+            Flexible(
+              child: Text(
+                topicName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                  letterSpacing: -0.2,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
             ),
           ],

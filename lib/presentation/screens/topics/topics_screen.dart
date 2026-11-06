@@ -74,7 +74,7 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
       }
     });
 
-    final topics = ref.watch(topicsProvider);
+    final topics = ref.watch(contentRepositoryProvider).getTopics();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final themeMode = ref.watch(themeNotifierProvider);
@@ -113,7 +113,7 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
               padding: EdgeInsets.fromLTRB(20, topPadding, 20, 32),
               itemCount: topics.length,
               itemBuilder: (context, index) {
-                final topic = topics[index];
+                final topic = topics[index].name;
                 final totalAssets = ref.watch(topicAssetCountProvider(topic));
                 final packs = ref.watch(packsProvider(topic));
                 final accentColor = AppConstants.getTopicColor(topic);
@@ -135,7 +135,7 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
                           accent: accentColor,
                           packCount: packs.length,
                           totalAssets: totalAssets,
-                          onTap: () => _navigateToPacks(context, topic),
+                          onTap: () => _navigateToPacks(context, topic, topics[index].id),
                         ),
                       ),
                     ),
@@ -149,12 +149,12 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
     );
   }
 
-  void _navigateToPacks(BuildContext context, String topic) {
+  void _navigateToPacks(BuildContext context, String topic, String topicId) {
     Navigator.push(
       context,
       PageRouteBuilder<void>(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            PacksScreen(topicName: topic),
+            PacksScreen(topicName: topic, topicId: topicId),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: CurvedAnimation(
