@@ -1,0 +1,66 @@
+name: CI & Fast Verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Fast Verification & Quality Gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image verification dependency
+        run: python3 -m pip install Pillow==12.3.0
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-flutter-3.47.9-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-3.47.9-pub-
+      - name: Output toolchain versions
+        run: |
+          flutter --version
+          dart --version
+          python3 --version
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Check Dart formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Analyze (fatal infos)
+        run: flutter analyze --fatal-infos
+      - name: Unit and widget tests
+        run: flutter test --reporter expanded
+      - name: Check manifest against disk
+        run: python3 scripts/generate_manifest.py --check
+      - name: Audit assets
+        run: python3 scripts/audit_assets.py
+      - name: Check version triad (read only)
+        run: python3 .agents/hooks/project_check.py --check
+      - name: Check Python tooling syntax
+        run: python3 -m compileall -q scripts .agents/hooks
+      - name: Test CI and agent tooling
+        run: python3 -m unittest discover -s .agents/tests -v
+      - name: Verify analyzer and test failure detection
+        run: python3 scripts/check_ci_failure_detection.py
+      - name: Validate optional agent setup
+        if: ${{ hashFiles('.agents/scripts/validate_setup.py') != '' }}
+        run: python3 .agents/scripts/validate_setup.py

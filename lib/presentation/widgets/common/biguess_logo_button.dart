@@ -57,8 +57,10 @@ class _BiGuessLogoButtonState extends State<BiGuessLogoButton>
             borderRadius: BorderRadius.circular(widget.size * 0.25),
             boxShadow: [
               BoxShadow(
-                color:
-                    Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.2),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),

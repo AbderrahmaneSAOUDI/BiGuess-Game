@@ -136,9 +136,8 @@ class _AnimatedActionButtonState extends State<AnimatedActionButton>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final primaryGlow = isDark
-        ? AppColors.refreshGradientStart
-        : theme.colorScheme.primary;
+    final primaryGlow =
+        isDark ? AppColors.refreshGradientStart : theme.colorScheme.primary;
     final primaryDeep = isDark
         ? AppColors.refreshGradientEnd
         : theme.colorScheme.primaryContainer;

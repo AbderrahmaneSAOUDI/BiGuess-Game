@@ -43,8 +43,9 @@ class GameRoundState {
       isCountingDown: isCountingDown ?? this.isCountingDown,
       countdown: countdown ?? this.countdown,
       showPicture: showPicture ?? this.showPicture,
-      currentImageAsset:
-          clearCurrentAsset ? null : (currentImageAsset ?? this.currentImageAsset),
+      currentImageAsset: clearCurrentAsset
+          ? null
+          : (currentImageAsset ?? this.currentImageAsset),
       correctAnswer:
           clearCorrectAnswer ? null : (correctAnswer ?? this.correctAnswer),
       hasStarted: hasStarted ?? this.hasStarted,

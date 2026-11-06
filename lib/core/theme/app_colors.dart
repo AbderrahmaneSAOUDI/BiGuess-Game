@@ -7,19 +7,21 @@ class AppColors {
   static const Color primarySeed = Colors.blue;
 
   // Countdown timer colors
-  static const Color countdownCritical = Color(0xFFFF3366); // Energetic Crimson (1s)
-  static const Color countdownWarning = Color(0xFFFF9900);  // Vibrant Amber (2s)
-  static const Color countdownAlert = Color(0xFFFFD700);    // Gold (3s)
-  static const Color countdownDefault = Color(0xFF00E5FF);  // Electric Cyan (4s+)
+  static const Color countdownCritical =
+      Color(0xFFFF3366); // Energetic Crimson (1s)
+  static const Color countdownWarning = Color(0xFFFF9900); // Vibrant Amber (2s)
+  static const Color countdownAlert = Color(0xFFFFD700); // Gold (3s)
+  static const Color countdownDefault =
+      Color(0xFF00E5FF); // Electric Cyan (4s+)
 
   // Gameplay Action Buttons
   static const Color startGradientStart = Color(0xFF00E676); // Spring Green
-  static const Color startGradientEnd = Color(0xFF00C853);   // Emerald Green
+  static const Color startGradientEnd = Color(0xFF00C853); // Emerald Green
   static const Color refreshGradientStart = Color(0xFF2979FF); // Electric Blue
-  static const Color refreshGradientEnd = Color(0xFF1565C0);   // Deep Blue
+  static const Color refreshGradientEnd = Color(0xFF1565C0); // Deep Blue
 
   // Topic accent colors
-  static const Color animeAccent = Color(0xFFE040FB);     // Vivid Magenta
+  static const Color animeAccent = Color(0xFFE040FB); // Vivid Magenta
   static const Color geographyAccent = Color(0xFF00E676); // Spring Green
-  static const Color moviesAccent = Color(0xFFFF6D00);    // Vivid Orange
+  static const Color moviesAccent = Color(0xFFFF6D00); // Vivid Orange
 }

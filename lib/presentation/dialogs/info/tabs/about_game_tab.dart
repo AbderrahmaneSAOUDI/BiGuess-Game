@@ -40,14 +40,16 @@ class AboutGameTab extends ConsumerWidget {
                 gradient: LinearGradient(
                   colors: [
                     theme.colorScheme.primaryContainer.withValues(alpha: 0.6),
-                    theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
+                    theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.7),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                  color:
+                      theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
                 ),
               ),
               child: Column(
@@ -60,7 +62,8 @@ class AboutGameTab extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: theme.colorScheme.shadow.withValues(alpha: 0.12),
+                          color:
+                              theme.colorScheme.shadow.withValues(alpha: 0.12),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -101,7 +104,8 @@ class AboutGameTab extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary,
                           borderRadius: BorderRadius.circular(12),
@@ -117,7 +121,8 @@ class AboutGameTab extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.secondaryContainer,
                           borderRadius: BorderRadius.circular(12),
@@ -182,7 +187,8 @@ class AboutGameTab extends ConsumerWidget {
                 color: theme.colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  color:
+                      theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
               child: Column(
@@ -211,19 +217,22 @@ class AboutGameTab extends ConsumerWidget {
                   const FeatureBullet(
                     icon: Icons.bolt_rounded,
                     title: 'Instant Setup:',
-                    desc: 'Grab two devices anywhere, select your favorite anime franchise, and start a duel within 3 seconds.',
+                    desc:
+                        'Grab two devices anywhere, select your favorite anime franchise, and start a duel within 3 seconds.',
                   ),
                   const SizedBox(height: 8),
                   const FeatureBullet(
                     icon: Icons.wifi_off_rounded,
                     title: 'Fully Offline:',
-                    desc: 'Zero mobile data or Wi-Fi required. All high-res character assets are bundled locally.',
+                    desc:
+                        'Zero mobile data or Wi-Fi required. All high-res character assets are bundled locally.',
                   ),
                   const SizedBox(height: 8),
                   const FeatureBullet(
                     icon: Icons.groups_rounded,
                     title: 'Community Driven:',
-                    desc: 'Born from Google Developer Groups (GDG) Ghardaia community meetups and DevFest celebration events.',
+                    desc:
+                        'Born from Google Developer Groups (GDG) Ghardaia community meetups and DevFest celebration events.',
                   ),
                 ],
               ),
@@ -307,7 +316,8 @@ class _AppUpdateCard extends ConsumerWidget {
               icon: const Icon(Icons.refresh_rounded, size: 16),
               label: const Text('Check', style: TextStyle(fontSize: 12)),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -352,7 +362,8 @@ class _AppUpdateCard extends ConsumerWidget {
               icon: const Icon(Icons.download_rounded, size: 16),
               label: const Text('Update', style: TextStyle(fontSize: 12)),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -369,7 +380,8 @@ class _AppUpdateCard extends ConsumerWidget {
               children: [
                 Text(
                   '${(progress * 100).toStringAsFixed(0)}% downloaded',
-                  style: TextStyle(fontSize: 11, color: theme.colorScheme.primary),
+                  style:
+                      TextStyle(fontSize: 11, color: theme.colorScheme.primary),
                 ),
                 Text(
                   speedText,
@@ -429,7 +441,8 @@ class _AppUpdateCard extends ConsumerWidget {
             FilledButton.tonal(
               onPressed: () => UpdateDialog.show(context),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
@@ -440,4 +453,3 @@ class _AppUpdateCard extends ConsumerWidget {
     };
   }
 }
-

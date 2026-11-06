@@ -7,8 +7,8 @@ import 'topic_pack_providers.dart';
 
 /// Notifier managing the active game round state and countdown transitions.
 /// Keyed by a record of (topic, pack) to support the new hierarchy.
-class GameRoundNotifier
-    extends AutoDisposeFamilyNotifier<GameRoundState, ({String topic, String pack})> {
+class GameRoundNotifier extends AutoDisposeFamilyNotifier<GameRoundState,
+    ({String topic, String pack})> {
   Timer? _countdownTimer;
 
   @override

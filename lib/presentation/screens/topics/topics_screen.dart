@@ -79,8 +79,7 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final themeMode = ref.watch(themeNotifierProvider);
 
-    final topPadding =
-        MediaQuery.paddingOf(context).top + kToolbarHeight + 24;
+    final topPadding = MediaQuery.paddingOf(context).top + kToolbarHeight + 24;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -115,8 +114,7 @@ class _TopicsScreenState extends ConsumerState<TopicsScreen> {
               itemCount: topics.length,
               itemBuilder: (context, index) {
                 final topic = topics[index];
-                final totalAssets =
-                    ref.watch(topicAssetCountProvider(topic));
+                final totalAssets = ref.watch(topicAssetCountProvider(topic));
                 final packs = ref.watch(packsProvider(topic));
                 final accentColor = AppConstants.getTopicColor(topic);
                 final icon = AppConstants.getTopicIcon(topic);
@@ -284,7 +282,8 @@ class _TopicCard extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 18,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                color:
+                    theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
               ),
             ],
           ),
