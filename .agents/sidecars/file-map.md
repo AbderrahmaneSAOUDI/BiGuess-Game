@@ -9,7 +9,7 @@ Paths below describe the live tree. Read [architecture.md](architecture.md) for 
 | Round state and countdown | `lib/providers/game_controller.dart` (`GameRoundNotifier`, `gameRoundProvider`); `lib/domain/models/game_state.dart` (`GameRoundState`) |
 | Random/non-repeating selection | `lib/domain/use_cases/select_character_use_case.dart` (`SelectCharacterUseCase`); `lib/domain/models/character_algorithm.dart` |
 | Algorithm, countdown, hint, theme settings | `lib/providers/game_settings_controller.dart`, `lib/providers/theme_controller.dart`; `lib/presentation/dialogs/info/tabs/settings_tab.dart` |
-| Bundled content lookup | `lib/data/datasources/topic_pack_data_source.dart`; `lib/providers/topic_pack_providers.dart`; generated `lib/assets_manifest.dart` (`topicPackAssets`) |
+| Content repository and bundled adapter | `lib/domain/repositories/content_repository.dart`; `lib/data/repositories/legacy_manifest_content_repository.dart`; `lib/providers/topic_pack_providers.dart` (`contentRepositoryProvider`); legacy `lib/data/datasources/topic_pack_data_source.dart` and generated `lib/assets_manifest.dart` (`topicPackAssets`) |
 | Content generation and checks | `scripts/generate_manifest.py`, `scripts/audit_assets.py`, `scripts/character_stats.py`; `assets/images/<Topic>/<Pack>/`; `pubspec.yaml` |
 | Filename-derived display names | `lib/core/utils/asset_loader.dart` (`AssetLoader.extractCharacterName`) |
 | Topic styling and shared copy | `lib/core/constants/app_constants.dart`; `lib/core/theme/app_colors.dart`; `lib/core/theme/app_theme.dart` |

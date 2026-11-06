@@ -5,6 +5,7 @@ Run commands from the repository root. Read assertions before reusing tests; nam
 | Scope | Command | Existing coverage and limits |
 | --- | --- | --- |
 | Bundled content | `flutter test test/unit/topic_pack_test.dart` | Topic/pack lookup, nonempty packs, selected inventory expectations, filename parsing, dynamic colors/icons. Does not decode every image or validate future imported Packs. |
+| Content repository | `flutter test test/unit/content_repository_test.dart test/widget/content_navigation_test.dart` | Legacy adapter identity/order/labels/images, provider counts and empty lookups, navigation through bundled packs, and repository replacement through unchanged screens and reveal. Uses bundled images; does not install external Packs or exercise storage/network. |
 | Update decisions | `flutter test test/unit/update_test.dart` | SemVer parsing/comparison, remote JSON parsing, ABI resolution, APK/mandatory/patch decisions. No real delivery or controller lifecycle coverage. |
 | Record scaffold | `flutter test test/unit/cloud_database_service_test.dart` | GameRecord JSON conversion and service construction, not API requests or D1 writes. |
 | Reveal UI and hints | `flutter test test/widget/game_screen_test.dart` | Card/countdown mounting, countdown entry, name callbacks, stable card position, hint reset. Uses overridden assets; does not exhaust a deck or exercise full navigation. |

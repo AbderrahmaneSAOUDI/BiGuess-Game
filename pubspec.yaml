@@ -2,7 +2,7 @@ name: gdg_guess_game
 description: A guess image game with multiple categories.
 publish_to: 'none'
 
-version: 1.528.77+22
+version: 1.528.78+23
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

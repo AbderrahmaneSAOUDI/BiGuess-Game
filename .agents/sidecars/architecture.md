@@ -14,17 +14,20 @@ flowchart LR
   Game --> Round[GameRoundNotifier]
   Round --> Select[SelectCharacterUseCase]
   Round --> Assets[packAssetsProvider]
-  Assets --> Source[TopicPackDataSource]
+  Assets --> Repository[ContentRepository]
+  Repository --> Adapter[LegacyManifestContentRepository]
+  Adapter --> Source[TopicPackDataSource]
   Source --> Manifest[topicPackAssets]
   Topics -. first-frame check .-> Updates[UpdateController]
 ```
 
-Navigation uses `Navigator.push` with animated `PageRouteBuilder` transitions. Topic and pack names are current lookup keys; no stable persisted content IDs are involved. `GameInfoDialog` exposes rules, settings, about, and credits.
+Navigation uses `Navigator.push` with animated `PageRouteBuilder` transitions. Topic and pack names remain screen/round keys through a compatibility provider layer; the content repository reads canonical models by ID. `GameInfoDialog` exposes rules, settings, about, and credits.
 
 ## Offline content and round state
 
 - `scripts/generate_manifest.py` scans `assets/images/<Topic>/<Pack>/` into `lib/assets_manifest.dart`; `--sync-pubspec` updates bundle declarations. Display names come from filenames through `AssetLoader.extractCharacterName`; preserve spelling, spaces, and Unicode. The generator accepts WebP, PNG, JPG, and JPEG; the separate dynamic `AssetLoader.loadCategoryAssets` filter accepts WebP, PNG, and JPG.
-- `TopicPackDataSource` reads the generated constant map synchronously. Providers expose topics, packs, asset lists, and counts; unknown topic/pack lookups return empty lists or zero.
+- `ContentRepository` exposes synchronous local Topic, Pack, and Card reads with immutable lists. `contentRepositoryProvider` selects the source; the default `LegacyManifestContentRepository` snapshots `TopicPackDataSource`, preserving order, names and asset references. Legacy IDs encode source keys and survive reordering, but source renames/moves need migration mappings. Legacy Cards default to Easy because the manifest has no difficulty metadata; draft metadata does not imply publishing rights.
+- Screens keep their existing providers for topic/pack names, asset lists and counts. Those providers translate repository models into the current UI contract; unknown topic/pack lookups return empty lists or zero. Override `contentRepositoryProvider` to swap content without rewriting screens. Names must remain unique within the legacy navigation scope until routes migrate to IDs.
 - `gameRoundProvider` is an auto-disposed family keyed by `({String topic, String pack})`. `GameRoundNotifier.build` watches pack assets and initializes `GameRoundState`; missing images produce the empty state.
 - `startCountdown` ignores duplicate taps during countdown, hides the previous image, clears the answer, and resets the global hint provider. A periodic timer updates countdown, then reveals a selection. The timer is canceled on provider disposal and `reset`.
 - `SelectCharacterUseCase` accepts an injectable `Random`. Random mode samples the full list; non-repeating mode copies the remaining pool, removes the selected entry, and refills after exhaustion. It returns `CharacterSelectionResult`, not a Card entity.
@@ -43,4 +46,4 @@ The gameplay chain uses bundled assets and local state. It does not call the rec
 
 ## Target boundaries for future tickets
 
-`docs/migration/DECISIONS.md` defines future Card fields (`name`, `image`, `difficulty`, `packId`), one-topic sessions, cumulative difficulty, local no-repeat decks, Free/Pro limits, immutable snapshots, and deletion at safe points. These guide requested migration work; documentation does not make them implemented systems. The target excludes software adjudication of questions, scores, winners, and gameplay timers. Preserve current reveal behavior until its migration ticket and required UX decisions authorize change.
+Canonical immutable Topic, Pack, Card, and Difficulty models live under `lib/domain/models/`; Card has a technical ID plus name, imageReference, difficulty and packId. The repository adapter supplies these models, while the current round still consumes image paths and derives answers from filenames. `docs/migration/DECISIONS.md` defines target one-topic sessions, cumulative difficulty, local no-repeat decks, Free/Pro limits, immutable snapshots, and deletion at safe points. These guide requested migration work; documentation does not make them implemented systems. The target excludes software adjudication of questions, scores, winners, and gameplay timers. Preserve current reveal behavior until its migration ticket and required UX decisions authorize change.

@@ -83,9 +83,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 **Agent task:** Add stable-identifier, topic-agnostic immutable domain models and validations: Topic ID/name, Pack ID/topic ID/name, Card ID/pack ID/name/image reference/difficulty. Adhere strictly to the canonical MVP Card model (Name, Image, Difficulty, Pack relationship); do not add Subtitle, Description, Tags, Aliases, or topic-specific attributes. Include minimal operational metadata (published/deleted/revision) outside the game-domain Card where appropriate. Publishing applies at Topic and Pack levels, not per-Card.
 **Acceptance:** Serialization/validation tests cover invalid IDs/relations, difficulty outside 1–3, minimum playable Pack (2 Cards), and deterministic model equality without extra unrequested Card fields.
 
-### [ ] T07 — Introduce content repository interfaces and a legacy manifest adapter
+### [x] T07 — Introduce content repository interfaces and a legacy manifest adapter
 **Agent task:** Add interfaces for reading Topics, Packs, and Cards, and implement an adapter over current `TopicPackDataSource` / `assets_manifest.dart`. Make screens/providers consume interfaces rather than direct manifest map lookups. Retain the existing Topic/Pack visual design and current game behavior temporarily.
 **Acceptance:** The current two-topic/seven-pack navigation still works and tests pass; data source swapping needs no screen rewrite.
+
+**Implemented and rechecked (2026-11-06):** `ContentRepository` exposes local Topic/Pack/Card reads, and `LegacyManifestContentRepository` adapts bundled data without changing order, labels, or image paths. Providers now resolve through `contentRepositoryProvider`; screens and the current countdown/reveal flow retain their existing contracts. Unit and widget tests cover both topics, all seven Packs, empty lookups, stable IDs, and replacement content driving navigation and reveal through one repository override. Keep the legacy adapter until the T47 retirement gate.
 
 ### [x] T08 — Add local SQLite schema, migrations, and repository implementation
 **Agent task:** Add a local SQL implementation for Topics, Packs, Cards, installed-pack state, revisions, and deletion markers. Define safe schema migrations and query indexes for local search and card selection. Keep mutable active game state out of the database unless required by the blueprint.
