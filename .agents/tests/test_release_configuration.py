@@ -91,7 +91,7 @@ class ReleaseConfigurationTests(unittest.TestCase):
             )
 
     def test_validate_release_signing_gradle_task_exists(self):
-        """Gradle task validateReleaseSigning must be runnable and succeed in unconfigured mode."""
+        """The non-required check accepts either a valid key or no configured key."""
         gradlew = REPO_ROOT / "android" / "gradlew"
         if not gradlew.exists():
             self.skipTest("gradlew not found")
@@ -104,7 +104,7 @@ class ReleaseConfigurationTests(unittest.TestCase):
             timeout=60
         )
         self.assertEqual(res.returncode, 0, f"validateReleaseSigning failed: {res.stderr}")
-        self.assertIn("Release signing is NOT configured", res.stdout)
+        self.assertRegex(res.stdout, r"Release signing (?:is NOT configured|configuration is VALID)")
 
 
 if __name__ == "__main__":

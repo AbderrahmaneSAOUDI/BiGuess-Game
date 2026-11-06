@@ -49,13 +49,14 @@ For a local standard Flutter APK build:
 flutter build apk --release --split-per-abi
 ```
 
-Expected names are `app-arm64-v8a-release.apk`, `app-armeabi-v7a-release.apk`, and `app-x86_64-release.apk` under `build/app/outputs/flutter-apk/`. The release script requires all three nonempty outputs and rejects stale files after a build. Its Shorebird branch invokes `shorebird release android --artifact apk`; a universal-only result cannot satisfy this split-ABI contract. For explicit `--skip-build` reuse, verify the binaries' intended version and signature before publishing; collection alone cannot prove that match.
+Expected names are `app-arm64-v8a-release.apk`, `app-armeabi-v7a-release.apk`, and `app-x86_64-release.apk` under `build/app/outputs/flutter-apk/`. The release script requires all three nonempty outputs and rejects stale files after a build. The installed Shorebird CLI produces a universal APK and rejects ABI splitting, so the full pipeline refuses that combination before registering a Shorebird base. Explicit `--no-shorebird` preserves the three-APK format with standard Flutter. A universal OTA-enabled format requires an owner distribution decision. For explicit `--skip-build` reuse, verify the binaries' intended version and signature before publishing; collection alone cannot prove that match.
 
 ## Script limitations to account for
 
 - `--dry-run` prints a read-only plan without commands, version writes, builds, validation, Git or uploads. It proves planning only; run the actual local gates separately.
 - The patch pipeline validates native changes and Flutter analysis/tests before retargeting an active Shorebird base. A failed patch restores original pubspec/constants; success synchronizes and commits the whole triad. Existing staged work stops release commits.
 - Build/patch validation failures stop the pipeline unless checks are explicitly skipped. Full releases prepare a source tag, upload APKs, then push the active branch manifest. Draft/prerelease paths leave that manifest unpublished.
+- Full builds and patches validate Android release signing before version writes, app checks or Shorebird calls, even with `--skip-checks`. Credentials stay external; publishing an existing signed APK set with `--skip-build` needs no local private key.
 - Generated APK URLs are pinned to `v<version>` with an ARM64 fallback. Verify the actual ABI artifacts, version and signature before publishing; a version manifest alone does not prove correct binaries.
 
 For runtime update changes, run `flutter test test/unit/update_test.dart` and review `SemVer`, `RemoteVersion.resolveApkUrl`, `UpdateController`, and `OtaInstallerService` together. Do not publish a test manifest or upload a patch merely to validate the decision engine.

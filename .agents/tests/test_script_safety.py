@@ -103,6 +103,66 @@ class ReleaseSafetyTests(QuietTests):
                 for operation in operations.values():
                     operation.assert_not_called()
 
+    def test_missing_signing_stops_full_and_patch_before_metadata_checks_or_shorebird(self):
+        for pipeline, args in (
+            (release.pipeline_full_release, self.full_args(skip_build=False)),
+            (release.pipeline_patch_release, self.patch_args()),
+        ):
+            with self.subTest(pipeline=pipeline.__name__), ExitStack() as patches:
+                patches.enter_context(patch.object(release, "ensure_committed_app_source", return_value=True))
+                patches.enter_context(patch.object(release, "check_android_release_signing", return_value=False))
+                operations = [patches.enter_context(patch.object(release, name)) for name in (
+                    "run", "read_pubspec_version", "write_pubspec_version", "sync_version_json",
+                    "update_app_constants", "build_apks", "find_shorebird_bin", "get_shorebird_active_releases",
+                    "check_gh_cli", "create_github_release", "git_commit_and_push",
+                )]
+                self.assertNotEqual(pipeline(args), 0)
+                for operation in operations:
+                    operation.assert_not_called()
+
+    def test_signing_preflight_is_required_even_when_app_checks_are_skipped(self):
+        with patch.object(release, "ensure_committed_app_source", return_value=True), \
+                patch.object(release, "check_android_release_signing", return_value=False) as signing, \
+                patch.object(release, "build_apks") as build:
+            self.assertNotEqual(release.pipeline_full_release(
+                self.full_args(skip_build=False, skip_checks=True, skip_git=True, skip_github=True)), 0)
+        signing.assert_called_once()
+        build.assert_not_called()
+
+    def test_signing_probe_uses_required_gradle_check_and_hides_captured_output(self):
+        for result, expected in ((subprocess.CompletedProcess([], 0, 'private', 'private'), True),
+                                 (subprocess.CompletedProcess([], 1, 'private', 'private'), False),
+                                 (FileNotFoundError(), False),
+                                 (subprocess.TimeoutExpired('gradle', 90), False)):
+            with self.subTest(result=type(result).__name__), patch.object(release, 'run') as run:
+                if isinstance(result, Exception):
+                    run.side_effect = result
+                else:
+                    run.return_value = result
+                self.assertEqual(release.check_android_release_signing(), expected)
+                self.assertIn(':app:validateReleaseSigning', run.call_args.args[0])
+                self.assertIn('-PrequireReleaseSigning=true', run.call_args.args[0])
+                self.assertEqual(run.call_args.kwargs, {'capture': True, 'timeout': 90})
+        self.assertNotIn('private', self.output.getvalue())
+
+    def test_incompatible_shorebird_artifacts_stop_before_build_or_metadata_changes(self):
+        with patch.object(release, 'ensure_committed_app_source', return_value=True), \
+                patch.object(release, 'check_android_release_signing', return_value=True), \
+                patch.object(release, 'find_shorebird_bin', return_value='shorebird'), \
+                patch.object(release, 'run') as run, \
+                patch.object(release, 'sync_version_json') as metadata, \
+                patch.object(release, 'build_apks') as build:
+            self.assertNotEqual(release.pipeline_full_release(
+                self.full_args(skip_build=False, no_shorebird=False)), 0)
+        run.assert_not_called()
+        metadata.assert_not_called()
+        build.assert_not_called()
+
+    def test_explicit_flutter_split_build_is_allowed_without_shorebird_lookup(self):
+        with patch.object(release, 'find_shorebird_bin') as shorebird:
+            self.assertTrue(release.check_split_apk_builder(False))
+        shorebird.assert_not_called()
+
     def test_failed_release_preflight_never_runs_a_build(self):
         for failing in (
             ["flutter", "clean"], ["flutter", "pub", "get"],
@@ -129,6 +189,7 @@ class ReleaseSafetyTests(QuietTests):
 
     def patch_fixtures(self, stack):
         stack.enter_context(patch.object(release, "ensure_committed_app_source", return_value=True))
+        stack.enter_context(patch.object(release, "check_android_release_signing", return_value=True))
         stack.enter_context(patch.object(release, "find_shorebird_bin", return_value="shorebird"))
         stack.enter_context(patch.object(release, "read_pubspec_version", return_value="1.2.3+4"))
         stack.enter_context(patch.object(release, "get_shorebird_active_releases", return_value=["1.2.3+4"]))

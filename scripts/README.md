@@ -155,6 +155,19 @@ python3 .agents/hooks/project_check.py --check
 
 `release.py` without flags can publish. Its `--dry-run` is a plan preview, so a successful preview does not prove that a build or test passed. Full releases prepare a source tag, upload APKs, and then push the branch serving the active update manifest. Drafts and prereleases keep that branch manifest unchanged. Generated APK links point to the specific version, so they do not follow an unrelated latest release. Existing staged work stops release Git operations.
 
+Full builds and patches check Android release signing before changing versions,
+running app checks, or invoking Shorebird. Configure `android/key.properties`
+using [the template](../android/key.properties.example) or the documented signing
+environment variables. A missing/invalid configuration stops immediately and
+prints setup instructions. Publishing existing APKs with `--skip-build` does not
+require the build machine's private keystore. Release previews remain read-only.
+
+The current release format requires three ABI-specific APKs. The installed
+Shorebird CLI produces a universal APK and rejects ABI splitting, so this
+combination is refused before builds or Shorebird registration. Explicit
+`--no-shorebird` uses standard Flutter for the existing three-APK format.
+Switching to a universal OTA-enabled APK requires a separate distribution choice.
+
 Commit app source changes before a release or patch so the release tag matches the built app. Drafts and prereleases require a separate named release-preparation branch; the script refuses `main`, `master`, or detached HEAD. Their metadata commit stays on that branch and only the release tag is pushed. Merging or pushing the preparation branch is a separate deliberate action.
 
 New APK builds must produce all three architecture files during that build; old or duplicate outputs cannot fill a missing architecture. Release metadata includes the SHA-256 hash of each selected APK. `--skip-build` deliberately reuses existing files: verify their version and signing identity before publishing. A failed GitHub creation/upload stops the pipeline and never overwrites assets on an existing release.

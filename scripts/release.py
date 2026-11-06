@@ -80,6 +80,37 @@ def find_shorebird_bin() -> Optional[str]:
     return None
 
 
+def check_android_release_signing() -> bool:
+    """Fail before builds, metadata writes or publishing if signing is unavailable."""
+    command = [str(REPO_ROOT / "android/gradlew"), "-p", str(REPO_ROOT / "android"),
+               ":app:validateReleaseSigning", "-PrequireReleaseSigning=true", "--quiet"]
+    print("Checking Android release-signing configuration...")
+    try:
+        result = run(command, capture=True, timeout=90)
+    except (OSError, subprocess.TimeoutExpired):
+        print(f"{RED}Could not run the signing check. Check Java and the Android SDK.{RESET}")
+        return False
+    if result.returncode:
+        print(f"{RED}Android release signing is not ready. Release stopped before building.{RESET}")
+        print("Configure android/key.properties from android/key.properties.example, or set:")
+        print("  ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD,")
+        print("  ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD")
+        print("Use your existing release key for updates to previously signed APKs.")
+        print("Details: docs/migration/RELEASE_SAFETY_AND_DISTRIBUTION.md")
+        return False
+    return True
+
+
+def check_split_apk_builder(use_shorebird: bool) -> bool:
+    """Never register a universal Shorebird base for a split-APK-only pipeline."""
+    if use_shorebird and find_shorebird_bin():
+        print(f"{RED}Release stopped: Shorebird produces a universal APK, but this pipeline requires three ABI APKs.{RESET}")
+        print("For the existing three-APK distribution, use --no-shorebird.")
+        print("Using a universal Shorebird APK requires an explicit distribution-policy change.")
+        return False
+    return True
+
+
 def get_shorebird_active_releases(sb_bin: str) -> list[str]:
     """Query Shorebird for registered active releases."""
     res = run([sb_bin, "releases", "list"], capture=True)
@@ -605,6 +636,10 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
         return 1
     if (args.draft or args.prerelease) and not ensure_draft_branch():
         return 1
+    if not args.skip_build and not check_android_release_signing():
+        return 1
+    if not args.skip_build and not check_split_apk_builder(not getattr(args, "no_shorebird", False)):
+        return 1
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         🚀  BiGuess Full Release Pipeline                    {RESET}")
     print(f"{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}\n")
@@ -709,6 +744,8 @@ def pipeline_patch_release(args: argparse.Namespace) -> int:
     if getattr(args, "dry_run", False):
         return pipeline_preview(args, "patch")
     if not ensure_committed_app_source():
+        return 1
+    if not check_android_release_signing():
         return 1
     print(f"\n{BOLD}{CYAN}══════════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{CYAN}         🚀  BiGuess Shorebird OTA Patch Pipeline             {RESET}")
