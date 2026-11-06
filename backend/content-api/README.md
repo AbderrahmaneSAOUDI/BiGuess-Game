@@ -1,13 +1,54 @@
-# Content infrastructure (T20)
+# Content API (T20–T22)
 
 Isolated TypeScript Cloudflare Worker, D1 migrations and private R2 objects.
 `../biguess-api/` remains the separate legacy game-record API. No Flutter client,
 gameplay dependency, cloud resource, deployment or production credential is added.
 
-This is infrastructure, not the T21 catalog or T22 publishing implementation.
-The initial `storage_fixtures` table stores structured object metadata only; it
-does not define Topic/Pack/Card, revision or tombstone schemas. Future content
-migrations must follow the T19 shared contracts and approved decisions.
+The public catalog implements the frozen [v1 contract](../../contracts/content/v1/README.md).
+Immutable signed publications and anonymous downloads are described in
+[PUBLISHING.md](PUBLISHING.md). Studio mutations and sync remain separate tickets.
+The initial `storage_fixtures` table remains isolated from catalog data.
+
+## Public read-only catalog
+
+- `GET /content/v1/catalog/topics` returns published, nondeleted Topics.
+- `GET /content/v1/catalog/packs?topicId=<id>` returns published, nondeleted
+  Packs under that visible Topic. Counts/hash/revision describe the complete
+  published revision; draft edits must not replace this projection.
+
+Both accept `limit` (1–100, default 50) and opaque `cursor`. IDs sort by exact
+UTF-8 bytes, independent of names. Summaries contain only the frozen Topic/Pack
+fields; no Card or session endpoints or online gameplay calls are added.
+There is no player authentication. Wildcard CORS allows anonymous clients,
+including conditional requests; `OPTIONS` permits GET and `If-None-Match`.
+Unknown Topic is 404, unpublished Topic 403, deleted Topic 410. Invalid queries
+or methods are 400; unsupported API majors are 426. All use the v1 error envelope
+and `no-store`; storage failures are retryable 503 with `Retry-After: 5`.
+
+D1 migration `0002_catalog.sql` adds the published summary projection and durable
+pagination snapshots. No public mutation route or production content seed exists.
+Tests populate synthetic summaries directly; an empty migrated DB returns an
+empty catalog. The trusted publisher atomically projects validated complete
+published revisions with their active Card count and exact manifest hash.
+
+Snapshots bind endpoint, Topic, limit, order and the complete summary set for
+10–20 minutes. Opaque cursors authenticate their position with a server-only
+random snapshot secret. New content and metadata edits do not alter existing
+pages. Every read rechecks current visibility of the parent and **all** snapshot
+entries before any 304; missing/hidden/deleted entries expire the snapshot (409).
+Clients restart pagination and retain their last complete successful catalog.
+Snapshot rows are retained so valid expired cursors remain distinguishable from
+invalid ones; retention/compaction is an operational follow-up before large-scale
+traffic. Snapshots use one D1 row and are subject to D1's row-size limit; oversized
+catalogs fail as 503 rather than silently returning incomplete pages.
+
+Successful pages use `public, max-age=60, must-revalidate` and a strong quoted
+SHA-256 ETag of exact response bytes. Conditional GET supports ETag lists, weak
+validators and `*`, returning an empty 304 with the same cache/CORS headers.
+Identical first pages share a snapshot within a ten-minute window; a new window
+can change the ETag even when summaries are unchanged. Visibility rechecks apply
+to requests reaching the service; already cached bytes remain subject to the
+contract's 60-second freshness window.
 
 ## Local development
 
@@ -58,7 +99,10 @@ npm test
 npm run build
 ```
 
-Tests execute in workerd/Miniflare. They exercise D1/R2 reads, corruption and
+Tests execute in workerd/Miniflare. Catalog tests validate actual HTTP payloads
+with the shared Python contract validator (install `contracts/content/requirements.txt`).
+They cover visibility, byte ordering, stable snapshots, cursor tampering/expiry,
+ETags, anonymous CORS, structured errors and storage failure. Storage tests cover D1/R2 reads, corruption and
 missing-storage responses, schema constraints, staging fixture exclusion, seed
 guardrails, configuration isolation and secret ignore rules. The persistence
 test applies real Wrangler migrations twice and seeds twice in a temporary
@@ -125,8 +169,8 @@ restoring an old snapshot can lose newer writes. Prefer a tested forward repair
 migration when preserving those writes is required.
 
 Retain previous R2 objects throughout the rollback window; code/D1 restores do
-not restore deleted objects. Future publishing must retain immutable revisions
-and verify object hashes before metadata becomes visible (T22). Never purge a
+not restore deleted objects. The T22 publisher retains immutable revisions
+and verifies object hashes before metadata becomes visible. Never purge a
 bucket as part of deployment rollback. For local reset, stop dev and select a
 fresh state directory, then rerun migrations/seeds; no remote deletion is needed.
 

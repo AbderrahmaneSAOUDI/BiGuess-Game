@@ -1,4 +1,6 @@
 import type { Env } from './env';
+import { catalog } from './catalog';
+import { download } from './download';
 
 interface Fixture {
   object_key: string;
@@ -15,6 +17,8 @@ const json = (value: unknown, status = 200) => Response.json(value, {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if (path.startsWith('/content/v1/packs/')) return download(request, env);
+    if (path === '/content' || path.startsWith('/content/')) return catalog(request, env);
     if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
     // Process liveness deliberately does not depend on storage availability.
     if (path === '/health') return json({ status: 'ok', environment: env.APP_ENV });

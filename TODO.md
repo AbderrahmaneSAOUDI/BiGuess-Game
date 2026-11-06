@@ -175,13 +175,17 @@ Do not infer or display a digital winner.
 
 **Implemented:** [Isolated content infrastructure](backend/content-api/README.md) with typed Worker bindings, separate local/staging D1 and private R2 resources, a numbered metadata migration, deterministic WebP seeds, a locked Node toolchain, and workerd integration tests. Tests cover repeated local migrations/seeds, persisted D1/R2 reads, corrupt/missing objects, staging fixture exclusion, and seed/secret guardrails. Local HTTP smoke checks serve verified fixture bytes. Deploy/rollback is documented; no cloud resources or production writes were required. Catalog, publishing, and Studio endpoints remain subsequent tickets.
 
-### [ ] T21 — Implement public read-only catalog endpoints
+### [x] T21 — Implement public read-only catalog endpoints
 **Agent task:** Serve only published Topics and published Packs belonging to visible Topics, with compact metadata, counts, revisions, pagination, caching headers, and clear unavailability responses. No gameplay-session or per-Card online endpoints.
 **Acceptance:** Contract/integration tests verify unpublished content is hidden, stable ordering, cache behavior, errors, and anonymous mobile access.
 
-### [ ] T22 — Implement immutable R2 objects and signed Pack manifests
+**Implemented:** [Public catalog v1](backend/content-api/README.md#public-read-only-catalog), with D1 published-summary projections, snapshot-bound pagination, exact UTF-8 ID ordering, SHA-256 ETags, conditional caching, anonymous CORS, and structured availability/storage errors. Workerd/D1 integration tests validate actual responses against the frozen shared contracts and cover hidden/deleted content, stable pages, cursor binding/tampering/expiry and cache revalidation. No deployment or gameplay/Card endpoints.
+
+### [x] T22 — Implement immutable R2 objects and signed Pack manifests
 **Agent task:** Add deterministic publishing artifacts/manifests and immutable/content-addressed image keys in R2. Verify checksums and prevent half-published revisions becoming visible. Keep a previous valid revision available for rollback; access must be appropriate for public downloaded content.
 **Acceptance:** A full fixture Pack can be resolved/downloaded and verified against its manifest; missing/altered objects fail safely; publishing is atomic from the catalog perspective.
+
+**Implemented:** [Immutable publication and signature protocol](backend/content-api/PUBLISHING.md), deterministic offline Ed25519 receipts, create-only content-addressed R2 artifacts, read-back checksum verification, and a compare-and-swap D1 transaction that activates immutable history and catalog summaries together. Anonymous revision-specific manifest/receipt/archive/image routes preserve the frozen v1 payloads, verify storage before successful/conditional responses, and retain earlier revisions for forward rollback. Workerd tests cover a complete downloaded Shapes fixture, every interrupted write stage, competing publishers, catalog-transaction failure, missing/altered objects, signature trust, visibility and immutable-key collisions. No cloud deployment, public publishing mutation or Flutter download client is added.
 
 ### [ ] T23 — Enforce Studio authentication and roles at the API boundary
 **Agent task:** Verify Firebase-issued Google sign-in tokens on Workers; authorize only allowlisted/data-driven Owner/Admin and Collector roles. Enforce strict permissions server-side: Owner Admin has full control; Data Collectors may create/edit Packs and Cards and manage permitted metadata, but **Data Collectors cannot delete anything** (neither soft nor permanent deletion). In MVP, deletion endpoints are strictly restricted to the Owner Admin. Moderator and community roles are explicitly post-MVP. Players remain accountless.
