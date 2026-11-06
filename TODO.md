@@ -75,7 +75,7 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 # PHASE B — Local-first domain and playable engine (still works without a backend)
 
-### [ ] T06 — Implement canonical Topic, Pack, Card, and Difficulty domain models
+### [x] T06 — Implement canonical Topic, Pack, Card, and Difficulty domain models
 **Agent task:** Add stable-identifier, topic-agnostic immutable domain models and validations: Topic ID/name, Pack ID/topic ID/name, Card ID/pack ID/name/image reference/difficulty. Adhere strictly to the canonical MVP Card model (Name, Image, Difficulty, Pack relationship); do not add Subtitle, Description, Tags, Aliases, or topic-specific attributes. Include minimal operational metadata (published/deleted/revision) outside the game-domain Card where appropriate. Publishing applies at Topic and Pack levels, not per-Card.
 **Acceptance:** Serialization/validation tests cover invalid IDs/relations, difficulty outside 1–3, minimum playable Pack (2 Cards), and deterministic model equality without extra unrequested Card fields.
 
