@@ -45,8 +45,12 @@ run_check tests flutter test --reporter expanded
 run_check manifest python3 scripts/generate_manifest.py --check
 run_check assets python3 scripts/audit_assets.py
 run_check versions python3 .agents/hooks/project_check.py --check
-run_check agent_setup python3 .agents/scripts/validate_setup.py
+run_check tooling_syntax python3 -m compileall -q scripts .agents/hooks
 run_check agent_tests python3 -m unittest discover -s .agents/tests -v
+run_check failure_detection python3 scripts/check_ci_failure_detection.py
+if [[ -f .agents/scripts/validate_setup.py ]]; then
+  run_check agent_setup python3 .agents/scripts/validate_setup.py
+fi
 if [[ $mode == full ]]; then
   run_check statistics python3 scripts/character_stats.py
   run_check doctor flutter doctor -v

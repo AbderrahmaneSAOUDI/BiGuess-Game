@@ -55,7 +55,12 @@ jobs:
         run: python3 scripts/audit_assets.py
       - name: Check version triad (read only)
         run: python3 .agents/hooks/project_check.py --check
-      - name: Validate agent tooling
-        run: python3 .agents/scripts/validate_setup.py
-      - name: Test agent tooling
+      - name: Check Python tooling syntax
+        run: python3 -m compileall -q scripts .agents/hooks
+      - name: Test CI and agent tooling
         run: python3 -m unittest discover -s .agents/tests -v
+      - name: Verify analyzer and test failure detection
+        run: python3 scripts/check_ci_failure_detection.py
+      - name: Validate optional agent setup
+        if: ${{ hashFiles('.agents/scripts/validate_setup.py') != '' }}
+        run: python3 .agents/scripts/validate_setup.py

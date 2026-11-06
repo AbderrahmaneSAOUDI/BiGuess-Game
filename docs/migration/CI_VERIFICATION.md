@@ -1,9 +1,9 @@
 # CI verification (T03 recheck)
 
 Rechecked **2026-11-06** against the [workflow](../../.github/workflows/ci.yml).
-T03 is **partially verified**: workflow triggers and local gates are checked; successful
-hosted runs for both a PR and a `main` push remain unverified. The previous runtime,
-hermeticity and full acceptance claims were stronger than the available evidence.
+T03 is **complete**: the scoped workflow passed on a real pull request and a real
+`main` push, including deliberate analyzer/test failure detection on both runners.
+The dated local baseline evidence below remains separate from hosted execution.
 
 ## Workflow and required checks
 
@@ -35,20 +35,28 @@ flutter test --reporter expanded
 python3 scripts/generate_manifest.py --check
 python3 scripts/audit_assets.py
 python3 .agents/hooks/project_check.py --check
-python3 .agents/scripts/validate_setup.py
+python3 -m compileall -q scripts .agents/hooks
 python3 -m unittest discover -s .agents/tests -v
+python3 scripts/check_ci_failure_detection.py
+# When the full agent setup is installed:
+python3 .agents/scripts/validate_setup.py
 ```
 
 The manifest check compares the Dart manifest to disk; it does not validate pubspec
 asset registration. The asset auditor returns failure for missing/corrupt assets;
 other findings can be warnings. Pillow must be installed for image verification.
+CI also runs version-gate regression tests and verifies deliberate analyzer/test
+failure detection through `scripts/check_ci_failure_detection.py`, with temporary
+fixtures removed in `finally` cleanup. The full agent setup validator runs when
+installed; the scoped remote CI installation includes only the checker/helper/tests.
 The version checker is read-only. It replaces the previous
 `release.py --version-only` invocation, which rewrites release metadata and can
 recompute native-change status/URLs. CI must check versions without repairing them.
 
 Configure branch protection to require **Fast Verification & Quality Gates**.
-Reading server-side branch protection returned HTTP 403 (integration lacks access);
-it was not changed. A workflow file alone cannot enforce merge policy. Follow `AGENTS.md` for the scoped version/Git
+The branch endpoint reports that `main` is unprotected; the dedicated protection
+endpoint returned HTTP 403 for the integration. Protection settings were not changed.
+A workflow file alone cannot enforce merge policy. Follow `AGENTS.md` for the scoped version/Git
 lifecycle after passing checks.
 
 ## Executed evidence
@@ -80,13 +88,37 @@ build ran, and the script returned 1; fast mode returned 0 and omitted the debug
 build. [Summary](evidence/2026-11-06-t01-t03/script_summary.json). These mock checks
 verify script orchestration only; actual Flutter execution is logged separately.
 
-A read-only GitHub repository Actions API query returned **`total_count: 0`**
-([response](evidence/2026-11-06-t01-t03/github_runs.json)): no retained hosted runs
-were available at audit time. The commit-specific PR query was also empty; a
-`gh run list` fallback failed with a TLS handshake timeout. Remaining T03 acceptance:
-obtain hosted PR and `main` run URLs/results and, if required by merge policy,
-verify the required status check in branch protection. Do not mark hosted acceptance
-complete based only on these local runs.
+## Hosted acceptance (completed 2026-11-06)
+
+| Event | Commit | Run | Result |
+| --- | --- | --- | --- |
+| Pull request [#1](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/pull/1) | `1634363` | [42199913166](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/actions/runs/42199913166) | **SUCCESS** |
+| Push to `main` after merge | `d3320af` | [42200303160](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/actions/runs/42200303160) | **SUCCESS** |
+
+Each hosted job passed dependency resolution, formatting, analyzer, all **31 Flutter
+tests** on remote main, manifest/asset checks, read-only version verification, Python
+syntax and **five version-gate tests**. The failure-detection step required exit 1
+with `invalid_assignment` and exit 1 with `Expected: <3>` from real Flutter commands.
+The optional full-agent setup validator was skipped because that setup is not yet
+installed on remote main; the version helper and its tests were included explicitly.
+
+[Machine results and step conclusions](evidence/2026-11-06-t03-hosted/hosted_runs.json),
+[PR log excerpts](evidence/2026-11-06-t03-hosted/pr_verification.txt), and
+[main log excerpts](evidence/2026-11-06-t03-hosted/main_verification.txt) preserve the
+observed toolchain, passing tests, and both expected failures. Earlier zero-run API
+evidence remains a historical snapshot, superseded by these successful runs.
+
+Local `main` and remote `main` have unrelated histories. To complete hosted acceptance
+without publishing unrelated local backend, app, migration, or Android work, PR #1
+was based on remote `main` at `d4ab660`. Its Dart edits are formatter output required
+by the gate. No history was rewritten. The same workflow/failure checks were brought
+back to the local branch, which retains its additional tests and full agent setup.
+Successful hosted runs cover the scoped remote source, not unpublished local changes.
+The local shared checkout was also checked independently at `c5ad3f5`: all gates
+passed, including 36 Flutter tests and 54 Python tests. Its transient formatting
+failure during concurrent T04 edits was followed by a complete passing rerun; see
+[local summary](evidence/2026-11-06-t03-hosted/local_summary.tsv) and
+[context](evidence/2026-11-06-t03-hosted/local_context.txt).
 
 ## Local reproduction
 
