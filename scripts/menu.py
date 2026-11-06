@@ -9,8 +9,10 @@ import json as json_mod
 import os
 import re
 import select
+import shutil
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 # ANSI colors
@@ -51,12 +53,30 @@ def clear_screen() -> None:
         os.system("cls" if os.name == "nt" else "clear")
 
 
+def _display_width(text: str) -> int:
+    """Count terminal cells for our labels, including emoji and ANSI colors."""
+    width = previous = 0
+    for character in re.sub(r"\x1b\[[0-9;]*m", "", text):
+        if character == "\ufe0f":
+            # Emoji presentation makes otherwise narrow symbols two cells wide.
+            if previous == 1:
+                width += 1
+                previous = 2
+        elif not unicodedata.combining(character):
+            previous = 2 if unicodedata.east_asian_width(character) in ("W", "F") else 1
+            width += previous
+    return width
+
+
 def print_banner() -> None:
-    """Print BiGuess header banner."""
-    print(f"{BOLD}{CYAN}╔══════════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{BOLD}{CYAN}║                 🎮  BIGUESS GAME TOOLBOX                     ║{RESET}")
-    print(f"{BOLD}{CYAN}║             Developer Utilities & Asset Automation           ║{RESET}")
-    print(f"{BOLD}{CYAN}╚══════════════════════════════════════════════════════════════╝{RESET}\n")
+    """Center the title and subtitle inside equal-width borders."""
+    width = 62
+    print(f"{BOLD}{CYAN}╔{'═' * width}╗{RESET}")
+    for text in ("🎮  BIGUESS GAME TOOLBOX", "Developer Utilities & Asset Automation"):
+        padding = width - _display_width(text)
+        left = padding // 2
+        print(f"{BOLD}{CYAN}║{' ' * left}{text}{' ' * (padding - left)}║{RESET}")
+    print(f"{BOLD}{CYAN}╚{'═' * width}╝{RESET}\n")
 
 
 def read_line_with_esc(prompt_text: str) -> str:
@@ -658,12 +678,35 @@ def print_tool_tree(show_files: bool = False) -> None:
         "stats": "📊", "export": "📤", "build": "🚀", "version": "🏷️",
         "clean": "🧹", "release": "📦",
     }
+    description_width = max(
+        _display_width(description)
+        for _, entries in TOOL_GROUPS
+        for _, _, description, _ in entries
+    )
+    script_width = max(
+        _display_width(f"({script})")
+        for _, entries in TOOL_GROUPS
+        for _, _, _, script in entries
+    )
+    columns = shutil.get_terminal_size().columns
     for group, entries in TOOL_GROUPS:
-        print(f"\n{BOLD}{BLUE}▶ {group}{RESET}")
+        print(f"\n  {BOLD}{BLUE}▶ {group}{RESET}")
         for number, shortcut, description, script in entries:
             color = MAGENTA if shortcut in ("topics", "release", "version") else CYAN
-            suffix = f" {DIM}({script}){RESET}" if show_files else ""
-            print(f"  {color}[{number:>2}]{RESET} {icons[shortcut]}  {shortcut:<10} {description}{suffix}")
+            icon = icons[shortcut]
+            icon_padding = " " * (4 - _display_width(icon))
+            prefix = f"  {color}[{number:>2}]{RESET} {icon}{icon_padding}{shortcut:<10} "
+            if show_files:
+                gap = " " * (description_width - _display_width(description) + 2)
+                suffix = f"{DIM}({script}){RESET}"
+                line = f"{prefix}{description}{gap}{suffix}"
+                if _display_width(prefix) + description_width + 2 + script_width <= columns:
+                    print(line)
+                else:
+                    print(f"{prefix}{description}")
+                    print(f"{' ' * _display_width(prefix)}{suffix}")
+            else:
+                print(f"{prefix}{description}")
     print(f"\n  {CYAN}[ 0]{RESET} 🚪  Exit\n")
 
 
