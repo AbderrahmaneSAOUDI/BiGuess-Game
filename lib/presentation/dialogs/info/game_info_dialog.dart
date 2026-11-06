@@ -138,14 +138,16 @@ class _GameInfoDialogState extends State<GameInfoDialog>
                 color: theme.colorScheme.surface,
                 border: Border(
                   bottom: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    color:
+                        theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
                   ),
                 ),
               ),
               child: TabBar(
                 controller: _tabController,
                 isScrollable: isCompact,
-                tabAlignment: isCompact ? TabAlignment.start : TabAlignment.fill,
+                tabAlignment:
+                    isCompact ? TabAlignment.start : TabAlignment.fill,
                 indicatorSize: TabBarIndicatorSize.tab,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 12),
                 labelStyle: const TextStyle(

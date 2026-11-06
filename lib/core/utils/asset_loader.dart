@@ -8,15 +8,12 @@ class AssetLoader {
   static Future<List<String>> loadCategoryAssets(String categoryPath) async {
     try {
       final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-      final assets = manifest
-          .listAssets()
-          .where((String key) {
-            return key.startsWith(categoryPath) &&
-                (key.endsWith('.webp') ||
-                    key.endsWith('.png') ||
-                    key.endsWith('.jpg'));
-          })
-          .toList();
+      final assets = manifest.listAssets().where((String key) {
+        return key.startsWith(categoryPath) &&
+            (key.endsWith('.webp') ||
+                key.endsWith('.png') ||
+                key.endsWith('.jpg'));
+      }).toList();
 
       return assets;
     } catch (e) {

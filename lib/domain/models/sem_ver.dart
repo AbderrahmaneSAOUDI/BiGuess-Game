@@ -52,7 +52,8 @@ class SemVer implements Comparable<SemVer> {
   }
 
   /// Zero / unknown version sentinel.
-  static const SemVer zero = SemVer(major: 0, minor: 0, patch: 0, buildNumber: 0);
+  static const SemVer zero =
+      SemVer(major: 0, minor: 0, patch: 0, buildNumber: 0);
 
   /// Whether [other] has a higher major or minor component than `this`.
   ///
@@ -100,5 +101,7 @@ class SemVer implements Comparable<SemVer> {
   int get hashCode => Object.hash(major, minor, patch, buildNumber);
 
   @override
-  String toString() => buildNumber > 0 ? '$major.$minor.$patch+$buildNumber' : '$major.$minor.$patch';
+  String toString() => buildNumber > 0
+      ? '$major.$minor.$patch+$buildNumber'
+      : '$major.$minor.$patch';
 }

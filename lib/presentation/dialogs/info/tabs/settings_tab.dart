@@ -58,7 +58,8 @@ class SettingsTab extends ConsumerWidget {
                     RadioListTile<CharacterAlgorithm>(
                       title: Text(
                         'Non-Repeating (Fair Rotation)',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                       value: CharacterAlgorithm.nonRepeating,
                       contentPadding: EdgeInsets.symmetric(horizontal: 8),
@@ -66,7 +67,8 @@ class SettingsTab extends ConsumerWidget {
                     RadioListTile<CharacterAlgorithm>(
                       title: Text(
                         'Random (Can Repeat)',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                       value: CharacterAlgorithm.random,
                       contentPadding: EdgeInsets.symmetric(horizontal: 8),
@@ -82,7 +84,8 @@ class SettingsTab extends ConsumerWidget {
               title: 'Countdown Duration',
               icon: Icons.timer_outlined,
               trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
@@ -152,7 +155,9 @@ class SettingsTab extends ConsumerWidget {
                         final currentMode = ref.read(themeNotifierProvider);
                         final desired = newSelection.first;
                         if (currentMode != desired) {
-                          ref.read(themeNotifierProvider.notifier).toggleTheme();
+                          ref
+                              .read(themeNotifierProvider.notifier)
+                              .toggleTheme();
                         }
                       },
                     ),
@@ -161,11 +166,14 @@ class SettingsTab extends ConsumerWidget {
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
                         'Show Character Name On Reveal',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                       value: showHint,
                       onChanged: (val) {
-                        ref.read(showCharacterNameHintProvider.notifier).set(val);
+                        ref
+                            .read(showCharacterNameHintProvider.notifier)
+                            .set(val);
                       },
                     ),
                   ],

@@ -18,9 +18,8 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accentColor = isUser
-        ? theme.colorScheme.primary
-        : theme.colorScheme.secondary;
+    final accentColor =
+        isUser ? theme.colorScheme.primary : theme.colorScheme.secondary;
 
     return Container(
       padding: const EdgeInsets.all(10),

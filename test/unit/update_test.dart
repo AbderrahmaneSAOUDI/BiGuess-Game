@@ -62,7 +62,8 @@ void main() {
   });
 
   group('RemoteVersion parsing and ABI resolution', () {
-    test('parses json defensively with string build number and string boolean', () {
+    test('parses json defensively with string build number and string boolean',
+        () {
       final json = {
         'latest_version': '0.32.0',
         'build_number': '12',
@@ -143,7 +144,9 @@ void main() {
       expect(fullApk.mandatory, isFalse);
     });
 
-    test('returns UpdateFullApk with mandatory=true when below minRequiredVersion', () {
+    test(
+        'returns UpdateFullApk with mandatory=true when below minRequiredVersion',
+        () {
       final local = SemVer.parse('0.29.0+1');
       const remote = RemoteVersion(
         latestVersion: '0.32.0',
@@ -160,7 +163,9 @@ void main() {
       expect(fullApk.mandatory, isTrue);
     });
 
-    test('returns UpdateShorebirdPatch when pure patch bump without native changes and Shorebird is available', () {
+    test(
+        'returns UpdateShorebirdPatch when pure patch bump without native changes and Shorebird is available',
+        () {
       final local = SemVer.parse('0.31.0+7');
       const remote = RemoteVersion(
         latestVersion: '0.31.1',
@@ -179,7 +184,9 @@ void main() {
       expect(decision, isA<UpdateShorebirdPatch>());
     });
 
-    test('falls back to UpdateFullApk when Shorebird is unavailable on the device', () {
+    test(
+        'falls back to UpdateFullApk when Shorebird is unavailable on the device',
+        () {
       final local = SemVer.parse('0.31.0+7');
       const remote = RemoteVersion(
         latestVersion: '0.31.1',

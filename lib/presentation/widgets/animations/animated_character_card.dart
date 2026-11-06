@@ -208,15 +208,16 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                       gradient: LinearGradient(
                         colors: [
                           theme.colorScheme.primary.withValues(alpha: 0.85),
-                          theme.colorScheme.primaryContainer.withValues(alpha: 0.85),
+                          theme.colorScheme.primaryContainer
+                              .withValues(alpha: 0.85),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: theme.colorScheme.primary
-                              .withValues(alpha: 0.32),
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.32),
                           blurRadius: 24,
                           spreadRadius: 2,
                           offset: const Offset(0, 6),
@@ -355,11 +356,10 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                 ),
                                 decoration: BoxDecoration(
                                   color: widget.showNameHint
-                                      ? theme.colorScheme
-                                          .surfaceContainerHighest
+                                      ? theme
+                                          .colorScheme.surfaceContainerHighest
                                       : (isDark
-                                          ? Colors.white
-                                              .withValues(alpha: 0.08)
+                                          ? Colors.white.withValues(alpha: 0.08)
                                           : Colors.black
                                               .withValues(alpha: 0.05)),
                                   borderRadius: BorderRadius.circular(22),
@@ -370,8 +370,8 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: theme.colorScheme.shadow
-                                          .withValues(
+                                      color:
+                                          theme.colorScheme.shadow.withValues(
                                         alpha: isDark ? 0.25 : 0.10,
                                       ),
                                       blurRadius: 8,
@@ -399,8 +399,7 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
                                         style: TextStyle(
                                           fontSize: 17,
                                           fontWeight: FontWeight.w800,
-                                          color:
-                                              theme.colorScheme.onSurface,
+                                          color: theme.colorScheme.onSurface,
                                           letterSpacing: 0.3,
                                         ),
                                         maxLines: 1,
