@@ -1,0 +1,11 @@
+2026-11-06T10:09:01.8634545Z Flutter 3.47.9 • channel stable • https://github.com/flutter/flutter.git
+2026-11-06T10:09:01.8636311Z Tools • Dart 3.13.7 • DevTools 2.60.0
+2026-11-06T10:09:29.2527858Z 00:02 +31: All tests passed!
+2026-11-06T10:09:29.7667609Z Ran 5 tests in 0.004s
+2026-11-06T10:09:29.7763830Z ##[group]Run python3 scripts/check_ci_failure_detection.py
+2026-11-06T10:09:39.2603165Z Command: flutter analyze --fatal-infos
+2026-11-06T10:09:39.2629215Z   error • A value of type 'String' can't be assigned to a variable of type 'int'. Try changing the type of the variable, or casting the right-hand type to 'int' • lib/ci_negative_v85s3vyf.dart:1:35 • invalid_assignment
+2026-11-06T10:09:39.2630165Z PASS: expected exit 1 and 'invalid_assignment' detected
+2026-11-06T10:09:41.6479611Z Command: flutter test --reporter expanded test/ci_negative_vt9f2_9w_test.dart
+2026-11-06T10:09:41.6512397Z   Expected: <3>
+2026-11-06T10:09:41.6515165Z PASS: expected exit 1 and 'Expected: <3>' detected

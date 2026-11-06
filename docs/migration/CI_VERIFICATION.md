@@ -67,4 +67,23 @@ release metadata; no production release is made.
 
 Initial remote-source verification passed analyzer and all **31 Flutter tests**.
 Formatting initially failed on 29 files and was corrected with `dart format lib test`.
-Hosted PR/push run URLs and conclusions will be recorded after execution.
+
+## Hosted acceptance: complete (2026-11-06)
+
+| Event | Commit | Run | Result |
+| --- | --- | --- | --- |
+| PR [#1](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/pull/1) | `1634363` | [42199913166](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/actions/runs/42199913166) | **SUCCESS** |
+| `main` push after merge | `d3320af` | [42200303160](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/actions/runs/42200303160) | **SUCCESS** |
+
+Both jobs passed all checks, including **31 Flutter tests**, **five version-gate
+tests**, and both deliberate-defect checks (expected exit 1 for `invalid_assignment`
+and `Expected: <3>`). The optional full-agent setup validator was skipped because
+this scoped change does not install that setup.
+
+[Machine run/step results](evidence/2026-11-06-t03-hosted/hosted_runs.json),
+[PR verification excerpts](evidence/2026-11-06-t03-hosted/pr_verification.txt), and
+[main verification excerpts](evidence/2026-11-06-t03-hosted/main_verification.txt)
+retain the hosted evidence. Required pre-merge checks and toolchain pins are above.
+Branch protection was not enabled by this task. No release or artifact publication
+was performed. The subsequent documentation commit records these completed runs;
+the workflow continues to check each future PR and main push.

@@ -8,7 +8,7 @@ class AppConstants {
   static const String appName = 'BiGuess Game';
   static const String appTitle = 'BiGuess';
   static const String appTagline = 'The Ultimate 2-Player Mystery Challenge';
-  static const String defaultVersion = '0.528.1';
+  static const String defaultVersion = '0.528.2';
   static const String fontFamily = 'GoogleSans';
   static const String imageDisclaimer =
       'We do not own any of the images. All rights belong to their respective owners.';
