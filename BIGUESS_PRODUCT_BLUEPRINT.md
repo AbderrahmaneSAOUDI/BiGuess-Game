@@ -104,7 +104,24 @@ The intended flow is:
 
 If a player wants to play another topic or pack that has not been downloaded, they reconnect, download the required content, and can then play that content offline.
 
-A downloaded Pack remains playable offline unless the player removes it locally or the device later synchronizes a valid cloud deletion.
+Downloaded content availability and cloud synchronization follow five authoritative principles:
+
+1. **Downloaded Packs remain playable offline.** Core gameplay operates with zero network dependency.
+2. **Offline devices cannot detect cloud changes.** BiGuess cannot control an offline device and never attempts to do so.
+3. **Deletions eventually propagate to connected devices.** When an authorized deletion occurs in the backend, connected devices receive deletion metadata during synchronization.
+4. **Local content is removed only at safe points.** When synchronization detects a valid deletion, the local content is removed safely without ever interfering with active gameplay.
+5. **No permanent connectivity or online license checks are required.** Players are never locked out of downloaded content due to lack of internet access.
+
+### Hidden vs. Deleted Content
+
+BiGuess strictly distinguishes between two administrative states:
+
+* **Hidden / Unpublished:** Content is no longer discoverable in the public catalog and is unavailable for new downloads. It is not necessarily deleted from backend storage. Its offline behavior for already-downloaded copies remains an open decision rather than an assumed automatic deletion.
+* **Deleted:** Content has been removed through an authorized administrative operation (strictly the Owner Admin in MVP; future Moderators post-MVP). Deletion creates tombstones that propagate to connected devices, removing local copies at safe points.
+
+### Gameplay Snapshot Safety
+
+An active game must never be interrupted by remote updates, deletions, or unpublishing. The Game Engine operates from a consistent local content snapshot. When synchronization discovers changes, they are applied only after the player exits the active game or returns to the Home screen.
 
 The core gameplay should not require:
 
@@ -285,7 +302,7 @@ BiGuess should provide settings that the application can meaningfully control.
 Initial configurable settings include:
 
 - Difficulty;
-- Number of rounds;
+- Number of rounds (up to 10 rounds per game in Free; configurable without this limit in Pro);
 - Single Pack selection (within chosen Topic);
 - Multiple selected Packs (within chosen Topic);
 - Random Pack selection (within chosen Topic).
@@ -544,20 +561,25 @@ BiGuess does not need to commit to a monetization model before the product has d
 
 Potential future models may include:
 
-- premium content packs;
-- free core content with premium packs;
-- a one-time Pro purchase;
-- carefully placed advertising outside active gameplay;
-- premium/community-created packs;
-- other models discovered through actual user behavior.
+- a one-time Pro upgrade or sustainable subscription;
+- official/licensed premium content packs;
+- carefully placed non-intrusive elements outside active gameplay;
+- creator-supported community packs.
 
 The core social experience should remain protected.
 
-In particular, monetization should not introduce intrusive interruptions during a round or force unnecessary online requirements into the core offline gameplay.
+In particular, monetization should not introduce intrusive interruptions during a round or force unnecessary online requirements into the core offline gameplay. No mandatory login or permanent online entitlement check is required during active gameplay.
 
-The product should first prove that people enjoy BiGuess.
+### Established Free vs. Pro Model
 
-Monetization can then be designed around what players actually value.
+* **Free Version:**
+  - **Pack Storage:** Free users can store a maximum of **5 downloaded Packs simultaneously**. All Cards inside those downloaded Packs are fully accessible for gameplay. If a user with 5 Packs wants to download another, removing an existing downloaded Pack frees a slot.
+  - **Rounds:** Free users can configure and play up to **10 rounds per game**. A single game cannot exceed 10 rounds. After reaching the limit, the game ends normally. Starting a new game from the Home screen resets the round limit. This is not a daily, lifetime, or cumulative play quota, and requires no advertisements or internet connection to play again.
+* **Pro Version:**
+  - Unlimited locally stored Packs, subject only to available device storage.
+  - No 10-round per game maximum.
+  - Full access to all Cards in downloaded Packs.
+  - Core game mechanics and offline capability remain identical in Free and Pro.
 
 ---
 
@@ -661,12 +683,15 @@ Difficulty should affect content selection rather than restrict the players' rea
 
 The number of rounds should be configurable.
 
-Possible choices can include a small set of easy-to-understand options such as:
+* **Free Version:** Players can configure and play up to **10 rounds per game**. A single Free game cannot exceed 10 rounds. After completing the configured rounds (up to 10), the game ends normally. When the group wishes to play again, they return to the Home screen and start a new game, which immediately resets the round counter. This is not a daily quota, lifetime cap, or cumulative playtime restriction. Starting another Free game requires no ads or network access.
+* **Pro Version:** Removes the 10-round per game limit, allowing unrestricted round numbers.
+
+Possible round options in the setup UI can include:
 
 - 1 round;
 - 3 rounds;
 - 5 rounds;
-- other appropriate options to be determined during UX design.
+- up to 10 rounds (Free version maximum; Pro allows higher or custom options).
 
 The exact interface should be designed to make configuration fast for a group that is already sitting together and ready to play.
 
@@ -833,7 +858,7 @@ The best outcome is that they **start playing BiGuess quickly and then spend the
 
 ---
 
-## Game Model
+# Game Model
 
 ### 1. Game Structure
 
@@ -1065,7 +1090,7 @@ Game
 ├── Topic: Anime
 ├── Packs: Naruto + One Piece
 ├── Difficulty: Medium
-├── Rounds: 3
+├── Rounds: 3 (Free supports up to 10 rounds per game; Pro allows unrestricted rounds)
 │
 ├── Round 1
 ├── Round 2
@@ -1267,7 +1292,7 @@ The players manage the actual game.
 
 ---
 
-## Content System
+# Content System
 
 ### 1. Purpose
 
@@ -1860,11 +1885,11 @@ The architecture must satisfy the following requirements:
 
 ---
 
-# 2. Main Systems
+## 2. Main Systems
 
 BiGuess consists of three major systems.
 
-## 2.1 BiGuess Mobile
+### 2.1 BiGuess Mobile
 
 The player-facing Flutter application.
 
@@ -1883,7 +1908,7 @@ The mobile application must not depend on the backend during gameplay.
 
 ---
 
-## 2.2 BiGuess Studio
+### 2.2 BiGuess Studio
 
 BiGuess Studio is a separate Flutter application used to manage BiGuess content.
 
@@ -1912,7 +1937,7 @@ Future responsibilities may include:
 
 ---
 
-## 2.3 Content Backend
+### 2.3 Content Backend
 
 The Content Backend stores and distributes BiGuess content.
 
@@ -1940,7 +1965,7 @@ It does not need:
 
 ---
 
-# 3. Offline-First Architecture
+## 3. Offline-First Architecture
 
 The most important technical principle of BiGuess is:
 
@@ -1977,7 +2002,7 @@ This guarantees that the real-life game is not interrupted by network problems.
 
 ---
 
-# 4. Mobile Application Architecture
+## 4. Mobile Application Architecture
 
 The BiGuess mobile application should separate presentation, game logic, content management, and storage.
 
@@ -2019,7 +2044,7 @@ The exact Flutter package and folder structure should be decided during implemen
 
 ---
 
-# 5. Separation Between Game and Content
+## 5. Separation Between Game and Content
 
 The Game Engine must not contain hardcoded Cards or Topic-specific logic.
 
@@ -2050,7 +2075,7 @@ This allows new Topics to be added without modifying the gameplay system.
 
 ---
 
-# 6. Content Architecture
+## 6. Content Architecture
 
 The technical system follows:
 
@@ -2100,7 +2125,7 @@ The database may contain additional technical fields, but these should not unnec
 
 ---
 
-# 7. Pack Download
+## 7. Pack Download
 
 The Pack is the main download unit.
 
@@ -2137,7 +2162,7 @@ The application should perform bulk downloads rather than requesting each Card i
 
 ---
 
-# 8. Remote Content Catalog
+## 8. Remote Content Catalog
 
 The application needs a lightweight way to discover what content exists before downloading it.
 
@@ -2157,7 +2182,7 @@ Browsing available Packs should not require downloading the entire Card dataset.
 
 ---
 
-# 9. Database Architecture
+## 9. Database Architecture
 
 The content database should be independent from the authentication system.
 
@@ -2191,7 +2216,7 @@ This separation allows the content database to be replaced without replacing the
 
 ---
 
-# 10. SQL as the Content Database
+## 10. SQL as the Content Database
 
 A SQL database is currently the preferred direction for the canonical BiGuess content database because the content relationships are naturally structured:
 
@@ -2221,7 +2246,7 @@ No provider should be selected merely because it is popular.
 
 ---
 
-# 11. Database Portability
+## 11. Database Portability
 
 The project should be designed so the Content Database can be replaced in the future.
 
@@ -2263,7 +2288,7 @@ Provider-specific database structures should therefore be isolated inside the ba
 
 ---
 
-# 12. Authentication Architecture
+## 12. Authentication Architecture
 
 Firebase Authentication may be used for BiGuess Studio authentication.
 
@@ -2295,7 +2320,7 @@ These responsibilities must remain separate.
 
 ---
 
-# 13. Studio Authorization
+## 13. Studio Authorization
 
 Only emails authorized by the Owner Admin can access BiGuess Studio.
 
@@ -2323,7 +2348,7 @@ An authenticated Google account is not automatically a Studio user.
 
 ---
 
-# 14. Studio Roles
+## 14. Studio Roles
 
 The MVP should support role-based access.
 
@@ -2344,27 +2369,42 @@ Responsibilities include:
 
 ## Data Collector
 
-A trusted contributor responsible for building content.
+A trusted contributor responsible for populating and maintaining content within their authorized scope.
 
-Responsibilities may include:
+Responsibilities include:
 
-* Add Cards.
-* Edit Cards.
+* Add Cards and modify Cards.
 * Assign difficulty.
-* Create Packs according to permissions.
-* Contribute content.
+* Manage permitted content metadata.
+* Create and edit Packs according to permissions.
+* Hide content from public visibility where authorized.
+* Maintain existing published content according to the established publishing workflow without Owner approval bottlenecks for routine edits.
 
-## Moderator
+**Authoritative Deletion Rule:**
+**Data Collectors cannot delete anything. In MVP, deletion operations are strictly restricted to the Owner Admin.** (Future Moderators will also be authorized to soft-delete content within their scope when community moderation is implemented post-MVP).
 
-A trusted user selected by the Owner Admin.
+Data Collectors must NOT:
+* Soft-delete content.
+* Permanently delete content.
+* Trigger deletion operations that remove content from the backend or users' devices.
+* Restore or permanently destroy deleted records.
 
-The future role is primarily intended for reviewing community submissions.
+Hiding content is not deletion. Backend authorization rules enforce these restrictions, not merely the Studio UI.
 
-The exact permission matrix should be defined before implementation.
+## Moderator (Future Extension — Post-MVP)
+
+A trusted role appointed by the Owner Admin for post-MVP community content governance.
+
+Responsibilities will include:
+* Review community submissions.
+* Perform authorized soft-deletion of inappropriate or policy-violating content.
+* Inspect reported content.
+
+*(Note: The Moderator role and workflow are explicitly excluded from the initial MVP; all MVP review, publishing, and deletion authority resides with the Owner Admin).*
 
 ---
 
-# 15. Studio First Login
+## 15. Studio First Login
 
 BiGuess Studio should be optimized for minimal remote database usage.
 
@@ -2388,7 +2428,7 @@ The goal is to allow users to work primarily from a locally synchronized dataset
 
 ---
 
-# 16. Studio Synchronization
+## 16. Studio Synchronization
 
 Studio synchronization is manual.
 
@@ -2416,7 +2456,7 @@ This reduces unnecessary database reads and keeps the system within free-tier li
 
 ---
 
-# 17. Optimized Refresh
+## 17. Optimized Refresh
 
 Pressing Refresh should not download the entire database every time.
 
@@ -2455,7 +2495,7 @@ The goal is:
 
 ---
 
-# 18. Studio Local Data
+## 18. Studio Local Data
 
 Studio should work primarily with its local synchronized dataset.
 
@@ -2484,7 +2524,7 @@ Examples of operations that should preferably be batched:
 
 ---
 
-# 19. Mobile Content Synchronization
+## 19. Mobile Content Synchronization
 
 Mobile synchronization follows the same low-request philosophy.
 
@@ -2504,9 +2544,11 @@ Offline Gameplay
 
 The application should not request individual Cards from the database during gameplay.
 
+Synchronization operates strictly in the background outside of active gameplay. When a connected device detects cloud changes (new packs, updates, or deletions), these changes are applied safely when the player is on the Home screen or leaves the gameplay flow. Synchronization never interrupts an active game.
+
 ---
 
-# 20. Content Updates
+## 20. Content Updates
 
 BiGuess does not require user-facing Pack version numbers.
 
@@ -2538,7 +2580,7 @@ The mechanism is an internal technical detail.
 
 ---
 
-# 21. Image Storage
+## 21. Image Storage
 
 Card images should be stored separately from database metadata whenever possible.
 
@@ -2569,7 +2611,7 @@ Images should also be optimized before publication to reduce:
 
 ---
 
-# 22. Local Mobile Storage
+## 22. Local Mobile Storage
 
 Downloaded Packs are stored inside BiGuess's private application storage.
 
@@ -2590,7 +2632,7 @@ The exact local database/storage technology will be selected during implementati
 
 ---
 
-# 23. Content Protection
+## 23. Content Protection
 
 Downloaded images should be stored in an encrypted/protected form.
 
@@ -2615,7 +2657,7 @@ Any content that can ultimately be displayed on a device can potentially be extr
 
 ---
 
-# 24. Game Engine
+## 24. Game Engine
 
 The Game Engine is completely local.
 
@@ -2629,8 +2671,11 @@ Its responsibilities include:
 * Assign Cards locally.
 * Remove selected Cards from the temporary pool.
 * Rebuild the pool when exhausted.
-* Track the current Round.
+* Track the current Round (enforcing up to 10 rounds per game in Free; unrestricted in Pro).
 * Finish the configured number of Rounds.
+* Maintain a consistent local content snapshot throughout the active game.
+
+**Core Principle:** Remote deletions, updates, or unpublishing never invalidate, alter, or interrupt an active game in progress.
 
 The Game Engine does not manage:
 
@@ -2645,7 +2690,7 @@ The Game Engine does not manage:
 
 ---
 
-# 25. Card Pool
+## 25. Card Pool
 
 When a game starts:
 
@@ -2671,7 +2716,7 @@ The pool is temporary and does not need to be persisted.
 
 ---
 
-# 26. Independent Player Devices
+## 26. Independent Player Devices
 
 Every player's phone operates independently.
 
@@ -2702,7 +2747,7 @@ The physical players create the connection through conversation and gameplay.
 
 ---
 
-# 27. Duplicate Cards Between Players
+## 27. Duplicate Cards Between Players
 
 BiGuess does not guarantee unique Cards across different phones.
 
@@ -2720,7 +2765,7 @@ BiGuess should not introduce networking solely to prevent this.
 
 ---
 
-# 28. Persistent Game State
+## 28. Persistent Game State
 
 BiGuess does not save Game State.
 
@@ -2743,7 +2788,7 @@ The only important persistent user-side data is downloaded content.
 
 ---
 
-# 29. Network Usage
+## 29. Network Usage
 
 Network access should be concentrated around content operations.
 
@@ -2767,7 +2812,7 @@ Network access should be concentrated around content operations.
 
 ---
 
-# 30. Free-Tier Optimization
+## 30. Free-Tier Optimization
 
 The architecture must actively minimize backend usage.
 
@@ -2809,7 +2854,7 @@ Future rejected community submissions should be deleted after one week.
 
 ---
 
-# 31. BiGuess Studio User Profiles
+## 31. BiGuess Studio User Profiles
 
 A Studio user has a profile.
 
@@ -2836,7 +2881,7 @@ These statistics provide useful information about each contributor and prepare t
 
 ---
 
-# 32. Contribution Statistics
+## 32. Contribution Statistics
 
 Studio should track contributor activity.
 
@@ -2855,7 +2900,7 @@ The system should prioritize minimizing writes while maintaining accurate statis
 
 ---
 
-# 33. Studio Gamification
+## 33. Studio Gamification
 
 A contributor ranking system is planned for the future.
 
@@ -2873,7 +2918,7 @@ The MVP includes the profile and basic contribution statistics needed to support
 
 ---
 
-# 34. Community Content
+## 34. Community Content
 
 Community content is not part of the initial Mobile MVP.
 
@@ -2907,7 +2952,7 @@ Community submissions must not automatically become public content.
 
 ---
 
-# 35. Moderation
+## 35. Moderation
 
 Moderators are selected by the Owner Admin using authorized email addresses.
 
@@ -2923,7 +2968,7 @@ Only accepted submissions become official published content.
 
 ---
 
-# 36. Rejected Submissions
+## 36. Rejected Submissions
 
 Rejected community submissions should not remain permanently stored.
 
@@ -2945,7 +2990,7 @@ This also supports the strict free-tier requirement.
 
 ---
 
-# 37. Community Contribution Statistics
+## 37. Community Contribution Statistics
 
 For future community content, only accepted submissions count toward contributor statistics and ranking.
 
@@ -2973,7 +3018,7 @@ Rejected content must not artificially increase contributor rankings.
 
 ---
 
-# 38. Backend Portability Strategy
+## 38. Backend Portability Strategy
 
 The architecture should be designed around a provider-independent domain.
 
@@ -3002,7 +3047,7 @@ This reduces the cost of future migration.
 
 ---
 
-# 39. Initial Backend Direction
+## 39. Initial Backend Direction
 
 The current preferred direction is:
 
@@ -3045,7 +3090,7 @@ The final selection must be based primarily on:
 
 ---
 
-# 40. Development Strategy
+## 40. Development Strategy
 
 BiGuess Mobile and BiGuess Studio should be developed in parallel.
 
@@ -3070,7 +3115,7 @@ This allows the mobile application to be tested with realistic Packs containing 
 
 ---
 
-# 41. MVP Technical Principles
+## 41. MVP Technical Principles
 
 The technical architecture follows these rules:
 
@@ -3173,7 +3218,7 @@ Its responsibility is content.
 
 ---
 
-# 2. Main Philosophy
+## 2. Main Philosophy
 
 BiGuess Studio should be designed around one fundamental goal:
 
@@ -3201,7 +3246,7 @@ The application should prioritize:
 
 ---
 
-# 3. Content Hierarchy
+## 3. Content Hierarchy
 
 BiGuess content follows a strict hierarchy:
 
@@ -3306,9 +3351,9 @@ Players determine those facts through their real-life questions.
 
 ---
 
-# 4. Studio Users and Roles
+## 4. Studio Users and Roles
 
-## 4.1 Owner Admin
+### 4.1 Owner Admin
 
 The Owner Admin has complete control over Studio and its content.
 
@@ -3335,57 +3380,66 @@ The Owner Admin is the final authority over published content.
 
 ---
 
-## 4.2 Data Collector
+### 4.2 Data Collector
 
-Data Collectors are trusted contributors who populate the BiGuess content database.
+Data Collectors are trusted contributors who populate and maintain the BiGuess content database.
 
-Their primary purpose is to create and maintain content.
+Their primary purpose is to create and maintain content within their authorized scope.
 
 A Collector can:
 
-* create Packs
-* edit Packs
-* delete Packs
+* create Packs within permitted Topics
+* edit Packs within their authorized scope
 * create Cards
 * edit Cards
-* delete Cards
 * upload images
 * assign Card difficulty
+* manage permitted content metadata
+* hide content from public visibility where their role permits
+* maintain existing published content according to the established publishing workflow
 * review their content
 * search content
 * filter content
-* perform bulk actions where permitted
+* perform bulk actions where permitted (excluding deletion)
 
-Collectors **cannot permanently delete content**.
+**Authoritative Deletion Rule:**
+**Data Collectors cannot delete anything. In MVP, deletion operations are strictly restricted to the Owner Admin.** (When the future Moderator role is introduced post-MVP, Moderators will be granted soft-deletion capabilities, but Data Collectors can never delete anything).
 
-Collectors can mark content as deleted, but the deletion is reversible by the Owner Admin.
+Data Collectors must NOT:
+* soft-delete content;
+* permanently delete content;
+* trigger deletion operations that remove content from the backend or users' devices;
+* restore or permanently destroy deleted records.
 
-Collectors also cannot manage Topics.
+Hiding content from public visibility is **not** deletion. Hiding removes content from catalog discovery and new downloads, whereas deletion is an authorized administrative operation that marks records for removal and propagates tombstones to connected devices.
 
-This keeps the top-level content taxonomy under administrative control while allowing Collectors to efficiently build Packs and Cards.
+Collectors also cannot manage Topics or perform initial Topic/Pack publishing (which requires Owner Admin approval).
 
----
-
-## 4.3 Moderator
-
-Moderators are a future role.
-
-They will primarily exist when BiGuess supports community-generated content.
-
-Moderators will eventually be able to:
-
-* review community submissions
-* accept submissions
-* reject submissions
-* inspect reported content
-
-Moderator functionality is **not part of the initial Studio MVP**.
+This keeps taxonomy, initial publishing, and deletion strictly governed while empowering Collectors to build and maintain Packs and Cards without administrative bottlenecks. Backend authorization rules enforce these permissions, not merely the Studio UI.
 
 ---
 
-# 5. Authentication and Authorization
+### 4.3 Moderator (Post-MVP Extension)
 
-## 5.1 Google Login
+Moderators are a future role associated with community-generated content.
+
+Moderator functionality and workflows are **explicitly outside the initial Studio MVP**.
+
+When introduced post-MVP, Moderators will be authorized to:
+
+* review community submissions;
+* accept submissions;
+* reject submissions;
+* perform soft-deletion on inappropriate content;
+* inspect reported content.
+
+In the initial Studio MVP, all administrative review, initial publishing, soft-deletion, restoration, and permanent deletion are performed exclusively by the Owner Admin.
+
+---
+
+## 5. Authentication and Authorization
+
+### 5.1 Google Login
 
 BiGuess Studio uses Google authentication.
 
@@ -3401,7 +3455,7 @@ The BiGuess backend answers:
 
 ---
 
-## 5.2 Authorized Users
+### 5.2 Authorized Users
 
 Studio access is restricted.
 
@@ -3423,7 +3477,7 @@ Instead, the user sees an access-denied state and can sign out.
 
 ---
 
-## 5.3 Roles Must Be Data-Driven
+### 5.3 Roles Must Be Data-Driven
 
 The application should not hard-code permissions throughout the UI.
 
@@ -3445,7 +3499,7 @@ This makes it possible to introduce additional roles later without redesigning t
 
 ---
 
-# 6. Studio Navigation
+## 6. Studio Navigation
 
 The Studio interface should remain simple.
 
@@ -3472,7 +3526,7 @@ The exact visual layout can be decided during UI/UX design, but navigation shoul
 
 ---
 
-# 7. Dashboard
+## 7. Dashboard
 
 The Dashboard provides a quick overview of the content system and the user's activity.
 
@@ -3525,7 +3579,7 @@ Advanced analytics are not part of the MVP.
 
 ---
 
-# 8. Topic Management
+## 8. Topic Management
 
 Topics represent the highest level of the content hierarchy.
 
@@ -3562,7 +3616,7 @@ Keeping Topic management restricted avoids this problem.
 
 ---
 
-# 9. Pack Management
+## 9. Pack Management
 
 Packs are the primary organizational and download unit.
 
@@ -3591,64 +3645,66 @@ A Pack should show information such as:
 Naruto
 
 Topic: Anime
-Cards: 142
+Total Cards: 142
+Active Cards: 138
+Hidden Cards: 4
 
-Draft Cards: 32
-Published Cards: 110
-
-Status: Published
+Pack Status: Published
 
 [Add Cards]
-[Review]
-[Publish]
+[Review & Validate]
+[Publish Revision]
 ```
 
-The exact information displayed can evolve with the UI design.
+Cards are not published independently; publishing occurs strictly at the Topic and Pack level. Individual Cards within a Pack have visibility status (`Active` or `Hidden`).
 
 ---
 
-## Pack CRUD
+## Pack Operations
 
 Collectors can:
 
-* create Packs
-* edit Packs
-* mark Packs as deleted
+* create Packs within permitted Topics;
+* edit Packs within their authorized scope;
+* hide Packs from public visibility where authorized.
 
-Owner Admin can:
+Owner Admin (MVP) can:
 
-* create Packs
-* edit Packs
-* mark Packs as deleted
-* restore Packs
-* permanently delete Packs
-* publish Packs
-* unpublish Packs
+* create Packs;
+* edit Packs;
+* soft-delete Packs (generates deletion tombstones for distribution);
+* restore Packs;
+* permanently delete Packs;
+* publish Packs;
+* unpublish Packs.
 
 ---
 
-# 10. Soft Deletion
+## 10. Soft Deletion
 
-Deletion of content by Collectors must be **soft deletion**.
+In MVP, deletion operations are strictly restricted to the Owner Admin. Data Collectors cannot perform deletion operations of any kind. (When the Moderator role is implemented post-MVP, Moderators will also receive soft-deletion permissions).
 
-A Collector does not permanently remove content from the database.
+When an authorized Owner Admin deletes content, the operation is **soft deletion**.
+
+Content is not immediately destroyed in the database.
 
 Instead:
 
 ```text
 Active
   ↓
-Deleted
+Deleted (Soft-Deleted)
 ```
 
-Deleted content:
+Soft-deleted content:
 
-* disappears from normal content views
-* is hidden from the BiGuess mobile game
-* is excluded from normal searches and lists
-* remains available to the Owner Admin
+* disappears from normal content views;
+* is hidden from the BiGuess mobile game and distribution catalogs;
+* is excluded from normal searches and lists;
+* generates deletion synchronization metadata (tombstones) for mobile propagation;
+* remains available to the Owner Admin for review and audit.
 
-The Owner Admin can then decide what happens next:
+The Owner Admin can then determine the subsequent lifecycle:
 
 ```text
 Deleted
@@ -3658,11 +3714,11 @@ Deleted
    └── Permanently Delete
 ```
 
-This protects against accidental deletion and allows the Owner Admin to review content before permanently removing it.
+This protects against accidental deletion and provides a safe review period before irreversible physical removal.
 
 ---
 
-# 11. Deleted Content and the Mobile Game
+## 11. Deleted Content and the Mobile Game
 
 Deleted content must never be included in newly distributed playable content.
 
@@ -3673,43 +3729,47 @@ Card
 Status: Deleted
 ```
 
-the mobile game must not select it during gameplay.
+the mobile game must not select it in future games.
 
-If a Pack is deleted, it must not be offered as an available playable Pack.
+If a Pack is deleted, it must not be offered as an available playable Pack in the catalog.
 
 If a Topic is deleted, it must not be offered as an available Topic.
 
-Local cached content also needs to respect deletion updates.
+### Safe Deletion Propagation
 
-Therefore synchronization must be able to communicate not only:
-
-```text
-New content
-```
-
-but also:
+Synchronization communicates both additions and deletions:
 
 ```text
-Deleted content
+Additions & Updates
+         +
+Deletion Tombstones
 ```
+
+**Non-Interruption Rule:** If a game is currently active, detected deletions are not applied immediately to the running game. The Game Engine preserves its consistent local content snapshot until the game concludes. When the user returns to the Home screen or exits the active gameplay flow, the deletion is safely executed against local storage.
+
+### Deletion vs. Unpublishing
+
+* **Deleted Content:** Authorized administrative deletion that must eventually be purged from devices upon synchronization.
+* **Hidden / Unpublished Content:** Removed from catalog visibility and new downloads, but not deleted from storage. Offline behavior for already-downloaded unpublished content remains an open decision.
 
 ---
 
-# 12. Card Management
+## 12. Card Management
 
 Cards are the most frequently created entities in Studio.
 
 The Card editor should remain simple.
 
-A Card contains:
+The canonical MVP Card model requires exactly four core elements:
 
-```text
-Name
-Image
-Difficulty
-```
+- **Name**
+- **Image**
+- **Difficulty** (1 = Easy, 2 = Medium, 3 = Hard)
+- **Pack** (relationship)
 
-The Pack relationship is determined by the context in which the Card is created.
+Do not add `Subtitle`, `Description`, `Tags`, `Aliases`, or topic-specific semantic attributes to the required MVP Card model. Technical identifiers (`id`, `packId`, `imageReference`) exist internally, but the product-level model remains strictly generic and topic-agnostic.
+
+The Pack relationship is determined by the context in which the Card is created. Data Collectors may create, edit, and hide Cards, but cannot delete them (deletion is restricted to Owner Admin in MVP).
 
 Example:
 
@@ -3734,7 +3794,7 @@ Difficulty:
 
 ---
 
-# 13. Card Naming
+## 13. Card Naming
 
 The Card Name remains a dedicated field.
 
@@ -3800,7 +3860,7 @@ The Collector always has the ability to edit the name.
 
 ---
 
-# 14. Image Upload and Automatic Compression
+## 14. Image Upload and Automatic Compression
 
 Image handling should be designed to minimize storage and bandwidth usage.
 
@@ -3836,7 +3896,7 @@ The objective is:
 
 ---
 
-# 15. Image Processing Principles
+## 15. Image Processing Principles
 
 Image processing should balance:
 
@@ -3860,7 +3920,7 @@ The system should avoid processing that noticeably slows down the content-creati
 
 ---
 
-# 16. Bulk Card Import
+## 16. Bulk Card Import
 
 Bulk importing is an important Studio feature.
 
@@ -3885,7 +3945,7 @@ Studio then creates a list of Cards for review.
 
 ---
 
-# 17. Bulk Import Review
+## 17. Bulk Import Review
 
 Bulk importing should **not immediately publish or blindly save all cards**.
 
@@ -3929,7 +3989,7 @@ This is especially useful when the filename has been used as the initial suggest
 
 ---
 
-# 18. Bulk Import Goals
+## 18. Bulk Import Goals
 
 The bulk-import workflow should optimize for:
 
@@ -3953,7 +4013,7 @@ In particular, difficulty assignment should remain under human control.
 
 ---
 
-# 19. Bulk Actions
+## 19. Bulk Actions
 
 Once content exists, Studio should support useful bulk actions.
 
@@ -3963,23 +4023,27 @@ For example:
 Select 20 Cards
 
 [Change Difficulty]
-[Delete]
+[Hide / Retire]
 ```
 
 Potential future actions can include:
 
 * changing difficulty
-* moving Cards
-* deleting Cards
-* restoring Cards
+* moving Cards (within authorized scope)
+* hiding Cards from public visibility where authorized
+* administrative deletion and restoration (Admins / Moderators only)
 
-Bulk actions should always respect the user's role.
+Bulk actions must always strictly enforce role-based boundaries:
 
-Dangerous operations such as deletion should require confirmation.
+* **Data Collectors cannot delete:** Collectors may bulk-change difficulty, bulk-move Cards within scope, and bulk-hide Cards where authorized, but cannot initiate bulk deletion.
+* In MVP, all deletion operations (soft-deletion and permanent deletion) are restricted to the Owner Admin.
+* Soft-deletion permissions for community submissions will extend to Moderators when that role is implemented post-MVP.
+* Soft-deleted Cards remain recoverable by Owner Admin.
+* Changes to published content create a new revision following automated validation.
 
 ---
 
-# 20. Search
+## 20. Search
 
 Search is an essential Studio feature.
 
@@ -4012,7 +4076,7 @@ This provides:
 
 ---
 
-# 21. Filtering
+## 21. Filtering
 
 Studio should support practical local filtering.
 
@@ -4039,32 +4103,43 @@ The goal is to make large datasets manageable without generating unnecessary bac
 
 ---
 
-# 22. Content Status
+## 22. Content Status and Visibility
 
-Content should have a lifecycle.
+BiGuess maintains a clear separation between container publishing status and individual Card visibility:
 
-At minimum, Studio needs to distinguish between content that is:
+### 1. Topics and Packs (Publishing Entities)
+
+Topics and Packs are the units of catalog discovery and distribution. Their lifecycle states are:
 
 ```text
 Draft
-Published
-Deleted
+   ↓
+Published  ⇄  Unpublished (Hidden)
+   ↓
+Deleted (Soft-Deleted)
+   │
+   ├── Restore (by Owner)
+   └── Permanent Deletion (by Owner)
 ```
 
-Deleted is a separate state because deletion is soft and reversible by the Owner Admin.
+* **Draft:** Work-in-progress, not yet eligible for public mobile distribution.
+* **Published:** Validated and accessible for mobile discovery and download.
+* **Unpublished (Hidden):** Temporarily hidden from public catalog discovery and new downloads without backend deletion.
+* **Deleted:** Soft-deleted by the Owner Admin; publishes deletion tombstones to synchronization metadata.
 
-The exact internal state model can be expanded if future community moderation requires states such as:
+### 2. Cards (Component Entities within a Pack)
 
-```text
-Pending Review
-Rejected
-```
+Cards are not individually published to mobile users. They inherit publication from their parent Pack. Within a Pack, each Card has an explicit visibility status:
 
-but those states should not unnecessarily complicate the MVP.
+* **Active:** Fully visible and eligible for gameplay selection whenever the parent Pack is published.
+* **Hidden:** Temporarily suppressed from mobile gameplay selection and synchronization by a Collector or Admin without deleting the Card record (ideal for seasonal rotation or content correction).
+* **Deleted:** Soft-deleted by Owner Admin; excluded from distribution and generates a Card deletion tombstone if previously synced.
+
+The internal state model may later incorporate community moderation states (`Pending Review`, `Rejected`), but those remain post-MVP extensions.
 
 ---
 
-# 23. Publishing Model
+## 23. Publishing Model
 
 Publishing happens at the **Topic and Pack level**.
 
@@ -4077,7 +4152,7 @@ A Topic can also have a published state because Topics themselves determine what
 Publishing governance follows three distinct tiers:
 
 1. **Initial Publication (Packs and Topics):** Requires Owner Admin validation and explicit approval before becoming available to mobile users.
-2. **Routine Maintenance of Published Packs:** Authorized Data Collectors can directly edit, add, or retire Cards in an already-published Pack. The Pack receives a new revision automatically, without creating an Owner approval bottleneck for routine content updates.
+2. **Routine Maintenance of Published Packs:** Authorized Data Collectors can directly edit, add, or hide Cards in an already-published Pack within their permissions. Every new published revision must pass applicable automated validation rules before becoming distributed. If valid, the Pack receives a new revision automatically, without creating an Owner approval bottleneck for routine updates.
 3. **Community Submissions (Future):** Submissions from external community contributors will enter a dedicated moderation queue before review and publication.
 
 Example:
@@ -4097,7 +4172,7 @@ The mobile application should only receive content that is eligible for publicat
 
 ---
 
-# 24. Pack Publishing
+## 24. Pack Publishing
 
 A Pack should have a clear review state before publishing.
 
@@ -4122,7 +4197,7 @@ If the Pack is later modified, the changes must be reflected in the synchronizat
 
 ---
 
-# 25. Topic Publishing
+## 25. Topic Publishing
 
 Topics can also be published or unpublished.
 
@@ -4153,25 +4228,27 @@ makes it available to players.
 
 ---
 
-# 26. Unpublishing
+## 26. Unpublishing
 
 Publishing should be reversible.
 
-The Owner Admin should be able to:
+The Owner Admin (or authorized contributor) should be able to:
 
 ```text
 Published
     ↓
-Unpublish
+Unpublish / Hide
     ↓
-Not available for new gameplay
+Not available for new downloads from catalog
 ```
 
-This is important for correcting mistakes, temporarily removing problematic content, or preparing major content changes.
+Unpublishing hides the Topic or Pack from the public catalog so that new users cannot discover or download it.
+
+**Distinction from Deletion:** Unpublishing is not deletion. It does not purge content from backend storage. Existing offline behavior on devices that already downloaded the content prior to unpublishing remains an open decision rather than an assumed local deletion policy.
 
 ---
 
-# 27. Validation Before Publishing
+## 27. Validation Before Publishing
 
 Studio should validate content before allowing publication.
 
@@ -4206,7 +4283,7 @@ Validation should prevent broken content from being distributed to the mobile ap
 
 ---
 
-# 28. Duplicate Detection
+## 28. Duplicate Detection
 
 Studio should help identify potential duplicate Cards.
 
@@ -4234,7 +4311,7 @@ The final decision remains with the content manager.
 
 ---
 
-# 29. Local-First Architecture
+## 29. Local-First Architecture
 
 Studio should operate primarily from local data after synchronization.
 
@@ -4261,7 +4338,7 @@ Normal browsing, searching, filtering, and editing should use local data wheneve
 
 ---
 
-# 30. First Login
+## 30. First Login
 
 After the first successful login and authorization:
 
@@ -4285,7 +4362,7 @@ After that, Studio should avoid repeatedly downloading everything.
 
 ---
 
-# 31. Manual Synchronization
+## 31. Manual Synchronization
 
 Studio should use **manual refresh**, not realtime synchronization.
 
@@ -4322,7 +4399,7 @@ The system should avoid downloading unchanged content.
 
 ---
 
-# 32. Incremental Synchronization
+## 32. Incremental Synchronization
 
 Synchronization should support:
 
@@ -4356,7 +4433,7 @@ This minimizes:
 
 ---
 
-# 33. Free-Tier-First Engineering
+## 33. Free-Tier-First Engineering
 
 A fundamental BiGuess architecture principle is:
 
@@ -4404,7 +4481,7 @@ If a more efficient architecture provides the same functionality while using few
 
 ---
 
-# 34. Backend Independence
+## 34. Backend Independence
 
 Studio should not directly couple the UI to a specific backend provider.
 
@@ -4428,7 +4505,7 @@ This makes it possible to change infrastructure later without rewriting Studio's
 
 ---
 
-# 35. Image Storage
+## 35. Image Storage
 
 Card metadata belongs in the database.
 
@@ -4458,7 +4535,7 @@ This keeps the database suitable for structured data while allowing image storag
 
 ---
 
-# 36. Mobile Image Protection
+## 36. Mobile Image Protection
 
 Images distributed to the mobile application should be stored in the application's private storage.
 
@@ -4486,7 +4563,7 @@ Protection should not noticeably affect normal gameplay.
 
 ---
 
-# 37. Contribution Statistics
+## 37. Contribution Statistics
 
 User profiles are part of the Studio MVP.
 
@@ -4517,7 +4594,7 @@ The statistics represent actual activity.
 
 ---
 
-# 38. Contribution Counting
+## 38. Contribution Counting
 
 Deleted content does **not** erase the contributor's historical contribution count.
 
@@ -4544,7 +4621,7 @@ This also creates useful data for possible future contributor rankings.
 
 ---
 
-# 39. Ranking
+## 39. Ranking
 
 Contributor ranking is **not part of the MVP**.
 
@@ -4573,7 +4650,7 @@ just for the sake of gamification.
 
 ---
 
-# 40. Community Content — Future
+## 40. Community Content — Future
 
 Community contributions are a future extension.
 
@@ -4599,7 +4676,7 @@ Only accepted contributions should count toward future contributor rankings.
 
 ---
 
-# 41. Rejected Community Content
+## 41. Rejected Community Content
 
 Rejected community content should not be stored indefinitely.
 
@@ -4621,7 +4698,7 @@ The exact implementation of the cleanup mechanism will depend on the selected ba
 
 ---
 
-# 42. Data Editing and Conflicts
+## 42. Data Editing and Conflicts
 
 Studio is not intended to provide realtime collaborative editing.
 
@@ -4641,7 +4718,7 @@ The priority is avoiding unnecessary synchronization complexity.
 
 ---
 
-# 43. Offline Capability
+## 43. Offline Capability
 
 Studio should remain useful when the network is temporarily unavailable.
 
@@ -4661,7 +4738,7 @@ The exact offline editing queue will be determined during the synchronization ar
 
 ---
 
-# 44. Studio MVP
+## 44. Studio MVP
 
 The first production-ready Studio should contain:
 
@@ -4680,21 +4757,21 @@ The first production-ready Studio should contain:
 
 ## Packs
 
-* Collector CRUD
+* Collector Create/Read/Update/Hide (no deletion)
 * Owner CRUD
-* soft deletion
-* restoration by Owner
-* permanent deletion by Owner
-* publishing
-* unpublishing
+* Soft deletion (Owner Admin only in MVP; Moderator post-MVP)
+* Restoration by Owner
+* Permanent deletion by Owner
+* Publishing
+* Unpublishing
 
 ## Cards
 
-* Collector CRUD
+* Collector Create/Read/Update/Hide (no deletion)
 * Owner CRUD
-* soft deletion
-* restoration by Owner
-* permanent deletion by Owner
+* Soft deletion (Owner Admin only in MVP; Moderator post-MVP)
+* Restoration by Owner
+* Permanent deletion by Owner
 * image upload
 * automatic image compression
 * difficulty assignment
@@ -4737,7 +4814,7 @@ The first production-ready Studio should contain:
 
 ---
 
-# 45. Explicitly Out of MVP
+## 45. Explicitly Out of MVP
 
 The following should **not** delay the first Studio release:
 
@@ -4763,7 +4840,7 @@ These can be reconsidered after BiGuess has real users and real content-creation
 
 ---
 
-# 46. Ideal Collector Workflow
+## 46. Ideal Collector Workflow
 
 The complete intended workflow should feel like this:
 
@@ -4811,7 +4888,7 @@ The experience should feel fast enough that a Collector can comfortably create l
 
 ---
 
-# 47. Design Principles
+## 47. Design Principles
 
 BiGuess Studio should follow these principles throughout development.
 
@@ -4875,7 +4952,7 @@ Community systems, ranking, moderation, AI, and advanced analytics should only b
 
 ---
 
-# 48. Final Studio Vision
+## 48. Final Studio Vision
 
 BiGuess Studio should ultimately become the **content engine behind BiGuess**.
 
@@ -4945,7 +5022,6 @@ Everything beyond that can grow when the project earns the right to become more 
 
 ---
 
-## Distribution & Updates
 # Distribution & Updates
 
 ## 1. Purpose
@@ -4964,7 +5040,7 @@ Once the required Packs are downloaded and verified, the user should be able to 
 
 ---
 
-# 2. Distribution Model
+## 2. Distribution Model
 
 BiGuess uses a **Pack-based distribution model**.
 
@@ -5007,7 +5083,7 @@ The user downloads **Pack A**, not individual Cards.
 
 ---
 
-# 3. Catalog vs Content
+## 3. Catalog vs Content
 
 BiGuess should distinguish between lightweight catalog information and heavy playable content.
 
@@ -5043,7 +5119,7 @@ The user should explicitly choose which Packs they want available offline.
 
 ---
 
-# 4. Downloading Packs
+## 4. Downloading Packs
 
 Downloading a Pack is the main way new playable content enters the device.
 
@@ -5073,7 +5149,7 @@ If the download fails halfway through, the Pack must not be treated as a complet
 
 ---
 
-# 5. Pack Download Size
+## 5. Pack Download Size
 
 Before downloading a Pack, BiGuess should show the user an approximate download size.
 
@@ -5082,8 +5158,8 @@ For example:
 ```text
 Anime Legends
 
-Cards: 250
-Download size: ~38 MB
+Cards: 200
+Download size: ~8.5 MB
 
 [ Download ]
 ```
@@ -5094,7 +5170,7 @@ The displayed size does not need to be perfectly exact, but it should be reasona
 
 ---
 
-# 6. Download Activity and Logs
+## 6. Download Activity and Logs
 
 Downloading a Pack should not feel like a black box.
 
@@ -5146,7 +5222,7 @@ The activity view may also be useful for diagnosing failed downloads without req
 
 ---
 
-# 7. Download Integrity
+## 7. Download Integrity
 
 BiGuess should verify downloaded content before considering a Pack ready.
 
@@ -5166,7 +5242,7 @@ A corrupted or incomplete download must never silently replace valid local conte
 
 ---
 
-# 8. Local Pack States
+## 8. Local Pack States
 
 A downloaded Pack can have states similar to:
 
@@ -5213,13 +5289,19 @@ A previously valid local version should remain usable whenever possible.
 
 ---
 
-# 9. Offline Availability
+## 9. Offline Availability
 
 Once a Pack is successfully downloaded:
 
 > **A downloaded Pack does not expire and requires no periodic online validation.**
 
-It remains playable offline indefinitely unless removed locally by the user or removed after synchronizing a valid cloud deletion. BiGuess must not require the user to reconnect to the internet before playing a downloaded Pack.
+Offline availability follows five authoritative rules:
+
+1. **Downloaded Packs remain playable offline indefinitely.** Gameplay never requires an active network connection or periodic online validation.
+2. **Offline devices cannot detect cloud changes.** BiGuess cannot control an offline device and never attempts to do so.
+3. **Deletions propagate when connected.** When an authorized deletion occurs on the backend, connected devices receive deletion tombstones during synchronization.
+4. **Local content is removed only at safe points.** When synchronization detects a valid deletion, local content is removed safely without ever interrupting active gameplay.
+5. **No periodic online license validation.** Players are never locked out of downloaded content due to offline duration.
 
 The user should be able to:
 
@@ -5236,7 +5318,7 @@ The internet is required for obtaining or synchronizing content, not for the act
 
 ---
 
-# 10. No Network During Gameplay
+## 10. No Network During Gameplay
 
 The Game Engine should operate entirely from local content.
 
@@ -5255,7 +5337,7 @@ This is especially important because BiGuess is designed for real-world social s
 
 ---
 
-# 11. Pack Selection and Downloads
+## 11. Pack Selection and Downloads
 
 A user may select one or multiple Packs from the same Topic.
 
@@ -5281,7 +5363,7 @@ This preserves the Pack as the fundamental unit of distribution and makes failur
 
 ---
 
-# 12. Download Concurrency
+## 12. Download Concurrency
 
 BiGuess should avoid downloading an unlimited number of files simultaneously.
 
@@ -5297,7 +5379,7 @@ The exact concurrency limit can be determined during implementation and testing.
 
 ---
 
-# 13. Interrupted Downloads
+## 13. Interrupted Downloads
 
 Downloads can fail because of:
 
@@ -5314,7 +5396,7 @@ Where technically practical, BiGuess should support retrying or resuming downloa
 
 ---
 
-# 14. Atomic Pack Updates
+## 14. Atomic Pack Updates
 
 Updating a Pack should not destroy the currently playable Pack before the new version is ready.
 
@@ -5340,7 +5422,7 @@ Only after the new Pack has been successfully downloaded and verified should it 
 
 ---
 
-# 15. Incremental Pack Updates
+## 15. Incremental Pack Updates
 
 BiGuess should avoid redownloading an entire Pack whenever a small change occurs.
 
@@ -5380,7 +5462,7 @@ It also helps BiGuess remain within free-tier infrastructure limits.
 
 ---
 
-# 16. Pack Revisions
+## 16. Pack Revisions
 
 Users do not need to see technical version numbers.
 
@@ -5412,7 +5494,7 @@ Update available
 
 ---
 
-# 17. Checking for Updates
+## 17. Checking for Updates
 
 Update checking should be lightweight.
 
@@ -5442,7 +5524,7 @@ This distinction is important for users with limited mobile data.
 
 ---
 
-# 18. Manual Updates
+## 18. Manual Updates
 
 Large content downloads should not happen silently in the background.
 
@@ -5462,7 +5544,7 @@ Lightweight update checks are acceptable, but the actual transfer of large conte
 
 ---
 
-# 19. No Realtime Content Synchronization
+## 19. No Realtime Content Synchronization
 
 BiGuess does not require realtime synchronization.
 
@@ -5486,7 +5568,7 @@ Content changes can be detected during appropriate synchronization moments inste
 
 ---
 
-# 20. Studio Synchronization
+## 20. Studio Synchronization
 
 BiGuess Studio follows the same local-first philosophy.
 
@@ -5512,7 +5594,7 @@ The exact implementation may differ between Studio and the mobile game, but unne
 
 ---
 
-# 21. Content Created by Trusted Collectors
+## 21. Content Created by Trusted Collectors
 
 BiGuess Studio collectors are trusted members of the project team.
 
@@ -5524,7 +5606,7 @@ This is especially important because the project owner needs to remain focused o
 
 ---
 
-# 22. Updating a Published Pack
+## 22. Updating a Published Pack
 
 A published Pack may be updated directly by an authorized Studio collector.
 
@@ -5533,20 +5615,22 @@ The workflow is:
 ```text
 Published Pack
       ↓
-Collector edits Pack
+Collector edits Pack (adds / modifies / hides Cards; no deletion)
       ↓
-Adds / modifies / removes Cards
+Automated validation checks
       ↓
-Collector saves changes
+Collector saves valid changes
       ↓
 Pack receives a new internal revision
       ↓
 Published Pack is updated
       ↓
-Devices detect the change
+Connected devices detect the revision
       ↓
 Devices download required changes
 ```
+
+Routine edits by trusted collectors do not require manual Owner Admin approval, but every new published revision must pass applicable automated validation rules. Invalid content must never be distributed as a valid Pack update.
 
 There is no requirement for Owner Admin approval for every update to a published Pack.
 
@@ -5556,7 +5640,7 @@ The purpose is to keep content production efficient and prevent the Owner Admin 
 
 ---
 
-# 23. Publishing Rules
+## 23. Publishing Rules
 
 Publishing applies to:
 
@@ -5585,52 +5669,64 @@ Publishing happens at the Topic and Pack levels.
 
 ---
 
-# 24. Pack Deletion
+## 24. Pack Deletion
 
-There is only **one deletion behavior** for Packs.
+BiGuess strictly distinguishes between deletion and hiding/unpublishing:
 
-BiGuess does not distinguish between different deletion types.
+* **Hidden / Unpublished:** Content is removed from catalog discovery and new downloads. It remains in backend storage. Offline behavior for devices that already have it downloaded remains an open decision.
+* **Deleted:** Content has been deleted through an authorized administrative operation (strictly Owner Admin in MVP; Moderator post-MVP). Deletion creates tombstones that propagate to connected devices.
 
-When a Pack is removed from the cloud:
+When a Pack is deleted from the cloud:
 
-1. The Pack is no longer available for new downloads.
-2. Connected devices learn that the Pack has been deleted.
-3. The local Pack is deleted from those devices.
-4. The Pack becomes unavailable for gameplay.
-
-The goal is to keep the local device synchronized with the actual cloud catalog.
+1. The Pack is soft-deleted and assigned a deletion tombstone in the backend (retaining audit records; permanent deletion is a separate Owner-only operation).
+2. Deletion tombstones are published in synchronization metadata.
+3. Connected devices learn about the deletion during synchronization.
+4. The local Pack is removed from those devices at a safe point (upon returning to Home or exiting gameplay).
+5. The Pack becomes unavailable for future games.
 
 ---
 
-# 25. Device Behavior After Cloud Deletion
+## 25. Device Behavior After Cloud Deletion
 
-A device cannot know about a deletion while it is completely offline.
+A device cannot detect cloud changes while it is offline. Furthermore, **cloud deletion must never interrupt active gameplay**.
 
 Therefore:
 
 ```text
 Cloud Pack deleted
         ↓
-Device offline
+Device offline or in active game
         ↓
-Existing local Pack may temporarily remain
+Active game continues using its local snapshot
         ↓
-Device reconnects
+Device reconnects & syncs (or exits game)
         ↓
-Synchronization detects deletion
+Player returns to Home screen
         ↓
-Local Pack is immediately deleted
+Detected deletion safely applied to local storage
+        ↓
+Pack unavailable for next game
 ```
 
-As soon as the device has connectivity and receives the information that the Pack has been deleted, it should remove the local Pack.
+### Synchronization Triggers & Deletion Propagation
 
-There are no separate deletion categories or complicated deletion modes.
+BiGuess defines explicit, low-overhead triggers for discovering cloud deletions and updates without polling or background battery drain:
 
-This keeps both the Studio workflow and the mobile synchronization implementation simpler.
+1. **Lightweight Check Triggers:** Whenever the device has network connectivity, a lightweight check (querying revision hashes and tombstones) is automatically triggered upon:
+   * **App Cold Launch:** Initial startup check before or during catalog summary display.
+   * **App Resume:** Bringing the application back to the foreground from the system background.
+   * **Return to Home Screen:** Navigating back to the Home or Topics screen after finishing or leaving a game.
+2. **Safe Deletion Application:**
+   * If an active game is currently in progress, detected deletions are buffered and **never interrupt the active game**.
+   * Once the player returns to the Home screen or exits the active gameplay flow, the local SQLite records and cached image assets for the deleted Pack are safely purged.
+   * The next game uses the refreshed local content dataset.
+3. **Separation of Deletions vs. Downloads:**
+   * Deletion synchronization is automated and lightweight (free-tier friendly, tiny tombstone payload).
+   * In contrast, large content downloads (new packs or extensive card additions) remain manual and user-initiated to respect player data preferences.
 
 ---
 
-# 26. Deletion vs Local Storage Management
+## 26. Deletion vs Local Storage Management
 
 Deleting a Pack from the cloud is different from the user removing a downloaded Pack from their own device.
 
@@ -5658,7 +5754,7 @@ Once the device learns about the deletion, the local copy must be removed.
 
 ---
 
-# 27. Deleted Content and Synchronization
+## 27. Deleted Content and Synchronization
 
 Synchronization metadata should allow the client to know that a Pack was deleted.
 
@@ -5678,7 +5774,7 @@ The implementation details depend on the final backend, but the product rule is 
 
 ---
 
-# 28. Local Storage
+## 28. Local Storage
 
 Downloaded content should be stored in the application's private storage area.
 
@@ -5707,7 +5803,7 @@ The goal is:
 
 ---
 
-# 29. Performance of Protected Content
+## 29. Performance of Protected Content
 
 Content protection must not make the game feel slow.
 
@@ -5749,29 +5845,26 @@ Protection should therefore be balanced against:
 
 ---
 
-# 30. Local Content Snapshot During Gameplay
+## 30. Local Content Snapshot During Gameplay
 
-Once a game starts, the Game Engine should work from a consistent local content snapshot.
+**Core Principle: Never interrupt an active game to synchronize content.**
 
-An update or synchronization operation should not modify the active game pool in the middle of a round.
+An active BiGuess game must never be interrupted because content was updated, hidden, or deleted remotely. The Game Engine works strictly from a consistent local content snapshot throughout the entire active game session.
 
-For example:
+The authoritative synchronization lifecycle is:
 
-```text
-Pack is updated
-        ↓
-Game already running
-        ↓
-Current game continues using its snapshot
-```
+1. The player starts a game using locally available Cards.
+2. The game continues normally, even if backend content changes during gameplay.
+3. Remote deletions, updates, and unpublishing do not modify or invalidate the active game.
+4. Lightweight synchronization triggers (cold launch, app resume, or return to Home) detect remote tombstones and revision changes without interrupting gameplay.
+5. Detected deletions are applied safely to local storage once the player is on the Home screen or outside active gameplay.
+6. The next game uses the refreshed local dataset.
 
-The updated Pack can become active for the next game.
-
-This prevents unpredictable behavior such as Cards disappearing or changing while players are already playing.
+If the app is backgrounded or closed, synchronization should be attempted when technically possible, and otherwise executed upon the next suitable launch/resume or Home-screen refresh. Mobile OS background execution after app termination is never guaranteed.
 
 ---
 
-# 31. Offline Catalog Information
+## 31. Offline Catalog Information
 
 BiGuess may cache lightweight catalog information locally.
 
@@ -5798,7 +5891,7 @@ The cloud remains authoritative once synchronization occurs.
 
 ---
 
-# 32. Storage Management
+## 32. Storage Management
 
 Downloaded Packs are persistent content, not temporary cache data.
 
@@ -5809,14 +5902,16 @@ For example:
 ```text
 Downloaded Packs
 
-Anime Heroes       32 MB
-Anime Villains     41 MB
-Football Legends   58 MB
+Anime Heroes (~180 Cards)       7.5 MB
+Anime Villains (~120 Cards)     5.2 MB
+Football Legends (~210 Cards)   8.8 MB
 
 [ Remove Download ]
 ```
 
-Removing a local download should free device storage without deleting the cloud Pack.
+Removing a local download frees device storage without deleting the cloud Pack.
+
+In the **Free version**, users can store a maximum of **5 downloaded Packs simultaneously**. Removing an existing downloaded Pack frees a storage slot, allowing another Pack to be downloaded. The Pro version allows unlimited locally stored Packs.
 
 This distinction should remain clear throughout the architecture:
 
@@ -5828,7 +5923,7 @@ Local downloaded content
 
 ---
 
-# 33. App Updates vs Content Updates
+## 33. App Updates vs Content Updates
 
 BiGuess has two independent update systems.
 
@@ -5861,7 +5956,7 @@ This separation allows content to evolve without requiring a new application rel
 
 ---
 
-# 34. Example: Adding Cards to a Published Pack
+## 34. Example: Adding Cards to a Published Pack
 
 Suppose:
 
@@ -5907,7 +6002,7 @@ The user does not need to reinstall the application.
 
 ---
 
-# 35. Example: Modifying a Card
+## 35. Example: Modifying a Card
 
 Suppose a collector changes the image of:
 
@@ -5935,7 +6030,7 @@ Replace local content
 
 ---
 
-# 36. Example: Removing a Card
+## 36. Example: Removing a Card
 
 If a Card is removed from a Pack:
 
@@ -5952,7 +6047,7 @@ Again, there is no need to redownload the entire Pack.
 
 ---
 
-# 37. Example: Deleting an Entire Pack
+## 37. Example: Deleting an Entire Pack
 
 If:
 
@@ -5986,7 +6081,7 @@ There are no alternative deletion modes.
 
 ---
 
-# 38. Free-Tier Optimization
+## 38. Free-Tier Optimization
 
 BiGuess is designed to remain within the available free infrastructure tiers for as long as possible.
 
@@ -6015,7 +6110,7 @@ The architecture should favor **fewer, larger, meaningful operations** over thou
 
 ---
 
-# 39. Bandwidth Optimization
+## 39. Bandwidth Optimization
 
 Bandwidth is especially important because Cards contain images.
 
@@ -6043,7 +6138,7 @@ The exact transport mechanism depends on the selected backend and storage provid
 
 ---
 
-# 40. Synchronization Philosophy
+## 40. Synchronization Philosophy
 
 The overall synchronization philosophy is:
 
@@ -6069,7 +6164,7 @@ The local device should be trusted to provide the content that has already been 
 
 ---
 
-# 41. What Distribution & Updates Must NOT Become
+## 41. What Distribution & Updates Must NOT Become
 
 The distribution system should not evolve into a complicated realtime content platform.
 
@@ -6091,7 +6186,7 @@ These features would add complexity without improving the core BiGuess experienc
 
 ---
 
-# 42. Final Architecture Principle
+## 42. Final Architecture Principle
 
 The Distribution & Updates system should remain simple:
 
@@ -6127,7 +6222,7 @@ The most important rule is:
 
 ---
 
-## Costs
+# Infrastructure & Costs
 
 ## 1. Cost Philosophy
 
@@ -6161,7 +6256,7 @@ The goal is to make the architecture **naturally inexpensive enough to remain in
 
 ---
 
-# 2. Cost Model
+## 2. Cost Model
 
 BiGuess has an unusually favorable cost model because the actual game is offline.
 
@@ -6195,7 +6290,7 @@ This makes **content distribution**, rather than gameplay infrastructure, the pr
 
 ---
 
-# 3. Recommended Infrastructure
+## 3. Recommended Infrastructure
 
 The current preferred infrastructure architecture is:
 
@@ -6231,7 +6326,7 @@ The exact provider selection remains subject to reevaluation if free-tier limits
 
 ---
 
-# 4. Cloudflare D1
+## 4. Cloudflare D1
 
 Cloudflare D1 is the preferred database for BiGuess's structured content.
 
@@ -6265,7 +6360,7 @@ Images belong in object storage.
 
 ---
 
-# 5. D1 Free-Tier Capacity
+## 5. D1 Free-Tier Capacity
 
 The current Cloudflare Workers Free plan provides D1 with:
 
@@ -6289,7 +6384,7 @@ For BiGuess, these limits are sufficient for the expected MVP architecture.
 
 ---
 
-# 6. Important D1 Free-Tier Consideration
+## 6. Important D1 Free-Tier Consideration
 
 Beginning September 1, 2026, Cloudflare began enforcing D1 Free-plan daily row-read and row-write limits.
 
@@ -6338,7 +6433,7 @@ App
 
 ---
 
-# 7. D1 Query Optimization Rules
+## 7. D1 Query Optimization Rules
 
 BiGuess should follow these rules:
 
@@ -6409,7 +6504,7 @@ The application should use explicit refresh/update checks.
 
 ---
 
-# 8. Cloudflare R2
+## 8. Cloudflare R2
 
 Cloudflare R2 should be used for Card images and other large content files.
 
@@ -6443,7 +6538,7 @@ The absence of Internet egress charges is particularly useful for BiGuess becaus
 
 ---
 
-# 9. Card Image Size Requirement
+## 9. Card Image Size Requirement
 
 BiGuess has a strict content optimization target:
 
@@ -6460,7 +6555,7 @@ The Collector should not need to manually optimize images.
 
 ---
 
-# 10. Pack Size Requirement
+## 10. Pack Size Requirement
 
 The target Pack size is:
 
@@ -6486,7 +6581,7 @@ This makes Pack downloads reasonably lightweight while allowing substantial cont
 
 ---
 
-# 11. Why Pack-Based Distribution Controls Costs
+## 11. Why Pack-Based Distribution Controls Costs
 
 The Pack is the primary content distribution unit.
 
@@ -6524,7 +6619,7 @@ This is one of the most important cost-control decisions in the architecture.
 
 ---
 
-# 12. Download Once, Play Offline Without Periodic Validation
+## 12. Download Once, Play Offline Without Periodic Validation
 
 Downloaded content does not expire and requires no periodic online checks.
 
@@ -6550,7 +6645,7 @@ This reduces both infrastructure usage and dependence on network availability wh
 
 ---
 
-# 13. Incremental Updates
+## 13. Incremental Updates
 
 BiGuess should never redownload an entire Pack when only a small part of the Pack has changed.
 
@@ -6590,7 +6685,7 @@ This significantly reduces bandwidth usage.
 
 ---
 
-# 14. Image Deduplication and Reuse
+## 14. Image Deduplication and Reuse
 
 The system should avoid downloading an image again when its content has not changed.
 
@@ -6615,7 +6710,7 @@ This reduces unnecessary R2 operations and mobile data usage.
 
 ---
 
-# 15. Local Storage
+## 15. Local Storage
 
 Downloaded Pack content should be stored inside the application's private storage area.
 
@@ -6639,7 +6734,7 @@ The user should eventually be able to manage downloaded Packs and delete local c
 
 ---
 
-# 16. Local Content Protection
+## 16. Local Content Protection
 
 Card images should not simply be placed in publicly accessible phone storage as ordinary JPG/PNG files.
 
@@ -6655,7 +6750,7 @@ Protection mechanisms must therefore not introduce noticeable delays when displa
 
 ---
 
-# 17. Cloudflare Workers
+## 17. Cloudflare Workers
 
 Cloudflare Workers should act as the API layer between BiGuess clients and the backend.
 
@@ -6682,7 +6777,7 @@ For the expected BiGuess MVP traffic pattern, this should provide substantial ro
 
 ---
 
-# 18. API Efficiency
+## 18. API Efficiency
 
 The API should be designed around coarse-grained operations rather than tiny requests.
 
@@ -6708,7 +6803,7 @@ The API should return everything needed for a logical operation in as few reques
 
 ---
 
-# 19. Studio Cost Optimization
+## 19. Studio Cost Optimization
 
 BiGuess Studio is expected to generate more backend activity than the mobile game because it creates and modifies content.
 
@@ -6751,7 +6846,7 @@ Instead, the final Card name should be synchronized when the operation is commit
 
 ---
 
-# 20. Image Compression in Studio
+## 20. Image Compression in Studio
 
 Image optimization should happen automatically in Studio.
 
@@ -6782,7 +6877,7 @@ This simultaneously:
 
 ---
 
-# 21. Firebase Authentication
+## 21. Firebase Authentication
 
 Firebase Authentication can be used for Google authentication in BiGuess Studio.
 
@@ -6810,7 +6905,7 @@ Authentication and content storage therefore remain separate concerns.
 
 ---
 
-# 22. Why Not Use Firebase Firestore for Everything?
+## 22. Why Not Use Firebase Firestore for Everything?
 
 Firebase is not inherently unsuitable for BiGuess.
 
@@ -6840,7 +6935,7 @@ Firebase Authentication can still be used independently where it provides a conv
 
 ---
 
-# 23. Why Not Use a Traditional VPS?
+## 23. Why Not Use a Traditional VPS?
 
 A traditional VPS is unnecessary for the MVP.
 
@@ -6859,7 +6954,7 @@ Serverless infrastructure better matches BiGuess's usage pattern.
 
 ---
 
-# 24. Why Not Store Everything in One Service?
+## 24. Why Not Store Everything in One Service?
 
 Using one provider for everything can look simpler, but it is not necessarily the best architecture.
 
@@ -6888,7 +6983,7 @@ This also prevents the entire application from becoming tightly coupled to one b
 
 ---
 
-# 25. Cost-Control Rules
+## 25. Cost-Control Rules
 
 The following rules are considered architectural requirements.
 
@@ -6954,7 +7049,7 @@ If usage approaches a free-tier limit, the first response should be optimization
 
 ---
 
-# 26. Expected Traffic Pattern
+## 26. Expected Traffic Pattern
 
 BiGuess's expected traffic pattern is intentionally asymmetric.
 
@@ -6976,7 +7071,7 @@ This is acceptable because downloading a Pack is an explicit user action and occ
 
 ---
 
-# 27. Example: 1,000 Users
+## 27. Example: 1,000 Users
 
 Assume:
 
@@ -7002,7 +7097,7 @@ This is the key difference between BiGuess and an online game.
 
 ---
 
-# 28. Example: 10,000 Users
+## 28. Example: 10,000 Users
 
 Assume:
 
@@ -7035,7 +7130,7 @@ The project should nevertheless monitor:
 
 ---
 
-# 29. The Main Long-Term Cost Risk
+## 29. The Main Long-Term Cost Risk
 
 The main cost risk is **not the SQL database**.
 
@@ -7053,7 +7148,7 @@ Therefore, content size and distribution efficiency must remain important design
 
 ---
 
-# 30. Free-Tier Growth Strategy
+## 30. Free-Tier Growth Strategy
 
 BiGuess should grow through optimization stages.
 
@@ -7117,7 +7212,7 @@ There is no requirement that every component move to a paid plan simultaneously.
 
 ---
 
-# 31. No Artificial Infrastructure Complexity
+## 31. No Artificial Infrastructure Complexity
 
 BiGuess should not introduce infrastructure simply because it may become useful someday.
 
@@ -7151,7 +7246,7 @@ Simple infrastructure is cheaper, easier to maintain, and easier to replace.
 
 ---
 
-# 32. Monitoring
+## 32. Monitoring
 
 BiGuess should monitor infrastructure usage from the beginning.
 
@@ -7192,7 +7287,7 @@ Monitoring should be used primarily to identify optimization opportunities.
 
 ---
 
-# 33. Usage Alerts
+## 33. Usage Alerts
 
 The project should define internal warning thresholds before reaching provider limits.
 
@@ -7212,7 +7307,7 @@ The important principle is to discover inefficient behavior **before** the infra
 
 ---
 
-# 34. Database Failure and Free-Tier Exhaustion
+## 34. Database Failure and Free-Tier Exhaustion
 
 The application must not assume that the backend is always available.
 
@@ -7241,7 +7336,7 @@ It should not prevent an already downloaded Pack from being played.
 
 ---
 
-# 35. Cloud Deletion and Cost Control
+## 35. Cloud Deletion and Cost Control
 
 When a Pack is deleted from the cloud, connected devices must remove their local copy once they reconnect and learn that the Pack has been deleted.
 
@@ -7253,7 +7348,7 @@ Deletion records should eventually be cleaned according to a defined retention p
 
 ---
 
-# 36. Content Retention
+## 36. Content Retention
 
 Content that is permanently deleted from the cloud should eventually be removed from:
 
@@ -7273,7 +7368,7 @@ The retention period should be kept as short as practical while preserving the r
 
 ---
 
-# 37. Cost of Community Content
+## 37. Cost of Community Content
 
 Future community-generated content may significantly increase storage and download requirements.
 
@@ -7301,7 +7396,7 @@ The existing rule that refused submissions are permanently deleted after one wee
 
 ---
 
-# 38. Cost and Content Quality
+## 38. Cost and Content Quality
 
 Cost optimization must not destroy the actual game experience.
 
@@ -7320,7 +7415,7 @@ The `<50 KB` target is therefore a strong optimization target, not a reason to d
 
 ---
 
-# 39. Infrastructure Decision
+## 39. Infrastructure Decision
 
 The current preferred MVP infrastructure is:
 
@@ -7341,7 +7436,7 @@ This architecture is optimized around BiGuess's central principle:
 
 ---
 
-# 40. Cost Target
+## 40. Cost Target
 
 The intended MVP infrastructure target is:
 
@@ -7353,7 +7448,7 @@ Instead, the architecture is explicitly designed to make `$0/month` achievable d
 
 ---
 
-# 41. When Paid Infrastructure Becomes Acceptable
+## 41. When Paid Infrastructure Becomes Acceptable
 
 Paid infrastructure should only be considered when:
 
@@ -7367,7 +7462,7 @@ The project should not pay simply to avoid optimizing inefficient architecture.
 
 ---
 
-# 42. Cost Philosophy Summary
+## 42. Cost Philosophy Summary
 
 BiGuess is designed to be:
 
@@ -7399,7 +7494,7 @@ This is the fundamental reason BiGuess can remain inexpensive even as usage grow
 
 ---
 
-# 43. Provider Re-Evaluation
+## 43. Provider Re-Evaluation
 
 Cloudflare D1 + R2 + Workers is the current preferred architecture, but provider selection must not become an irreversible product decision.
 
@@ -7423,7 +7518,7 @@ The goal is to use the **most cost-efficient infrastructure that satisfies BiGue
 
 ---
 
-# 44. Final Principle
+## 44. Final Principle
 
 BiGuess should never be architected around the assumption:
 
@@ -7439,7 +7534,7 @@ This principle is especially important because BiGuess is an offline social game
 
 ---
 
-## Legal/IP
+# Legal & Intellectual Property
 
 BiGuess may contain references to third-party characters, people, brands, fictional works, games, movies, sports figures, historical figures, and other subjects that may be protected by copyright, trademarks, publicity rights, or other intellectual-property rights.
 
@@ -7598,7 +7693,7 @@ As BiGuess moves toward public distribution, monetization, large-scale community
 
 ---
 
-## Business Possibilities
+# Business Possibilities
 
 BiGuess should initially follow a **freemium access model**, rather than building its business around selling individual franchise or topic Packs.
 
@@ -7606,28 +7701,23 @@ The main objective of the free version is to let users genuinely experience BiGu
 
 ### Free Version
 
-The Free version should provide a complete and enjoyable core experience, while placing reasonable limits on content usage.
+The Free version provides a complete, polished, and enjoyable core experience with explicit, fair usage boundaries:
 
-* Core BiGuess gameplay remains free.
-* Users should not need an account just to play.
-* Gameplay remains offline after content has been downloaded.
-* Free users can download/store a limited number of Packs at the same time, currently considered **5 Packs**.
-* The limit should preferably represent the number of Packs currently stored rather than a lifetime number of downloads. Users should be able to remove Packs and replace them with others.
-* Free users have a limited selection of Cards available from downloaded Packs.
-* The Free limitation is an **in-app Card access/selection policy**, not an alternate Pack download format. The device downloads the complete, standard Pack (preserving Pack integrity and validation), but the local Game Engine restricts the active playable pool to approximately **50 randomly selected Cards per Pack/session**.
-* The limitation should feel like a restriction on access to the full Pack, not an artificial counter that permanently punishes users for playing.
-* Note: BiGuess Cards store identities (Name, Subtitle, Description, Image), not trivia questions; questions are formulated verbally by players in real life. Therefore, limits apply strictly to available Card identities.
-
-The download limitation also has a secondary technical benefit: it prevents the free version from accumulating a very large offline content library. However, this should not be the primary reason presented to users. The main business purpose is to create a meaningful distinction between Free and Pro.
+* **Pack Storage Limit:** Free users can store a maximum of **5 downloaded Packs simultaneously**. All Cards inside those 5 downloaded Packs are fully available for gameplay. This limit concerns locally stored Packs, not lifetime downloads. When a user has 5 Packs stored and wishes to download another, removing an existing downloaded Pack frees a slot.
+* **Round Limit:** Free users can configure and play up to **10 rounds per game**. A single game cannot exceed 10 rounds. After reaching the limit, the game ends normally. If the players wish to continue playing, they simply return to the Home screen and start a new game, which immediately resets the round limit. This is not a daily, lifetime, or cumulative play quota. Players do not need to watch advertisements or connect to the internet to start another Free game.
+* **Full Card Access:** All Cards contained in downloaded Packs are available for gameplay. There are no artificial 50-card limits, randomly restricted card pools, or per-session card access caps.
+* **Note on Canonical Card Model:** BiGuess Cards store identities comprising **Name, Image, Difficulty, and Pack relationship**, not trivia questions; questions are formulated verbally by players in real life.
+* **Offline-First:** Core gameplay remains 100% offline once Packs are downloaded. No accounts or logins are required to play.
 
 ### Pro Version
 
-BiGuess Pro should remove the meaningful limits imposed on the Free version.
+BiGuess Pro removes the Free-tier storage and round constraints:
 
-* Unlimited Pack storage/downloads.
-* Full access to all Cards contained in downloaded Packs.
-* No artificial gameplay limits on the number of available playable Cards.
-* The core offline-first gameplay experience remains unchanged.
+* Unlimited locally stored Packs, subject only to available device storage.
+* No 10-round maximum per game.
+* Full access to all Cards in downloaded Packs.
+* Core game mechanics and offline capability remain identical in Free and Pro.
+* No mandatory account login or permanent online entitlement checks during active gameplay.
 
 The Pro model should avoid adding unnecessary features purely to justify payment. Pro should primarily mean **full access to the BiGuess content experience**.
 
@@ -7704,7 +7794,7 @@ The current business direction can therefore be summarized simply:
 
 ---
 
-## MVP
+# MVP
 
 The BiGuess MVP exists to prove one thing:
 
@@ -7767,9 +7857,10 @@ BiGuess Mobile must provide:
 * Browse published Topics.
 * Browse Packs belonging to a Topic.
 * See Pack information and download state.
-* Download Packs.
+* Download Packs (Free users can store up to 5 downloaded Packs simultaneously; removing a Pack frees a slot. Pro allows unlimited stored Packs).
+* All Cards inside downloaded Packs are available for gameplay.
 * Keep downloaded Packs available offline.
-* Detect available updates.
+* Detect available updates and deletions.
 * Incrementally update changed content.
 
 The Pack is the primary download unit. Gameplay must use locally stored content rather than making per-Card network requests.
@@ -7787,7 +7878,7 @@ The selected Packs form the game's Card pool.
 MVP configuration:
 
 * Difficulty.
-* Number of rounds.
+* Number of rounds (up to 10 rounds per game in Free; resets upon starting a new game from Home. Pro removes the 10-round maximum).
 
 The configuration becomes fixed when the game starts.
 
@@ -7849,9 +7940,9 @@ Only authorized users can access Studio.
 
 #### Packs
 
-* Collector CRUD.
+* Collector Create/Read/Update/Hide (no deletion).
 * Owner CRUD.
-* Soft deletion.
+* Soft deletion (Owner Admin only in MVP; Moderator post-MVP).
 * Owner restoration.
 * Owner permanent deletion.
 * Publishing.
@@ -7859,9 +7950,9 @@ Only authorized users can access Studio.
 
 #### Cards
 
-* Collector CRUD.
+* Collector Create/Read/Update/Hide (no deletion).
 * Owner CRUD.
-* Soft deletion.
+* Soft deletion (Owner Admin only in MVP; Moderator post-MVP).
 * Owner restoration.
 * Owner permanent deletion.
 * Image upload.
@@ -7976,7 +8067,16 @@ The backend does **not** manage:
 
 ### 6. MVP Data Model
 
-The core content model remains deliberately small:
+The canonical MVP Card model requires exactly four core elements:
+
+- **Name**
+- **Image** (or image reference)
+- **Difficulty** (1 = Easy, 2 = Medium, 3 = Hard)
+- **Pack** (relationship)
+
+Do not add `Subtitle`, `Description`, `Tags`, `Aliases`, or topic-specific semantic attributes to the required MVP Card model. Technical identifiers and internal relationships exist where needed, but the product-level model remains generic, topic-agnostic, and cleanly separated from the game engine.
+
+The core data hierarchy is:
 
 ```text
 Topic
@@ -8011,8 +8111,6 @@ Easy   → 1
 Medium → 1 + 2
 Hard   → 1 + 2 + 3
 ```
-
-The Card model must remain generic and topic-agnostic.
 
 ---
 
@@ -8139,41 +8237,45 @@ These may become future features only when real product usage demonstrates a nee
 
 ### 11. MVP Development Order
 
-Development should happen in parallel rather than finishing one application completely before starting the other.
-
-Recommended order:
+BiGuess MVP development must **not** proceed as a rigid sequential waterfall. It is structured into **three parallel workstreams with explicit dependencies**:
 
 ```text
-1. Shared Models + Architecture
-            ↓
-2. Content Backend Foundation
-            ↓
-3. Studio Authentication + Roles
-            ↓
-4. Studio Topic / Pack / Card Creation
-            ↓
-5. Bulk Image/Card Workflow
-            ↓
-6. Publishing Pipeline
-            ↓
-7. Mobile Catalog
-            ↓
-8. Mobile Pack Download
-            ↓
-9. Local Content Storage
-            ↓
-10. Game Engine
-            ↓
-11. Identity Screen + Randomization
-            ↓
-12. Offline Gameplay
-            ↓
-13. Incremental Updates
-            ↓
-14. End-to-End Testing With Real Content
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ Foundation Milestone: Shared Content Models & API Contracts (Topic / Pack / Card)      │
+└───────────────────────────────────────────┬────────────────────────────────────────────┘
+                                            │
+        ┌───────────────────────────────────┼───────────────────────────────────┐
+        ▼                                   ▼                                   ▼
+┌──────────────────────────────┐ ┌──────────────────────────────┐ ┌──────────────────────────────┐
+│ Workstream A: Mobile App     │ │ Workstream B: Studio         │ │ Workstream C: Backend        │
+├──────────────────────────────┤ ├──────────────────────────────┤ ├──────────────────────────────┤
+│ • Extract Local Game Engine  │ │ • Google / Firebase Auth     │ │ • D1 Schema & Migrations     │
+│ • Local content repository   │ │ • Role-based permissions     │ │ • Workers API endpoints      │
+│ • Card selection & difficulty│ │ • Topic / Pack / Card screens│ │ • R2 image bucket storage    │
+│ • Identity screen & animation│ │ • Image upload & compression │ │ • Catalog & Pack download API│
+│ • Free / Pro rule enforcement│ │ • Bulk card import & review  │ │ • Incremental sync & revision│
+│ • Offline gameplay validation│ │ • Automated validation rules │ │ • Deletion tombstone pipeline│
+│ • Pack download manager      │ │ • Publishing workflow        │ │ • Free-tier cost guardrails  │
+│ • Safe non-interrupting sync │ │ • Local-first caching        │ │                              │
+└──────────────┬───────────────┘ └──────────────┬───────────────┘ └──────────────┬───────────────┘
+               │                                │                                │
+               └────────────────────────────────┼────────────────────────────────┘
+                                                ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ Integration Milestone: End-to-End Pipeline & Real Content Verification                 │
+│ • Studio populates real packs while Mobile engine is built (no blocking)               │
+│ • Mobile tests downloads and updates against live backend                              │
+│ • Offline gameplay and deletion propagation validated                                  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Studio should be started early enough for real data collectors to populate realistic Packs while Mobile is being developed. This is important because the mobile app must be tested against hundreds or thousands of real Cards rather than a tiny hardcoded dataset.
+### Key Workstream Dependencies
+
+1. **Shared Foundation First:** Canonical content models and API contracts must be agreed upon early, enabling all three streams to advance simultaneously.
+2. **Backend Foundations Support Both Streams:** Initial D1 schemas and R2 buckets unblock Studio ingestion and Mobile discovery.
+3. **Studio Populates Real Content in Parallel:** Studio does not wait for Mobile to finish. Real collectors begin populating and validating real anime/pop-culture cards immediately, providing realistic datasets for Mobile testing.
+4. **Mobile Does Not Wait for Complete Studio:** Mobile develops against local mock/migrated content first, integrating backend downloads once contracts are live.
+5. **End-to-End Milestone:** Full pipeline testing occurs once all three workstreams reach their integration gate.
 
 ---
 
@@ -8211,7 +8313,7 @@ That is the MVP.
 
 ---
 
-## Future Vision
+# Future Vision
 
 BiGuess should grow from a simple offline party game into a long-term social gaming platform built around **content, people, and face-to-face play**.
 
@@ -8393,7 +8495,7 @@ That is the long-term direction: **a growing content ecosystem built around an i
 
 ---
 
-## Migration Plan From Current BiGuess
+# Migration Plan From Current BiGuess
 
 The migration from the current BiGuess implementation to the target architecture should be performed incrementally.
 
@@ -9399,9 +9501,9 @@ When an authorized Studio collector modifies a published Pack:
 ```text
 Published Pack
       ↓
-Collector edits
+Collector edits (add / modify / hide Cards; no deletion)
       ↓
-Add / Modify / Remove Cards
+Automated validation checks
       ↓
 Save
       ↓
@@ -9414,9 +9516,7 @@ Devices detect change
 Required changes downloaded
 ```
 
-There is no requirement for Owner Admin approval for every modification made by a trusted Studio collector.
-
-The purpose is to prevent the project owner from becoming a bottleneck for routine content production.
+There is no requirement for Owner Admin approval for every routine modification made by a trusted Studio collector. Authorized Data Collectors can maintain published content within their permissions, but every new published revision must pass applicable automated validation rules before being distributed. Invalid content must not be distributed as a valid Pack update.
 
 ---
 
@@ -9429,17 +9529,17 @@ When a Pack is deleted from the cloud:
 ```text
 Cloud Pack deleted
        ↓
-Device offline
+Device offline or in active game
        ↓
-Local Pack may temporarily remain
+Active game continues using snapshot
        ↓
-Device reconnects
+Device reconnects & syncs
        ↓
-Deletion detected
+Player returns to Home screen
        ↓
-Local Pack removed
+Local Pack safely removed
        ↓
-Pack unavailable for gameplay
+Pack unavailable for next game
 ```
 
 A deleted Pack should no longer be available for new downloads.
@@ -9959,23 +10059,23 @@ The complete recommended sequence is:
 3. Define canonical Topic / Pack / Card models
           ↓
 ┌───────────────────────────────────────────────┴───────────────────────────────────────────────┐
-│ Track A: Mobile & Engine Pipeline             │ Track B: Studio & Content Pipeline (Parallel) │
+│ Parallel Workstream A: Mobile                 │ Parallel Workstream B: Studio                 │
 ├───────────────────────────────────────────────┼───────────────────────────────────────────────┤
 │ 4. Create migration adapters                  │ 7. Build BiGuess Studio foundation            │
-│ 5. Extract the local Game Engine              │ 8. Implement local-first Studio workflow      │
+│ 5. Extract local Game Engine (offline-first)  │ 8. Implement local-first Studio workflow      │
 │ 6. Introduce Local Content Repository         │ 9. Import existing content into Studio        │
 │ 10. Convert existing content into Packs       │ 14. Implement Pack revisions & validation     │
 │ 11. Move images into new asset pipeline       │ 15. Implement Topic/Pack publishing           │
-│ 12. Prove offline gameplay                    │                                               │
-│ 13. Define lightweight remote catalog         │                                               │
+│ 12. Enforce Free (5 packs, 10 rounds) & Pro   │ (Collector Create/Edit/Hide; No deletion)     │
+│ 13. Safe non-interrupting snapshot sync       │                                               │
 ├───────────────────────────────────────────────┴───────────────────────────────────────────────┤
-│ Shared Cloud Infrastructure & Distribution Pipeline                                           │
+│ Parallel Workstream C: Content Backend & Distribution Pipeline                                │
 ├───────────────────────────────────────────────────────────────────────────────────────────────┤
-│ 16. Implement Workers API                                                                     │
+│ 16. Implement Workers API & contracts                                                         │
 │ 17. Implement D1 metadata storage                                                             │
 │ 18. Implement R2 image/content storage                                                        │
 │ 19. Implement Pack downloads & incremental synchronization                                    │
-│ 20. Implement deletion synchronization & tombstones                                           │
+│ 20. Implement deletion tombstones & safe propagation                                          │
 └───────────────────────────────────────────────┬───────────────────────────────────────────────┘
                                                 ↓
                                 21. Replace legacy production content
@@ -10004,9 +10104,12 @@ The migration should be considered complete only when all of the following are t
 * The Game Engine is independent from content meaning.
 * Game selection and randomization are local.
 * Difficulty is applied locally.
+* Free tier constraints enforced: maximum 5 stored packs (full card access) and up to 10 rounds per game (resets from Home screen).
+* Pro mode removes the 5-pack storage and 10-round per game limits.
 * Downloaded Packs are stored privately.
 * Card images are available locally during gameplay.
 * No network connection is required during gameplay.
+* Cloud updates and deletions never interrupt active gameplay; snapshots protect in-progress games.
 * No realtime multiplayer system exists.
 * Active Game State remains local/in-memory.
 * Downloaded content persists between application launches.
