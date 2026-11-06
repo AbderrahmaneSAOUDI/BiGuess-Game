@@ -47,6 +47,7 @@ class FlutterRunTests(unittest.TestCase):
 
     def test_list_devices_returns_to_mode_selection_and_release_can_run(self):
         with patch.object(menu, 'read_line_with_esc', side_effect=['4', '3', '', '', '', '']), \
+                patch.object(menu, 'android_release_signing_ready', return_value=True), \
                 patch.object(menu, 'run_command') as run:
             menu.task_run_app()
         self.assertEqual(run.call_args_list[0].args[0], ['flutter', 'devices'])
@@ -75,6 +76,57 @@ class FlutterRunTests(unittest.TestCase):
                     run.return_value = failure
                 self.assertEqual(menu.run_single_task('run'), expected)
                 run.assert_called_once_with(['flutter', 'devices'], cwd=str(ROOT))
+
+    def test_missing_android_signing_returns_to_modes_and_profile_remains_available(self):
+        with patch.object(menu, 'read_line_with_esc', side_effect=['3', '2', '', '', '', '']), \
+                patch.object(menu, 'android_release_signing_ready', return_value=False), \
+                patch.object(menu, 'run_command') as run:
+            menu.task_run_app()
+        run.assert_called_once_with(['flutter', 'run', '--profile', '--target', 'lib/main.dart'])
+        self.assertIn('Android Release requires your release signing key', self.output.getvalue())
+
+    def test_failed_signing_check_can_be_cancelled_without_launching(self):
+        with patch.object(menu, 'read_line_with_esc', side_effect=['3', '0']), \
+                patch.object(menu, 'android_release_signing_ready', return_value=False), \
+                patch.object(menu, 'run_command') as run:
+            self.assertEqual(menu.run_single_task('run'), 0)
+        run.assert_not_called()
+
+    def test_non_android_release_does_not_require_android_keys(self):
+        with patch.object(menu, 'read_line_with_esc', side_effect=['5', 'chrome', '', '', '']), \
+                patch.object(menu, 'android_release_signing_ready') as signing, \
+                patch.object(menu, 'run_command') as run:
+            menu.task_run_app()
+        signing.assert_not_called()
+        self.assertIn('--release', run.call_args.args[0])
+        self.assertIn('chrome', run.call_args.args[0])
+
+    def test_signing_help_does_not_run_gradle_or_build(self):
+        with patch.object(menu, 'read_line_with_esc', side_effect=['6', '0']), \
+                patch.object(menu, 'android_release_signing_ready') as signing, \
+                patch.object(menu, 'run_command') as run:
+            self.assertEqual(menu.run_single_task('run'), 0)
+        signing.assert_not_called()
+        run.assert_not_called()
+        self.assertIn('ANDROID_KEYSTORE_PATH', self.output.getvalue())
+
+    def test_signing_probe_uses_gradle_without_printing_its_output(self):
+        for code, ready in ((0, True), (1, False)):
+            with self.subTest(code=code), patch.object(menu.subprocess, 'run',
+                    return_value=subprocess.CompletedProcess([], code, stdout='private-value',
+                                                            stderr='private-value')) as run:
+                self.assertEqual(menu.android_release_signing_ready(), ready)
+                command = run.call_args.args[0]
+                self.assertIn(':app:validateReleaseSigning', command)
+                self.assertIn('-PrequireReleaseSigning=true', command)
+                self.assertEqual(run.call_args.kwargs['timeout'], 90)
+        self.assertNotIn('private-value', self.output.getvalue())
+
+    def test_signing_probe_errors_do_not_launch_a_build(self):
+        for error in (FileNotFoundError(), subprocess.TimeoutExpired('gradle', 90)):
+            with self.subTest(error=type(error).__name__), \
+                    patch.object(menu.subprocess, 'run', side_effect=error):
+                self.assertFalse(menu.android_release_signing_ready())
 
     def test_menu_numbers_stay_sequential_and_run_aliases_match(self):
         entries = [entry for _, group in menu.TOOL_GROUPS for entry in group]

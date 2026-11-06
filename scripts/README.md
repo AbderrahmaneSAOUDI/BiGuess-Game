@@ -112,7 +112,14 @@ Choose **11 — run**, or open its launch options directly:
 ./scripts/run.sh run
 ```
 
-Choose Debug (default, with hot reload), Profile, or Release. You can list devices,
+Choose Debug (default, with hot reload), Profile, or Release. **For local Android
+performance testing without production signing keys, choose Profile (2).**
+Android Release (3) checks signing configuration before collecting launch options;
+if the check fails, it returns to the mode menu without starting a build. Configure
+your own key using `android/key.properties.example` or the documented environment
+variables. Signing help is available as option 6; option 5 runs Release on other
+platforms. No key is generated and Android release-signing requirements stay enforced.
+You can list devices,
 enter a device ID/name, change the entry-point file, add `KEY=value` Dart defines,
 and supply extra Flutter flags. Leave optional fields blank to use Flutter's
 defaults. Quote defines with spaces, for example `LABEL="My test build"`.
@@ -123,6 +130,7 @@ Pass arguments directly to skip the prompts:
 ```bash
 ./scripts/run.sh run --debug -d DEVICE_ID
 ./scripts/run.sh run --profile -d DEVICE_ID --dart-define=isProTestEnabled=true
+./scripts/run.sh run --release -d DEVICE_ID  # Android requires configured release signing
 ./scripts/run.sh run --help  # All options supported by your installed Flutter SDK
 ```
 
