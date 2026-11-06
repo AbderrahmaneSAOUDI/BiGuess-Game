@@ -48,7 +48,7 @@ While this roadmap organizes execution serially for a single-agent workflow, thi
 **Agent task:** Reinspect current HEAD; document actual navigation, current pack counts, character reveal/refresh, settings, network calls, dependencies, release configuration, tests, and known issues. Run available Flutter analyzer, tests, and debug build; record **pass/fail with logs**. Add a short `docs/migration/BASELINE.md` and a reproducible baseline script/commands. No product refactor.
 **Acceptance:** Report is sourced from current code, includes verified image counts by Topic/Pack, distinguishes observed behavior from blueprint target, and identifies any baseline test failures. Keep a rollback ref/tag without rewriting history.
 
-### [ ] T02 — GATE: Resolve implementation contracts and blueprint ambiguities
+### [x] T02 — GATE: Resolve implementation contracts and blueprint ambiguities
 **Agent task:** Write `docs/migration/DECISIONS.md` formalizing the authoritative decisions established in the consolidated `BIGUESS_PRODUCT_BLUEPRINT.md`:
 * **Canonical Card Model:** Exactly four product fields: Name, Image, Difficulty (1 = Easy, 2 = Medium, 3 = Hard), and Pack (relationship). No Subtitle, Description, Tags, Aliases, or topic-specific semantic attributes.
 * **Role Permissions:** Data Collectors **cannot delete anything** (neither soft nor permanent deletion, no restoration). In MVP, deletion operations are strictly restricted to the Owner Admin. (The Moderator role is deferred to post-MVP community content, at which point Moderators will be granted soft-deletion permissions within their scope). Collectors may create, edit, upload images, assign difficulty, manage metadata, and hide content from public visibility where authorized.
