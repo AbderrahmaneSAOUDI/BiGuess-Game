@@ -12,7 +12,7 @@ import 'package:gdg_guess_game/domain/use_cases/select_packs_use_case.dart';
 import 'package:gdg_guess_game/presentation/screens/game/game_configuration_screen.dart';
 import 'package:gdg_guess_game/presentation/screens/game/game_screen.dart';
 import 'package:gdg_guess_game/presentation/screens/packs/packs_screen.dart';
-import 'package:gdg_guess_game/providers/game_controller.dart';
+import 'package:gdg_guess_game/providers/game_session_controller.dart';
 import 'package:gdg_guess_game/providers/pack_selection_controller.dart';
 import 'package:gdg_guess_game/providers/topic_pack_providers.dart';
 
@@ -108,12 +108,10 @@ Future<void> _startAndCheck(
   final container = ProviderScope.containerOf(
     tester.element(find.byType(GameScreen)),
   );
-  final state = container.read(
-    gameRoundProvider((topic: 'Shapes', pack: label)),
-  );
+  final state = container.read(gameSessionProvider);
   expect(state.configuration!.topicId, 'topic');
   expect(state.configuration!.packIds, unorderedEquals(packIds));
-  expect(state.allImages, hasLength(packIds.length * 2));
+  expect(state.snapshot!.cards, hasLength(packIds.length * 2));
   expect(tester.takeException(), isNull);
   await tester.pumpWidget(const SizedBox.shrink());
 }

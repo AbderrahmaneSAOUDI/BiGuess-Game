@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/models/game_state.dart';
+import '../../../domain/models/game_session.dart';
 import '../../../providers/game_controller.dart';
+import '../../../providers/game_session_controller.dart';
 import '../../../providers/game_settings_controller.dart';
 import '../../widgets/animations/animated_action_button.dart';
 import '../../widgets/animations/animated_countdown.dart';
@@ -18,11 +20,13 @@ import 'widgets/game_empty_state.dart';
 class GameScreen extends ConsumerStatefulWidget {
   final String topicName;
   final String packName;
+  final bool useSession;
 
   const GameScreen({
     super.key,
     required this.topicName,
     required this.packName,
+    this.useSession = false,
   });
 
   @override
@@ -37,15 +41,17 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final state = ref.read(gameRoundProvider(_key));
-        for (final asset in state.allImages.take(5)) {
-          precacheImage(
-            AssetImage(asset),
-            context,
-            onError: (_, stackTrace) {},
-          );
-        }
+      if (!mounted) return;
+      final images = widget.useSession
+          ? ref
+                    .read(gameSessionProvider)
+                    .snapshot
+                    ?.cards
+                    .map((card) => card.imageReference) ??
+                const <String>[]
+          : ref.read(gameRoundProvider(_key)).allImages;
+      for (final asset in images.take(5)) {
+        precacheImage(AssetImage(asset), context, onError: (_, stackTrace) {});
       }
     });
   }
@@ -83,6 +89,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.useSession) {
+      return _GameSessionView(
+        topicName: widget.topicName,
+        packName: widget.packName,
+      );
+    }
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final state = ref.watch(gameRoundProvider(_key));
@@ -260,6 +272,174 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Configured games use the local session engine; the legacy reveal stays
+/// available for callers that have not entered through Game Setup.
+class _GameSessionView extends ConsumerWidget {
+  final String topicName;
+  final String packName;
+
+  const _GameSessionView({required this.topicName, required this.packName});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(gameSessionProvider);
+    final configuration = session.configuration;
+    final isComplete = session.phase == GameSessionPhase.completed;
+    final theme = Theme.of(context);
+
+    return PopScope<void>(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) ref.read(gameSessionProvider.notifier).returnHome();
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: _GameAppBar(topicName: topicName, packName: packName),
+        body: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(0, -0.3),
+              radius: 1.2,
+              colors: [
+                theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+                theme.scaffoldBackgroundColor,
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: configuration == null
+                ? const SizedBox.shrink()
+                : Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          'Round ${session.roundNumber} of ${configuration.rounds}',
+                          key: const ValueKey('round_progress'),
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ),
+                      Expanded(
+                        child: isComplete
+                            ? _GameCompletionState(rounds: configuration.rounds)
+                            : LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final card = session.assignedCard!;
+                                  return Center(
+                                    child: _GameCharacterDisplay(
+                                      key: ValueKey(
+                                        '${session.roundIndex}_${card.id}',
+                                      ),
+                                      imageAsset: card.imageReference,
+                                      characterName: card.name,
+                                      constraints: constraints,
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FilledButton.icon(
+                              onPressed: () {
+                                // A stale button callback cannot advance a
+                                // second round before the screen rebuilds.
+                                if (!identical(
+                                  ref.read(gameSessionProvider),
+                                  session,
+                                )) {
+                                  return;
+                                }
+                                final controller = ref.read(
+                                  gameSessionProvider.notifier,
+                                );
+                                ref
+                                    .read(
+                                      showCharacterNameHintProvider.notifier,
+                                    )
+                                    .set(false);
+                                if (isComplete) {
+                                  if (controller.requestReplay() ==
+                                      GameReplayRoute.home) {
+                                    Navigator.of(context).pop();
+                                  }
+                                } else {
+                                  controller.nextRound();
+                                }
+                              },
+                              icon: Icon(
+                                isComplete
+                                    ? configuration.isPro
+                                          ? Icons.replay_rounded
+                                          : Icons.home_rounded
+                                    : Icons.navigate_next_rounded,
+                              ),
+                              label: Text(
+                                isComplete
+                                    ? configuration.isPro
+                                          ? 'Replay'
+                                          : 'Return to Packs'
+                                    : session.roundNumber ==
+                                          configuration.rounds
+                                    ? 'Finish Game'
+                                    : 'Next Round',
+                              ),
+                            ),
+                            if (!isComplete) ...[
+                              const SizedBox(height: 10),
+                              Text(
+                                AppConstants.imageDisclaimer,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                            if (isComplete && configuration.isPro)
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Return to Packs'),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GameCompletionState extends StatelessWidget {
+  final int rounds;
+
+  const _GameCompletionState({required this.rounds});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle_outline_rounded, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              'Game complete',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text('$rounds ${rounds == 1 ? 'round' : 'rounds'} completed.'),
+          ],
+        ),
       ),
     );
   }

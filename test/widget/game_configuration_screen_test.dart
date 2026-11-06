@@ -8,7 +8,8 @@ import 'package:gdg_guess_game/presentation/screens/game/game_configuration_scre
 import 'package:gdg_guess_game/presentation/screens/game/game_screen.dart';
 import 'package:gdg_guess_game/presentation/screens/packs/packs_screen.dart';
 import 'package:gdg_guess_game/providers/entitlement_provider.dart';
-import 'package:gdg_guess_game/providers/game_controller.dart';
+import 'package:gdg_guess_game/domain/models/game_session.dart';
+import 'package:gdg_guess_game/providers/game_session_controller.dart';
 import 'package:gdg_guess_game/providers/game_settings_controller.dart';
 import 'package:gdg_guess_game/providers/topic_pack_providers.dart';
 
@@ -41,7 +42,6 @@ class _SetupRepository extends TestContentRepository {
 }
 
 void main() {
-  const key = (topic: 'Shapes', pack: 'Paper Shapes');
   late ProviderContainer container;
   late _SetupRepository repository;
 
@@ -112,10 +112,10 @@ void main() {
     final active = ProviderScope.containerOf(
       tester.element(find.byType(GameScreen)),
     );
-    final state = active.read(gameRoundProvider(key));
+    final state = active.read(gameSessionProvider);
     expect(state.configuration!.rounds, 10);
     expect(state.configuration!.maximumDifficulty, Difficulty.easy);
-    expect(state.allImages, [repository.cards.first.imageReference]);
+    expect(state.snapshot!.cards, [repository.cards.first]);
     await tester.tap(find.byTooltip('Back to Packs'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
@@ -147,14 +147,14 @@ void main() {
       final active = ProviderScope.containerOf(
         tester.element(find.byType(GameScreen)),
       );
-      expect(active.read(gameRoundProvider(key)).configuration!.rounds, 1000);
-      expect(active.read(gameRoundProvider(key)).configuration!.isPro, isTrue);
+      expect(active.read(gameSessionProvider).configuration!.rounds, 1000);
+      expect(active.read(gameSessionProvider).configuration!.isPro, isTrue);
       for (var round = 0; round < 11; round++) {
-        active.read(gameRoundProvider(key).notifier).startCountdown();
-        await tester.pump(const Duration(seconds: 1));
+        await tester.tap(find.text('Next Round'));
+        await tester.pump();
       }
-      expect(active.read(gameRoundProvider(key)).roundsPlayed, 11);
-      expect(active.read(gameRoundProvider(key)).hasReachedRoundLimit, isFalse);
+      expect(active.read(gameSessionProvider).roundNumber, 12);
+      expect(active.read(gameSessionProvider).phase, GameSessionPhase.active);
       expect(tester.takeException(), isNull);
     },
   );
@@ -213,8 +213,7 @@ void main() {
       final active = ProviderScope.containerOf(
         tester.element(find.byType(GameScreen)),
       );
-      final notifier = active.read(gameRoundProvider(key).notifier);
-      final frozen = active.read(gameRoundProvider(key));
+      final frozen = active.read(gameSessionProvider);
       container.read(countdownDurationProvider.notifier).setDuration(9);
       container
           .read(characterAlgorithmProvider.notifier)
@@ -229,27 +228,27 @@ void main() {
       ]);
       await tester.pump();
       expect(
-        active.read(gameRoundProvider(key)).configuration,
+        active.read(gameSessionProvider).configuration,
         same(frozen.configuration),
       );
-      expect(active.read(gameRoundProvider(key)).allImages, frozen.allImages);
-      for (var index = 1; index <= 2; index++) {
-        notifier.startCountdown();
-        expect(active.read(gameRoundProvider(key)).countdown, 1);
-        notifier.startCountdown(); // Duplicate taps cannot spend a round.
-        await tester.pump(const Duration(seconds: 1));
-        await tester.pump(const Duration(milliseconds: 500));
-        expect(active.read(gameRoundProvider(key)).roundsPlayed, index);
-        expect(
-          active.read(gameRoundProvider(key)).remainingImages.length,
-          2 - index,
-        );
-      }
-      final completed = active.read(gameRoundProvider(key));
-      notifier.startCountdown();
-      notifier.reset();
-      await tester.pump(const Duration(seconds: 2));
-      expect(active.read(gameRoundProvider(key)), same(completed));
+      expect(active.read(gameSessionProvider).snapshot, same(frozen.snapshot));
+      expect(frozen.roundNumber, 1);
+      expect(frozen.assignedCard, isNotNull);
+      await tester.tap(find.text('Next Round'));
+      await tester.pump();
+      expect(active.read(gameSessionProvider).roundNumber, 2);
+      expect(
+        active.read(gameSessionProvider).assignedCard!.id,
+        isNot(frozen.assignedCard!.id),
+      );
+      await tester.tap(find.text('Finish Game'));
+      await tester.pump();
+      expect(
+        active.read(gameSessionProvider).phase,
+        GameSessionPhase.completed,
+      );
+      expect(active.read(gameSessionProvider).completedRounds, 2);
+      expect(find.text('Game complete'), findsOneWidget);
       expect(find.text('Return to Packs'), findsOneWidget);
       await tester.tap(find.text('Return to Packs'));
       await tester.pump();

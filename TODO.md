@@ -138,12 +138,14 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 **Agent task:** Reuse current theme, animations, and widgets while migrating the Identity Screen to the new GameSession and local images. The removal or simplification of the existing Mystery Box tap, countdown animation, and related UI controls is a **design proposal subject to human product/UX approval** during this ticket; if preferred, the playful reveal animation can be retained in a faster, more responsive form. Ensure the outward-facing Card shows its identity name and image reliably. Keep motion purposeful and fast.
 **Acceptance:** Widget tests verify identity display after game start; no timer or per-question UI; UX transitions (whether immediate display or playful reveal) receive explicit sign-off; loading, missing image, orientation, accessibility, and accidental-tap behavior are handled.
 
-### [ ] T17 — Add game-complete and replay flow
+### [x] T17 — Add game-complete and replay flow
 **Agent task:** Display `Round X of Y`, a clean completion state after the configured final round (up to 10 in Free).
 * **Free Version Replay Flow:** Free players must return to the Home screen (or Packs screen) before starting another game. The primary completion action is `Return to Home` (or `Play Again`, which explicitly routes back through Home to reset the 10-round counter for a new game with zero advertisements, paywalls, or network requirements). Free mode does NOT provide an immediate in-session Replay action that bypasses Home.
 * **Pro Version Replay Flow:** Pro users (and Pro-test enabled builds) have an immediate `Replay` button to restart a new session instantly using the exact same configuration without returning to Home.
 Do not infer or display a digital winner.
 **Acceptance:** UI tests verify final round completion; in Free mode, completing configured rounds requires returning to Home to reset the counter; Pro mode allows direct instant replay; default path is faster than the old repeated countdown flow.
+
+**Implemented:** Configured games now use the local `GameSession` engine, display `Round X of Y`, and advance immediately from Start through Next Round without repeated countdowns. Finish Game completes the final displayed round without drawing another Card. Free completion returns through Packs before a fresh game resets the counter; Pro/test replay instantly reuses the exact frozen configuration and content. Widget tests cover 1/3/10-round Free sessions, Pro replay above ten rounds, changed content/access rules, stale taps, Back, hint reset, and compact completion layout. T16 identity-screen UX sign-off remains separate.
 
 ### [ ] T18 — GATE: Prove entirely offline local-Pack gameplay
 **Agent task:** Wire game screens to the local SQL/content repository with an imported fixture Pack. Disable connectivity, kill/restart the app, and prove Topic → Pack → Config → Card → all rounds works without any API/auth/image requests. Preserve a functioning legacy fallback until the subsequent cloud path is verified.

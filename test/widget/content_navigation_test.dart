@@ -95,7 +95,8 @@ void main() {
           await tester.pump();
           await tester.pump(const Duration(seconds: 1));
           expect(find.byType(GameScreen), findsOneWidget);
-          expect(find.byKey(const ValueKey('mystery')), findsOneWidget);
+          expect(find.byType(AnimatedCharacterCard), findsOneWidget);
+          expect(find.text('Round 1 of 10'), findsOneWidget);
           expect(find.text(pack), findsOneWidget);
           await tester.tap(find.byTooltip('Back to Packs'));
           await tester.pump();
@@ -134,10 +135,6 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Start Game'));
       await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-      await tester.tap(find.byKey(const ValueKey('mystery')));
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(seconds: 1));
       final displayed = tester.widget<AnimatedCharacterCard>(
         find.byType(AnimatedCharacterCard),

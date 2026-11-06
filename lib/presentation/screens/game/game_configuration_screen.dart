@@ -5,7 +5,8 @@ import '../../../domain/models/difficulty.dart';
 import '../../../domain/models/entitlement.dart';
 import '../../../domain/models/game_setup.dart';
 import '../../../providers/entitlement_provider.dart';
-import '../../../providers/game_controller.dart';
+import '../../../providers/game_session_controller.dart';
+import '../../../providers/game_settings_controller.dart';
 import '../../../providers/topic_pack_providers.dart';
 import 'game_screen.dart';
 
@@ -58,21 +59,23 @@ class _GameConfigurationScreenState
       return;
     }
     final snapshot = setup.freeze(entitlement: entitlement, content: content);
+    final session = ref.read(gameSessionProvider.notifier);
+    session.configure(snapshot.configuration);
+    session.start(
+      topic: snapshot.topic,
+      installedPacks: snapshot.packs,
+      installedCards: snapshot.cards,
+    );
+    ref.read(showCharacterNameHintProvider.notifier).set(false);
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _starting = true);
     // Replace setup so Back exits to Packs rather than editing a running game.
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder: (context) => ProviderScope(
-          overrides: [
-            gameRoundProvider.overrideWith(
-              () => GameRoundNotifier(configuredGame: snapshot),
-            ),
-          ],
-          child: GameScreen(
-            topicName: widget.topicName,
-            packName: widget.packName,
-          ),
+        builder: (context) => GameScreen(
+          topicName: widget.topicName,
+          packName: widget.packName,
+          useSession: true,
         ),
       ),
     );
