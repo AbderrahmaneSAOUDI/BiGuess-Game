@@ -1,0 +1,42 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "biguess-content-unconfigured",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "env": {
+    "local": {
+      "name": "biguess-content-local",
+      "vars": { "APP_ENV": "local" },
+      "d1_databases": [{
+        "binding": "DB",
+        "database_name": "biguess-content-local",
+        "database_id": "00000000-0000-0000-0000-000000000001",
+        "migrations_dir": "migrations",
+        "remote": false
+      }],
+      "r2_buckets": [{
+        "binding": "CONTENT",
+        "bucket_name": "biguess-content-local",
+        "remote": false
+      }]
+    },
+    "staging": {
+      "name": "biguess-content-staging",
+      "vars": { "APP_ENV": "staging" },
+      "d1_databases": [{
+        "binding": "DB",
+        "database_name": "biguess-content-staging",
+        "database_id": "00000000-0000-0000-0000-000000000002",
+        "migrations_dir": "migrations",
+        "remote": false
+      }],
+      "r2_buckets": [{
+        "binding": "CONTENT",
+        "bucket_name": "biguess-content-staging",
+        "remote": false
+      }]
+    }
+  }
+}

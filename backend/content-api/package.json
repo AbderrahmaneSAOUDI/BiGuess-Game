@@ -1,0 +1,24 @@
+{
+  "name": "@biguess/content-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "wrangler dev --env local --local --ip 127.0.0.1",
+    "db:migrate": "wrangler d1 migrations apply DB --env local --local",
+    "seed": "node scripts/seed.mjs",
+    "setup": "npm run db:migrate && npm run seed",
+    "typecheck": "tsc --noEmit",
+    "build": "wrangler deploy --env staging --dry-run --outdir dist",
+    "test": "npm run build && node --test --test-concurrency=1 test/*.test.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261106.1",
+    "miniflare": "5.20261103.0-beta",
+    "typescript": "5.9.3",
+    "wrangler": "4.157.0"
+  }
+}

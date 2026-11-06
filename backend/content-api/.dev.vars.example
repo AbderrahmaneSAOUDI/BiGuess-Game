@@ -1,0 +1,2 @@
+# No secrets are needed locally. Copy to .dev.vars.local if future bindings need them.
+# Never put actual credentials here, in wrangler.json, or in Flutter defines.

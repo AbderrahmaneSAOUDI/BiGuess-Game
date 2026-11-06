@@ -169,9 +169,11 @@ Do not infer or display a digital winner.
 
 **Implemented:** [Frozen content protocol v1](contracts/content/v1/README.md), OpenAPI 3.1 and JSON Schema 2020-12 definitions, portable positive/negative fixtures, and `.agents/tests/test_content_contract.py`. Reuses the existing full-Pack v1 format; includes semantic relationship/revision checks and real artifact digest verification. CI installs the pinned contract tooling. No backend deployment or app network client.
 
-### [ ] T20 — Scaffold Cloudflare Workers, D1 migrations, and R2 bindings
+### [x] T20 — Scaffold Cloudflare Workers, D1 migrations, and R2 bindings
 **Agent task:** Create an isolated `backend/` project with local development, migrations, typed environment bindings, nonproduction environments, deterministic seeds, and tests. D1 stores structured data; R2 stores optimized image/content objects. Never put API secrets into Flutter code or source control.
 **Acceptance:** Backend runs locally with a fixture; migrations are repeatable; no production writes required; documented deploy/rollback plan exists.
+
+**Implemented:** [Isolated content infrastructure](backend/content-api/README.md) with typed Worker bindings, separate local/staging D1 and private R2 resources, a numbered metadata migration, deterministic WebP seeds, a locked Node toolchain, and workerd integration tests. Tests cover repeated local migrations/seeds, persisted D1/R2 reads, corrupt/missing objects, staging fixture exclusion, and seed/secret guardrails. Local HTTP smoke checks serve verified fixture bytes. Deploy/rollback is documented; no cloud resources or production writes were required. Catalog, publishing, and Studio endpoints remain subsequent tickets.
 
 ### [ ] T21 — Implement public read-only catalog endpoints
 **Agent task:** Serve only published Topics and published Packs belonging to visible Topics, with compact metadata, counts, revisions, pagination, caching headers, and clear unavailability responses. No gameplay-session or per-Card online endpoints.
