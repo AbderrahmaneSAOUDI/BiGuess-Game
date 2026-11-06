@@ -20,7 +20,7 @@ class AboutGameTab extends ConsumerWidget {
     final versionText = versionAsync.when(
       data: (version) => 'Version $version',
       loading: () => 'Version ...',
-      error: (_, __) => 'Version ${AppConstants.defaultVersion}',
+      error: (_, stackTrace) => 'Version ${AppConstants.defaultVersion}',
     );
 
     return AnimationLimiter(

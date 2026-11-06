@@ -42,7 +42,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           precacheImage(
             AssetImage(asset),
             context,
-            onError: (_, __) {},
+            onError: (_, stackTrace) {},
           );
         }
       }

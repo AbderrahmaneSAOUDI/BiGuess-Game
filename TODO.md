@@ -95,9 +95,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 **Implemented:** [Full-Pack v1 contract and commands](docs/migration/PACK_FORMAT.md), offline `scripts/export_pack.py`, and self-contained acceptance tests in `.agents/tests/test_pack_export.py`. Fixture exports require explicit clearance; legacy exports require development-only opt-in. Import/install remains T10.
 
-### [ ] T10 — Implement atomic local Pack import/install from a file
+### [x] T10 — Implement atomic local Pack import/install from a file
 **Agent task:** Parse and validate Pack files, stage them in a temporary location, confirm image hashes/sizes and referential integrity, then atomically activate metadata and files. Preserve previous installed data if validation or storage fails; make install retry-safe.
 **Acceptance:** Valid fixture Pack installs and survives app restart; malformed, partial, and tampered Packs are rejected without damaging the previous playable Pack.
+
+**Implemented:** `LocalPackStore` validates T09 `.biguesspack` files, stages and verifies images/metadata in private storage, then activates an immutable generation with one atomic pointer rename. Reopening and retry/rollback tests cover malformed, partial, tampered, and storage-failure cases. See [installation API and guarantees](docs/migration/LOCAL_PACK_INSTALL.md). The legacy gameplay path remains playable during migration.
 
 ### [ ] T11 — Implement private local image storage and a presentation-safe image loader
 **Agent task:** Add an abstraction for asset images (legacy) and locally installed protected Pack images. Use app-private storage and practical protection/packaging, not public gallery paths. Benchmark/limit decoding overhead and caching; avoid claiming perfect DRM.

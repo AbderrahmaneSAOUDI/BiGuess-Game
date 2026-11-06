@@ -105,7 +105,7 @@ class _AnimatedCharacterCardState extends State<AnimatedCharacterCard>
           }
         }
       },
-      onError: (_, __) {},
+      onError: (_, stackTrace) {},
     );
     _imageStream!.addListener(_imageListener!);
   }

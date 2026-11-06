@@ -64,7 +64,7 @@ class DevelopersTab extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: developers.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        separatorBuilder: (_, index) => const SizedBox(height: 16),
         itemBuilder: (context, index) {
           final dev = developers[index];
           // Use theme primary/secondary to match color scheme dynamically if desired
