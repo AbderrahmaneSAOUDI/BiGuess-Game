@@ -1,21 +1,10 @@
 ---
 trigger: always_on
-description: Fast codebase navigation using the background sidecar index cache.
+description: Navigate live source efficiently and treat generated indexes as disposable hints.
 ---
 
-# Codebase Indexing & Cache Utilization
+# Source navigation
 
-## 1. Primary Cache Location
-The continuous background indexer maintains:
-- **JSON Index**: [codebase_index.json](file:///.agents/cache/codebase_index.json)
-  Contains file metadata: path, extension, line count, byte size, and exported classes/symbols.
-- **Markdown Architecture Summary**: [codebase_summary.md](file:///.agents/cache/codebase_summary.md)
-  Contains architectural overview, module boundaries, lines of code, and key symbols per file.
+Use a named path or `rg` first for direct lookups. For broad orientation consult [file map](../sidecars/file-map.md) or the optional `.agents/cache/codebase_summary.md`. An index can be stale and uses regex symbol extraction; verify declarations before editing.
 
-## 2. Fast Lookup Workflow
-1. **Check Cache First**: Consult `.agents/cache/codebase_index.json` or `.agents/cache/codebase_summary.md` before executing expensive recursive directory scans.
-2. **Instant Symbol Resolution**: Search for classes, models, widgets, or providers directly in the JSON index.
-3. **Manual Index Refresh**: If net-new files were just added and an immediate refresh is required:
-   ```bash
-   python3 .agents/sidecars/codebase-index-daemon/indexer_daemon.py --once
-   ```
+Refresh after structural changes with `python3 .agents/sidecars/codebase-index-daemon/indexer_daemon.py --once`. The index excludes archives, binary assets, dependency trees, and its own cache. Keep generated caches/logs/locks untracked. An explicit `--watch` process is optional; manage its lifetime in the foreground.

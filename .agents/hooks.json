@@ -1,48 +1,8 @@
 {
-  "safety-guard": {
-    "PreToolUse": [
-      {
-        "matcher": "run_command",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 hooks/dangerous_command_guard.py 2>/dev/null || python3 .agents/hooks/dangerous_command_guard.py",
-            "timeout": 15
-          }
-        ]
-      }
-    ]
-  },
-  "version-incrementer": {
-    "PostToolUse": [
-      {
-        "matcher": "write_file|edit_file|run_command",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 hooks/version_increment.py 2>/dev/null || python3 .agents/hooks/version_increment.py",
-            "timeout": 15
-          }
-        ]
-      }
-    ]
-  },
-  "session-init": {
-    "SessionStart": [
-      {
-        "type": "command",
-        "command": "python3 hooks/session_start.py 2>/dev/null || python3 .agents/hooks/session_start.py",
-        "timeout": 10
-      }
-    ]
-  },
-  "stop-guard": {
-    "Stop": [
-      {
-        "type": "command",
-        "command": "python3 hooks/stop_guard.py 2>/dev/null || python3 .agents/hooks/stop_guard.py",
-        "timeout": 30
-      }
-    ]
+  "hooks": {
+    "SessionStart": [{"hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/session_start.py\"", "timeout": 10}]}],
+    "PreToolUse": [{"matcher": "Bash|exec_command|run_command", "hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/dangerous_command_guard.py\"", "timeout": 5}]}],
+    "PostToolUse": [{"matcher": "apply_patch|Write|Edit|write_file|edit_file", "hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/project_check.py\"", "timeout": 5}]}],
+    "Stop": [{"hooks": [{"type": "command", "command": "python3 \"$(git rev-parse --show-toplevel)/.agents/hooks/stop_guard.py\"", "timeout": 10}]}]
   }
 }

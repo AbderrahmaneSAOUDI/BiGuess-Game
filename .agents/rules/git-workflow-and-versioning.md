@@ -1,46 +1,14 @@
 ---
 trigger: always_on
-description: Mandatory semantic patch versioning, commit message structure, and automated remote git push for BiGuess.
+description: Date-based synchronized versions, scoped commits, and required Git completion.
 ---
 
-# Git Workflow & Versioning
+# Version and Git lifecycle
 
-## 1. Mandatory Date-Based Semantic Versioning
-- BiGuess project inception date: **2025-05-27** (`BASE_DATE`).
-- Every substantive change to code, components, styles, or configuration MUST bump the version according to:
-  - **Major**: `1` (stable release track)
-  - **Minor**: elapsed days since project inception: `floor((Current Date - 2025-05-27) in days)`.
-  - **Patch**: incremental patch / commit number (incremented with every commit).
-  - **Build Number**: auto-incrementing integer appended to pubspec (`+<build>`).
-
-## 2. Version File Triad
-Three files must always stay in sync:
-1. **`pubspec.yaml`** — `version: 1.<minor>.<patch>+<build>` (single source of truth).
-2. **`version.json`** — remote OTA update manifest served to in-app updater.
-3. **`lib/core/constants/app_constants.dart`** — `defaultVersion = '1.<minor>.<patch>';`.
-
-Handled automatically via `.agents/hooks/version_increment.py` on `postToolUse`, or directly via `python3 .agents/hooks/git_auto_commit_push.py`.
-
-## 3. Commit Message Structure
-- Every commit MUST follow the semantic versioned format:
-  ```text
-  <version> - <type>(<scope>): <short imperative summary>
-  ```
-  or for general changes:
-  ```text
-  <version> - <type>: <short imperative summary>
-  ```
-- Allowed types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `chore`, `style`, `ci`.
-- Examples:
-  - `1.527.59 - feat(rules): add project operational rules, hooks, sidecars, and skills`
-  - `1.527.60 - fix(game): resolve character selection overflow on compact mobile devices`
-  - `1.527.61 - perf(assets): compress anime card images to high-efficiency webp`
-
-## 4. Mandatory End-of-Turn Git Push
-- Before completing any prompt turn with substantive changes:
-  1. Verify tests with `flutter test`.
-  2. Run the automated git assistant:
-     ```bash
-     python3 .agents/hooks/git_auto_commit_push.py "feat: description here"
-     ```
-  3. Ensure the remote repository is always synchronized with the latest working tree.
+- Snapshot status/index at task start and recheck before committing: this checkout can change concurrently. Preserve unrelated edits and pre-staged files rather than clearing or committing them.
+- After substantive edits, required Flutter tests must pass. Run `python3 .agents/hooks/version_increment.py` once at completion; it computes the date minor from `2025-05-27` in Africa/Algiers and a patch/build beyond HEAD. Repeated calls before a commit are idempotent; all three files are repaired even if pubspec already has the target version.
+- The triad is pubspec `version: major.minor.patch+build`, manifest `latest_version` and `build_number`, and `AppConstants.defaultVersion` without build. Preserve other manifest metadata. Invalid input must fail before any writes.
+- Use the `git-commit-push` skill and helper with explicit `--paths` for task-owned paths; inspect `--dry-run` first. Implicit version-triad entries include only version fields; explicitly selecting a version file or its parent directory includes its other edits too. Whole-workspace `--all` is for explicitly owned complete work only.
+- Commit subject: `<version> - <type>(<scope>): <imperative summary>`; allowed types: feat, fix, refactor, perf, test, docs, chore, style, ci.
+- Complete the authorized commit and ordinary push to the current branch. Do not retry a rejected push by force, reset, rebase, or sweeping in someone else's changes. Report the actual outcome.
+- Hooks observe edits and report drift; they do not bump on arbitrary tools, commit, publish, or launch daemons. Completion performs the mandatory version/Git lifecycle explicitly to avoid races between parallel edits.

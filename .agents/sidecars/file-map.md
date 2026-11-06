@@ -1,6 +1,6 @@
 # BiGuess source map
 
-Paths below describe the live tree. Read [architecture.md](architecture.md) for behavior and [test-map.md](test-map.md) for verification. The generated index in `.agents/cache/` is a navigation aid; confirm symbols against source.
+Paths below describe the live tree. Read [architecture.md](architecture.md) for behavior, [integrations.md](integrations.md) for content/backend/release pipelines, and [test-map.md](test-map.md) for verification. The generated index in `.agents/cache/` is a navigation aid; confirm symbols against source.
 
 | Change area | Entry points |
 | --- | --- |

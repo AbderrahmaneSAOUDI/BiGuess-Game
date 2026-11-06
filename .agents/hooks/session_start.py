@@ -1,64 +1,34 @@
 #!/usr/bin/env python3
-"""BiGuess Session Start Hook.
-
-Injects branch, HEAD commit, current version triad, and elapsed days since project inception.
-"""
-
+"""Inject a small, read-only project snapshot at session start."""
 from __future__ import annotations
-import datetime
+
 import json
-import re
 import subprocess
-import sys
-from pathlib import Path
 
-BASE_DATE = datetime.date(2025, 5, 27)
+from hook_common import context, git, project_root, read_event
+from project_check import version_issues
 
-def get_project_root() -> Path:
-    p = Path(__file__).resolve()
-    for parent in p.parents:
-        if (parent / ".git").exists() or (parent / "pubspec.yaml").exists():
-            return parent
-    return Path.cwd()
 
 def get_info() -> str:
-    root = get_project_root()
-    branch = "main"
-    commit = "unknown"
+    root = project_root()
     try:
-        branch = subprocess.check_output(["git", "-C", str(root), "branch", "--show-current"], stderr=subprocess.DEVNULL, text=True).strip()
-        commit = subprocess.check_output(["git", "-C", str(root), "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL, text=True).strip()
-    except Exception:
-        pass
+        branch = git(root, "branch", "--show-current") or "detached HEAD"
+        commit = git(root, "rev-parse", "--short", "HEAD")
+        status = git(root, "status", "--porcelain", "--untracked-files=normal")
+        count = len(status.splitlines()) if status else 0
+        snapshot = f"Branch: {branch} ({commit}); {count} pre-existing changed paths."
+    except (OSError, subprocess.SubprocessError):
+        snapshot = "Git snapshot unavailable."
+    issues = version_issues(root)
+    return (
+        f"BiGuess: {snapshot} Preserve work outside the task. "
+        "Read AGENTS.md and .agents/README.md; consult .agents/sidecars/file-map.md as needed. "
+        "Current gameplay: GameRoundNotifier + SelectCharacterUseCase + bundled topicPackAssets. "
+        "Check live source before treating blueprint features as implemented. "
+        + ("Version triad: " + "; ".join(issues) if issues else "Version triad synchronized.")
+    )
 
-    version = "1.0.0"
-    pubspec = root / "pubspec.yaml"
-    if pubspec.exists():
-        try:
-            m = re.search(r"^version:\s*(.+)$", pubspec.read_text(encoding="utf-8"), re.MULTILINE)
-            if m:
-                version = m.group(1).strip()
-        except Exception:
-            pass
-
-    today = datetime.date.today()
-    days = max(0, (today - BASE_DATE).days)
-
-    return f"Branch: {branch} ({commit}) | Version: {version} | Day: {days} (since 2025-05-27)"
 
 if __name__ == "__main__":
-    info = get_info()
-    output = {
-        "injectSteps": [
-            {
-                "systemMessage": {
-                    "systemMessage": f"[BiGuess Environment] {info}"
-                }
-            }
-        ],
-        "hookSpecificOutput": {
-            "hookEventName": "SessionStart",
-            "additionalContext": f"[BiGuess Environment] {info}"
-        }
-    }
-    print(json.dumps(output))
+    read_event()
+    print(json.dumps(context("SessionStart", get_info())))

@@ -1,25 +1,15 @@
 ---
 trigger: always_on
-description: Core standards, mechanics, state management, and asset architecture for BiGuess Game.
+description: Preserve offline gameplay, current layer ownership, and the bundled content contract.
 ---
 
-# BiGuess Game Standards & Architecture
+# Game architecture
 
-## 1. Core Game Principles
-- **Offline Face-to-Face Engagement**: BiGuess is an offline 2-player character deduction game. Core gameplay must run 100% offline with zero network latency.
-- **Layered Clean Architecture**:
-  - `lib/data/`: Data sources (asset manifest, topic loader, local preferences).
-  - `lib/domain/`: Pure Dart domain models (`GameState`, `Character`, `TopicPack`, `SemVer`) and use cases.
-  - `lib/presentation/`: Screens (`game`, `topics`, `packs`), widgets (`animations`, `common`), dialogs (`update`, `info`).
-  - `lib/providers/`: Riverpod 2.x state management (`GameController`, `ThemeController`, `GameSettingsController`, `TopicPackProviders`).
-  - `lib/services/`: Services (`VersionService`, `ShorebirdPatchService`, `OtaInstallerService`).
+- Keep round selection/reveal entirely local. `GameRoundNotifier` owns state/timers; `SelectCharacterUseCase` owns random/deck selection; widgets render and dispatch. Do not introduce HTTP, database writes, or per-card validation into that path.
+- `gameRoundProvider` is an auto-disposed family keyed by topic/pack. Preserve timer cancellation, duplicate-tap handling, pool exhaustion/refill, hint reset, and empty packs when changing it.
+- Bundled `topicPackAssets` feeds `TopicPackDataSource` and content providers. Filenames supply display names, so renames affect gameplay labels. Regenerate with `scripts/generate_manifest.py` and synchronize pubspec; do not hand-edit generated lists.
+- Prefer optimized WebP for new character artwork and audit sizes; existing PNG flags and supported formats remain valid. Do not blindly convert or rename an existing pack.
+- Keep platform/network adapters in services and UI orchestration in presentation controllers. Current domain selection imports a Flutter-dependent asset utility; do not assume all domain files are already pure Dart.
+- CloudDatabaseService is an unused record client scaffold. The blueprint's downloadable packs, stable Cards, Studio, difficulty/session rules, and synchronization are target work, implemented only by an authorized ticket.
 
-## 2. Asset Pipeline & Card Imagery
-- All character images must be compressed WebP assets under `assets/images/<Topic>/<Pack>/`.
-- Image assets must be properly registered in `assets_manifest.dart` or dynamic asset loaders.
-- Maintain high visual fidelity while keeping individual card file sizes minimal (<50 KB).
-
-## 3. OTA Updates & Shorebird Pipeline
-- **Shorebird OTA**: Pure Dart and asset changes are eligible for instant OTA code push via Shorebird.
-- **Split-ABI Release APK**: Any native changes (new plugins, AndroidManifest, Gradle, Kotlin/Java changes) require a full split-per-abi APK release (`arm64-v8a`, `armeabi-v7a`, `x86_64`).
-- **Version File Triad**: When bumping version, always sync `pubspec.yaml`, `version.json`, and `lib/core/constants/app_constants.dart`.
+See [current architecture](../sidecars/architecture.md), [integrations](../sidecars/integrations.md), and `docs/migration/DECISIONS.md` before crossing a boundary.

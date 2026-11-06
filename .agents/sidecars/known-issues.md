@@ -12,4 +12,4 @@ These are source observations, not a severity-ranked tracker or permission to ch
 | Record persistence is an isolated scaffold | `CloudDatabaseService` and `GameRecord` have no callers in the screen/round flow. Their test checks parsing/construction, not live persistence. Do not wire scores/winners into gameplay without a compatible explicit request. |
 | Test coverage is partial | [test-map.md](test-map.md) separates existing checks from unverified deck/timer, update-controller, installer, API, and device behavior. Shorebird warnings in ordinary Flutter runs are not evidence of patch delivery. |
 
-`README.md`, older audits, and prior sidecar prose can contain obsolete inventories, versions, architecture names, or completion claims. Verify against source and current commands.
+See [integrations.md](integrations.md) for asset-script and release-pipeline limitations. `README.md`, older audits, and prior sidecar prose can contain obsolete inventories, versions, architecture names, or completion claims. Verify against source and current commands.

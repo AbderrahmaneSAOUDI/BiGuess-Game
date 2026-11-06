@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python3 .agents/hooks/session_start.py
+exec python3 "$(dirname "$0")/session_start.py"

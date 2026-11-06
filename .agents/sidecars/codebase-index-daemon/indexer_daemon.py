@@ -19,7 +19,7 @@ import threading
 
 SOURCE_DIRS = (
     'lib', 'test', 'scripts', 'backend', 'android', 'ios', 'web', 'linux',
-    'macos', 'windows', '.agents',
+    'macos', 'windows', '.agents', '.github', '.codex', 'docs',
 )
 ROOT_FILES = {
     'AGENTS.md', 'README.md', 'pubspec.yaml', 'analysis_options.yaml',
@@ -126,7 +126,7 @@ def generate_index(project_root: Path) -> tuple[dict, str]:
         'Archives, binary assets, dependency/build trees and cache are excluded.',
         'Symbols use regular expressions; verify declarations in source.', '',
     ]
-    for prefix in ('lib/', 'test/', 'backend/', 'scripts/', '.agents/'):
+    for prefix in ('lib/', 'test/', 'backend/', 'scripts/', '.agents/', '.github/', 'docs/'):
         lines.extend([f'## {prefix}', ''])
         for item in files:
             if item['path'].startswith(prefix):

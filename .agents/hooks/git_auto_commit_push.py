@@ -1,130 +1,127 @@
 #!/usr/bin/env python3
-"""Automated Git Commit & Push Assistant for BiGuess.
-
-Stages all repository changes, ensures the patch version is incremented,
-constructs a semantic commit message prefixed with the version, and pushes to remote.
-
-Usage:
-    python3 .agents/hooks/git_auto_commit_push.py "feat: description here"
-    or:
-    python3 .agents/hooks/git_auto_commit_push.py
-"""
-
+"""Commit explicitly selected work and version fields using an isolated Git index."""
 from __future__ import annotations
+
+import argparse
+import datetime as dt
 import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+from version_increment import TRIAD, get_project_root, plan_triad, pubspec_version, rewrite_triad, sync_triad
 
-def run_cmd(cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]:
-    res = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=False)
-    return res.returncode, res.stdout.strip(), res.stderr.strip()
 
-def get_current_version(root: Path) -> str:
-    pubspec = root / "pubspec.yaml"
-    if pubspec.exists():
-        try:
-            m = re.search(r"^version:\s*(\d+\.\d+\.\d+)", pubspec.read_text(encoding="utf-8"), re.MULTILINE)
-            if m:
-                return m.group(1).strip()
-        except Exception:
-            pass
-    ver = root / "VERSION"
-    if ver.exists():
-        return ver.read_text(encoding="utf-8").strip()
-    return "1.0.0"
+def run(root: Path, *args: str, env: dict[str, str] | None = None, input: str | None = None) -> str:
+    effective = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
+    effective.pop("GIT_INDEX_FILE", None)
+    if env:
+        effective.update(env)
+    return subprocess.run(["git", "-C", str(root), *args], input=input, env=effective,
+                          capture_output=True, text=True, timeout=120, check=True).stdout
 
-def get_branch_name(root: Path) -> str:
-    code, stdout, _ = run_cmd(["git", "branch", "--show-current"], cwd=root)
-    return stdout if code == 0 and stdout else "main"
 
-def auto_generate_message(root: Path) -> str:
-    code, stdout, _ = run_cmd(["git", "status", "--porcelain"], cwd=root)
-    if not stdout:
-        return "chore: update project configuration"
+def checked_paths(root: Path, paths: list[str]) -> list[str]:
+    result = []
+    for name in paths:
+        candidate = Path(name)
+        if name.startswith(":") or ".." in candidate.parts:
+            raise ValueError(f"Unsafe path: {name}")
+        resolved = (root / candidate).resolve()
+        if not resolved.is_relative_to(root):
+            raise ValueError(f"Path outside repository: {name}")
+        result.append(resolved.relative_to(root).as_posix())
+    return result
 
-    files = [l.strip()[3:] for l in stdout.splitlines() if l.strip()]
-    if any(".agents/hooks" in f for f in files):
-        return "feat(agents): update lifecycle hooks and automation"
-    if any(".agents/sidecars" in f for f in files):
-        return "feat(agents): update sidecar indexer and services"
-    if any(".agents/rules" in f for f in files):
-        return "docs(rules): refine workspace agent rules"
-    if any(".agents/skills" in f for f in files):
-        return "feat(skills): add and refine agent skills"
-    if any("lib/presentation" in f for f in files):
-        return "feat(ui): update screens and widget presentation"
-    if any("lib/providers" in f for f in files):
-        return "feat(state): update game and settings controllers"
-    if any("lib/domain" in f for f in files):
-        return "feat(domain): update game models and use cases"
-    if any("lib/services" in f for f in files):
-        return "feat(services): enhance ota and version services"
-    if any("assets/" in f for f in files):
-        return "feat(assets): update game character cards and assets"
-    if any("test/" in f for f in files):
-        return "test: update unit and widget test suite"
-    if any("pubspec.yaml" in f for f in files):
-        return "chore: update dependencies and configuration"
-    return "feat: apply substantive project enhancements"
 
-def get_project_root() -> Path:
-    p = Path(__file__).resolve()
-    for parent in p.parents:
-        if (parent / ".git").exists() or (parent / "pubspec.yaml").exists():
-            return parent
-    return Path.cwd()
+def commit_selected(root: Path, summary: str, paths: list[str], *, all_paths: bool = False,
+                    dry_run: bool = False, push: bool = True, today: dt.date | None = None) -> str:
+    root = root.resolve()
+    selected = ["."] if all_paths else checked_paths(root, paths)
+    if not selected:
+        raise ValueError("Explicit --paths or --all is required")
+    branch = run(root, "symbolic-ref", "--quiet", "--short", "HEAD").strip()
+    if not branch:
+        raise ValueError("Cannot commit on detached HEAD")
+    # Selected paths and the version fields must start unstaged. Other staged work is retained.
+    staged = run(root, "diff", "--cached", "--name-only", "-z", "--", *selected, *TRIAD)
+    if staged:
+        raise ValueError("Selected paths or version files already have staged changes; preserve/reconcile them first")
+    changed = run(root, "diff", "--name-only", "--no-renames", "HEAD", "-z", "--", *selected)
+    untracked = run(root, "ls-files", "--others", "--exclude-standard", "-z", "--", *selected)
+    if not changed and not untracked:
+        semver = ".".join(map(str, pubspec_version((root / TRIAD[0]).read_text())[:3]))
+        print(json.dumps({"dry_run": dry_run, "noop": True, "paths": selected,
+                          "version": semver, "reason": "No task-owned changes"}))
+        return semver
+    version, planned = plan_triad(root, today)
+    semver = ".".join(map(str, version[:3]))
+    summary = re.sub(r"^\d+\.\d+\.\d+\s*[-:]\s*", "", summary.strip())
+    if not summary or "\n" in summary:
+        raise ValueError("Provide a single-line commit summary")
+    message = f"{semver} - {summary}"
+    if dry_run:
+        print(json.dumps({"dry_run": True, "paths": selected, "version_fields": list(TRIAD),
+                          "version": semver, "commit": message, "push": push}, indent=2))
+        return semver
+    original_head = run(root, "rev-parse", "HEAD").strip()
+    original_triad = {name: run(root, "show", f"HEAD:{name}") for name in TRIAD}
+    version_blobs = rewrite_triad(original_triad, version)
+    for name in TRIAD:
+        if any(path == "." or name == path or name.startswith(path.rstrip("/") + "/")
+               for path in selected):
+            # Explicit task scope authorizes the whole file, including dependencies,
+            # constants, or release metadata. Implicit trio entries get fields only.
+            version_blobs[name] = planned[name]
+    with tempfile.TemporaryDirectory(prefix="biguess-index-") as temporary:
+        environment = {"GIT_INDEX_FILE": str(Path(temporary) / "index")}
+        run(root, "read-tree", "HEAD", env=environment)
+        run(root, "add", "-A", "--", *selected, env=environment)
+        # Install either explicit task content or implicit version-only entries.
+        for name in TRIAD:
+            blob = run(root, "hash-object", "-w", "--stdin", input=version_blobs[name]).strip()
+            mode = run(root, "ls-tree", "HEAD", "--", name).split()[0]
+            run(root, "update-index", "--add", "--cacheinfo", f"{mode},{blob},{name}", env=environment)
+        if run(root, "rev-parse", "HEAD").strip() != original_head:
+            raise ValueError("HEAD changed while preparing the commit; retry from the new baseline")
+        # Recheck selected staging immediately before mutation.
+        if run(root, "diff", "--cached", "--name-only", "-z", "--", *selected, *TRIAD):
+            raise ValueError("Selected staging changed while preparing the commit")
+        # Sync worktree version fields only after all plans/index entries validate.
+        sync_triad(root, today)
+        output = run(root, "commit", "-m", message, env=environment)
+        print(output.strip())
+    # Adopt the new commit for selected entries only; unrelated staged blobs remain intact.
+    run(root, "reset", "--quiet", "HEAD", "--", *selected, *TRIAD)
+    if push:
+        print(run(root, "push", "origin", branch).strip())
+    return semver
+
 
 def main() -> int:
-    root = get_project_root()
-
-    code, stdout, _ = run_cmd(["git", "status", "--porcelain"], cwd=root)
-    if not stdout:
-        print("[git_auto_commit_push] Working tree clean. Nothing to commit.")
-        return 0
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("summary", help="Conventional commit summary")
+    scope = parser.add_mutually_exclusive_group(required=True)
+    scope.add_argument("--paths", nargs="+", help="Task-owned files/directories, relative to repository root")
+    scope.add_argument("--all", action="store_true", help="Explicitly include all worktree changes")
+    parser.add_argument("--dry-run", action="store_true", help="Read-only plan; no writes, commits, or pushes")
+    parser.add_argument("--no-push", action="store_true", help="Commit locally without pushing")
+    parser.add_argument("--root", type=Path, default=get_project_root())
+    parser.add_argument("--date", type=dt.date.fromisoformat, help="Override Africa/Algiers date for deterministic runs")
+    args = parser.parse_args()
     try:
-        from version_increment import sync_triad, git_has_substantive_changes
-        if git_has_substantive_changes(root):
-            sync_triad(root)
-    except Exception as e:
-        print(f"[git_auto_commit_push] Warning: version increment check: {e}", file=sys.stderr)
+        commit_selected(args.root, args.summary, args.paths or [], all_paths=args.all,
+                        dry_run=args.dry_run, push=not args.no_push, today=args.date)
+        return 0
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        print(f"Git synchronization failed: {error}", file=sys.stderr)
+        if isinstance(error, subprocess.CalledProcessError):
+            print(error.stderr, file=sys.stderr)
+        return 1
 
-    version = get_current_version(root)
-    branch = get_branch_name(root)
-
-    custom_msg = " ".join(sys.argv[1:]).strip() if len(sys.argv) > 1 else ""
-    if not custom_msg:
-        custom_msg = auto_generate_message(root)
-
-    # Strip any redundant version prefix from the provided message
-    cleaned_msg = re.sub(r'^\d+\.\d+\.\d+\s*[-:]\s*', '', custom_msg)
-    final_commit_msg = f"{version} - {cleaned_msg}"
-
-    print("[git_auto_commit_push] Staging changes...")
-    code, _, err = run_cmd(["git", "add", "."], cwd=root)
-    if code != 0:
-        print(f"[git_auto_commit_push] Error staging: {err}", file=sys.stderr)
-        return code
-
-    print(f"[git_auto_commit_push] Committing: '{final_commit_msg}'...")
-    code, out, err = run_cmd(["git", "commit", "-m", final_commit_msg], cwd=root)
-    if code != 0:
-        print(f"[git_auto_commit_push] Commit output: {out} {err}")
-        return code
-
-    print(f"[git_auto_commit_push] Pushing to origin/{branch}...")
-    code, out, err = run_cmd(["git", "push", "origin", branch], cwd=root)
-    if code != 0:
-        print(f"[git_auto_commit_push] Push error: {err}", file=sys.stderr)
-        return code
-
-    print(f"[git_auto_commit_push] Successfully committed and pushed version {version}!")
-    return 0
 
 if __name__ == "__main__":
     raise SystemExit(main())

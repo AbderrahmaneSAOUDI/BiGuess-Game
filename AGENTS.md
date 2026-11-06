@@ -1,50 +1,56 @@
-# BiGuess Game — Agent Operational Guide
+# BiGuess agent guide
 
-BiGuess is an offline 2-player face-to-face anime & pop-culture character guessing game built with Flutter, Dart, Riverpod 2.x, Material 3, and Shorebird hybrid OTA delivery.
+BiGuess is a Flutter/Dart face-to-face guessing game using Riverpod 2.x, Material 3, bundled character assets, and optional Android hybrid updates. Core gameplay must work entirely offline.
 
-## Directory Map
+## Start here
 
-- `lib/data/` — Data sources (`TopicPackDataSource`, asset manifest readers).
-- `lib/domain/` — Core business models (`Character`, `GameState`, `SemVer`, `RemoteVersion`, `TopicPack`) and use cases (`SelectCharacterUseCase`).
-- `lib/presentation/` — Presentation layer: screens (`GameScreen`, `TopicsScreen`, `PacksScreen`), widgets (`AnimatedCharacterCard`, `Countdown`, `ActionButton`), and dialogs (`UpdateDialog`, `GameInfoDialog`).
-- `lib/providers/` — Riverpod 2.x state controllers (`GameController`, `ThemeController`, `GameSettingsController`, `TopicPackProviders`).
-- `lib/services/` — Platform services (`VersionService`, `ShorebirdPatchService`, `OtaInstallerService`).
-- `lib/core/` — Constants (`AppConstants`), theme definitions (`AppTheme`), and utilities (`AssetLoader`, `UrlHelper`).
-- `assets/` — High-efficiency WebP character cards (`assets/images/`), Google Sans typography (`assets/fonts/`), and brand logos (`assets/logos/`).
-- `scripts/` — Developer automation & release pipeline (`release.py`, `run.sh`).
-- `test/` — Unit and widget verification suites (`test/unit/`, `test/widget/`).
-- `.agents/rules/` — Persistent operational rules (architecture, versioning, quality, speed).
-- `.agents/hooks/` & `hooks.json` — Lifecycle hooks (dangerous command guard, session start context, version automation).
-- `.agents/sidecars/` — Background daemons (codebase indexer, test watcher) and architecture maps.
-- `.agents/skills/` — On-demand procedural playbooks and workflows.
+1. Inspect `git status --short`; preserve existing staged and unstaged work. Multiple sessions may share this checkout.
+2. Read [.agents/README.md](.agents/README.md) for skill routing and automation. Read the relevant linked rules before editing their area; these Markdown rules are project instructions even when the host does not discover them automatically.
+3. Consult the [source map](.agents/sidecars/file-map.md), [architecture](.agents/sidecars/architecture.md), and [test map](.agents/sidecars/test-map.md). Use `rg` for direct searches; the generated index is an optional navigation cache, never the source of truth.
+4. For migration work read [approved decisions](docs/migration/DECISIONS.md) and the relevant [blueprint](BIGUESS_PRODUCT_BLUEPRINT.md) section. The blueprint and historical dossiers include future designs, not just implemented features.
 
-## Key Commands
+## Current ownership
 
-- `flutter test` — Run complete unit and widget test suite.
-- `flutter analyze` — Static analysis and lint verification.
-- `flutter run` — Start development build on emulator or connected device.
-- `flutter build apk --release --split-per-abi` — Build optimized split-ABI release APKs.
-- `python3 scripts/release.py --version-only` — Synchronize version triad.
-- `python3 .agents/hooks/git_auto_commit_push.py "<summary>"` — Bump version, stage, commit, and push.
+| Path | Responsibility |
+| --- | --- |
+| `lib/main.dart` | Flutter initialization, ProviderScope, themes, TopicsScreen |
+| `lib/data/`, `lib/assets_manifest.dart` | TopicPackDataSource and generated bundled `topicPackAssets` |
+| `lib/domain/` | GameRoundState, selection results/use case, version/update models |
+| `lib/providers/` | GameRoundNotifier and family provider, settings/theme/content providers |
+| `lib/presentation/` | Topic → pack → game navigation, reveal widgets, info/update dialogs, update controller |
+| `lib/services/` | Version/APK/Shorebird adapters; separate optional CloudDatabaseService |
+| `lib/core/` | AppConstants, themes, asset labels, URL helpers |
+| `assets/` | WebP anime cards, PNG geography flags, logos, fonts, profile images |
+| `backend/biguess-api/` | Cloudflare Worker/D1 game-record scaffold, not the planned content API |
+| `scripts/`, `test/`, `.github/` | Asset/release tools, Flutter verification, CI |
+| `.agents/`, `.codex/hooks.json` | Shared guidance, tools, optional sidecars, Codex hook entrypoint |
 
-## Hard Constraints & Invariants
+There are no current `Character`/`TopicPack` domain entities or `GameController` class. Check declarations before introducing abstractions from the target design. Historical copies under `old-lib/`, `old-test/`, and `ChatGPT/` are not active application source.
 
-- **Offline-First Gameplay:** Core 2-player character deduction must function 100% offline with zero runtime network latency.
-- **Widget Performance & Const:** Use `const` constructors wherever possible. Extract complex UI subtrees into dedicated `StatelessWidget` classes rather than large private `_build*()` methods.
-- **State & Lifecycle Safety:** Always guard with `if (!mounted) return;` after async `await` calls before calling `setState()` or interacting with `BuildContext`.
-- **Resource Disposal:** Explicitly dispose all `TextEditingController`, `AnimationController`, `ScrollController`, and `FocusNode` instances in `dispose()`.
-- **Zero Unprompted Additions:** Only implement changes, features, or copy explicitly requested by the user. Ask before adding or improving.
-- **Version File Triad Synchronization:** When bumping the version, always ensure `pubspec.yaml`, `version.json`, and `lib/core/constants/app_constants.dart` remain synchronized.
-- **Mandatory Lifecycle Automation:**
-  1. Verify with `flutter test`.
-  2. Silently increment version via `.agents/hooks/version_increment.py` (minor = elapsed days since `2025-05-27`).
-  3. Git sync: `python3 .agents/hooks/git_auto_commit_push.py "<version> - <summary>"`.
+## Required invariants
 
-## Progressive Disclosure Links
+- Implement only the requested behavior/copy; do not implement blueprint backlog or incidental app improvements. See [scope](.agents/rules/strict-scope-and-additions.md).
+- Keep selection, countdown, and reveal independent of network calls. See [architecture](.agents/rules/game-standards-and-architecture.md).
+- Use const constructors where possible and dedicated widgets for complex subtrees. After an async gap, check the owning `mounted`/`context.mounted` before UI access. Dispose owned controllers, focus nodes, subscriptions, and timers. See [quality](.agents/rules/code-quality-and-safety.md).
+- Regenerate the asset manifest from disk and preserve names/case/Unicode and bundle registration. See the `topic-pack-maintenance` skill.
+- Keep `pubspec.yaml`, `version.json`, and `AppConstants.defaultVersion` synchronized. Preserve native-change and release metadata. See [versioning](.agents/rules/git-workflow-and-versioning.md) and [releases](.agents/rules/release-automation.md).
 
-- Product Blueprint: [BIGUESS_PRODUCT_BLUEPRINT.md](file:///home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/BIGUESS_PRODUCT_BLUEPRINT.md)
-- Complete Technical Dossier: [PROJECT_DETAILS.md](file:///home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/PROJECT_DETAILS.md)
-- Execution Efficiency & Safety Rules: [.agents/rules/](file:///home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/.agents/rules)
-- Lifecycle Hooks Configuration: [.agents/hooks.json](file:///home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/.agents/hooks.json)
-- Sidecars & Architecture Maps: [.agents/sidecars/](file:///home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/.agents/sidecars)
-- Procedural Workflows & Skills: [.agents/skills/](file:///home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/.agents/skills)
+## Verification and completion
+
+```bash
+flutter test
+flutter analyze
+python3 .agents/scripts/validate_setup.py
+python3 -m unittest discover -s .agents/tests -v
+```
+
+Choose additional checks from the test map. Record pre-existing failures separately from regressions; do not claim a passing gate when its exit code failed.
+
+After substantive edits and successful required tests, run `.agents/hooks/version_increment.py` (minor = elapsed days since `2025-05-27` in Africa/Algiers), then the scoped Git helper:
+
+```bash
+python3 .agents/hooks/version_increment.py
+python3 .agents/hooks/git_auto_commit_push.py "chore(agents): describe the change" --paths <task-paths>
+```
+
+The helper includes version fields automatically. Inspect its `--dry-run` plan first; select only task-owned paths. Existing authorization for this lifecycle applies without another confirmation. Do not use whole-workspace staging for unrelated work. Stop on test/Git errors, report the cause, and never force-push. This lifecycle does not request APK/OTA publishing or backend deployment.
