@@ -1,0 +1,68 @@
+Command: flutter test --reporter expanded
+Injected file: test/ci_negative_o9aa6qxs_test.dart
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('deliberate CI failure', () {
+    expect(1 + 1, 3);
+  });
+}
+
+00:00 +0: loading /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart
+00:00 +0: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource returns only Anime and Geography topics
+00:00 +1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource returns all anime packs
+00:00 +2: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource returns flags pack under Geography
+00:00 +3: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource all packs contain assets
+00:00 +4: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: TopicPackDataSource geography flags count is 252
+00:00 +5: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AssetLoader.extractCharacterName extracts flag names without file extension
+00:00 +6: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AssetLoader.extractCharacterName extracts anime character names properly
+00:00 +7: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AppConstants Dynamic Theme & Icons known topics return configured colors
+00:00 +8: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AppConstants Dynamic Theme & Icons future custom topics dynamically receive valid colors
+00:00 +9: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/topic_pack_test.dart: AppConstants Dynamic Theme & Icons future custom topics dynamically receive contextual icons
+00:00 +10: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons parses version with build number
+00:00 +11: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons parses version without build number
+00:00 +12: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons parses version with pre-release and build number
+00:00 +13: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons parses empty or invalid version safely
+00:00 +14: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons correctly detects newer major or minor
+00:00 +15: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: SemVer parsing and comparisons correctly compares SemVer instances
+00:00 +16: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: RemoteVersion parsing and ABI resolution parses json defensively with string build number and string boolean
+00:00 +17: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: RemoteVersion parsing and ABI resolution resolves targeted ABI APK correctly
+00:00 +18: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions returns UpdateNone when local is up to date
+00:00 +19: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions returns UpdateFullApk on major or minor bump
+00:00 +20: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions returns UpdateFullApk with mandatory=true when below minRequiredVersion
+00:00 +21: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions returns UpdateShorebirdPatch when pure patch bump without native changes and Shorebird is available
+00:00 +22: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/update_test.dart: VersionService evaluateUpdate decisions falls back to UpdateFullApk when Shorebird is unavailable on the device
+00:00 +23: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model serializes to JSON correctly
+00:00 +24: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model deserializes from JSON correctly
+00:00 +25: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: GameRecord Model handles fallback and string types in JSON gracefully
+00:00 +26: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/unit/cloud_database_service_test.dart: CloudDatabaseService initializes with default endpoint
+00:01 +27: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_screen_test.dart: AnimatedCharacterCard mounts and renders without layout errors
+00:02 +27 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_screen_test.dart: AnimatedCharacterCard mounts and renders without layout errors
+00:02 +27 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/ci_negative_o9aa6qxs_test.dart: deliberate CI failure [E]
+  Expected: <3>
+    Actual: <2>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/ci_negative_o9aa6qxs_test.dart 5:5             main.<fn>
+  
+00:04 +27 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget_test.dart: BiGuessApp smoke test renders topics screen
+-------------------------------------------------------------------------------
+The Shorebird Updater is unavailable in the current environment.
+-------------------------------------------------------------------------------
+This occurs when using pkg:shorebird_code_push in an app that does not
+contain the Shorebird Engine. Most commonly this is due to building with
+`flutter build` or `flutter run` instead of `shorebird release` or `shorebird preview`.
+It can also occur when running on an unsupported platform (e.g. web).
+
+00:04 +28 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget_test.dart: BiGuessApp smoke test renders topics screen
+00:04 +29 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget_test.dart: BiGuessApp smoke test renders topics screen
+00:05 +30 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget_test.dart: BiGuessApp smoke test renders topics screen
+00:05 +31 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget_test.dart: BiGuessApp smoke test renders topics screen
+00:05 +32 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget_test.dart: BiGuessApp smoke test renders topics screen
+00:05 +33 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_screen_test.dart: AnimatedCharacterCard card does not move when toggling showNameHint
+00:06 +34 -1: /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/widget/game_screen_test.dart: startCountdown resets showCharacterNameHintProvider to false
+00:06 +35 -1: Some tests failed.
+
+Failing tests:
+  /home/saoudi26/Documents/GitHub/PERSONAL/BiGuess-Game/test/ci_negative_o9aa6qxs_test.dart: deliberate CI failure

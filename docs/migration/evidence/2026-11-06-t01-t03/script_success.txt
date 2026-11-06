@@ -1,0 +1,30 @@
+MOCK COMMANDS: verifies shell control flow only.
+Running dependencies (log: /tmp/biguess-baseline-smoke-butkvj5u/success/dependencies.txt)
+Running format (log: /tmp/biguess-baseline-smoke-butkvj5u/success/format.txt)
+Running analyze (log: /tmp/biguess-baseline-smoke-butkvj5u/success/analyze.txt)
+Running tests (log: /tmp/biguess-baseline-smoke-butkvj5u/success/tests.txt)
+Running manifest (log: /tmp/biguess-baseline-smoke-butkvj5u/success/manifest.txt)
+Running assets (log: /tmp/biguess-baseline-smoke-butkvj5u/success/assets.txt)
+Running versions (log: /tmp/biguess-baseline-smoke-butkvj5u/success/versions.txt)
+Running agent_setup (log: /tmp/biguess-baseline-smoke-butkvj5u/success/agent_setup.txt)
+Running agent_tests (log: /tmp/biguess-baseline-smoke-butkvj5u/success/agent_tests.txt)
+check	exit_code
+dependencies	0
+format	0
+analyze	0
+tests	0
+manifest	0
+assets	0
+versions	0
+agent_setup	0
+agent_tests	0
+check	exit_code
+dependencies	0
+format	0
+analyze	0
+tests	0
+manifest	0
+assets	0
+versions	0
+agent_setup	0
+agent_tests	0

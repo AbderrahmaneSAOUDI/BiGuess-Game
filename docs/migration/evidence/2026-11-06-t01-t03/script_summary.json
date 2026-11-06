@@ -1,0 +1,12 @@
+[
+  {
+    "case": "failure",
+    "exit_code": 1,
+    "verified": true
+  },
+  {
+    "case": "success",
+    "exit_code": 0,
+    "verified": true
+  }
+]

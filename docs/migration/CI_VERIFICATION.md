@@ -1,251 +1,100 @@
-# BiGuess — Continuous Integration & Fast Verification (T03)
+# CI verification (T03 recheck)
 
-**Author:** Antigravity (Pair Programming Assistant)  
-**Date:** 2026-11-06  
-**Context:** Phase A Migration Roadmap (`TODO.md` T03)  
-**Workflow File:** [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)  
-**Local Verification Script:** [`scripts/baseline_check.sh`](file:///scripts/baseline_check.sh)  
-**Verification Evidence Dossier:** [`docs/migration/evidence/2026-11-06-t01-t03/`](file:///docs/migration/evidence/2026-11-06-t01-t03/)  
+Rechecked **2026-11-06** against the [workflow](../../.github/workflows/ci.yml).
+T03 is **partially verified**: workflow triggers and local gates are checked; successful
+hosted runs for both a PR and a `main` push remain unverified. The previous runtime,
+hermeticity and full acceptance claims were stronger than the available evidence.
 
----
+## Workflow and required checks
 
-## 1. Executive Summary & Purpose
+The `verify` job (**Fast Verification & Quality Gates**) is configured for pushes
+to `main` and pull requests targeting `main`. Obsolete runs on the same ref are
+cancelled. Its token has `contents: read`, its timeout is 15 minutes, and it does
+not publish artifacts, invoke release tooling, or build release APKs.
 
-Task **T03** establishes continuous automated verification for the **BiGuess** project via GitHub Actions. It guarantees that every pull request targeting `main` and every direct push to `main` executes a rigorous, multi-stage quality pipeline before integration.
+| Tool | Configuration |
+| --- | --- |
+| Runner | `ubuntu-24.04` (runner image updates within this label) |
+| Flutter / bundled Dart | **3.47.9 stable / 3.13.7** |
+| Python | **3.11** minor series |
+| Pillow | **12.3.0** |
+| Actions | checkout v4, setup-python v5, flutter-action v2, cache v4; major tags can move |
 
-### Core Guarantees
-- **Fast Feedback Loop:** The entire verification pipeline runs in under 3 minutes.
-- **Hermetic & Cached:** Pinned Flutter SDK, Python 3.11 with Pillow, and Pub dependencies are cached to avoid redundant network overhead.
-- **Zero Production Side-Effects:** The CI pipeline does **not** invoke Shorebird production releases, build release APKs, or publish artifacts. Artifact generation is strictly decoupled and gated by dedicated release workflows.
-- **Local Parity:** Developers can run the exact same verification suite locally using `bash scripts/baseline_check.sh`.
+Flutter uses the setup action's SDK cache. Pub caching includes runner OS, Flutter
+version and `pubspec.lock` hash. This reduces repeated downloads; it does not make
+dependency resolution hermetic or guarantee a runtime. Update pins intentionally
+and rerun formatting/analyzer/tests when changing Flutter/Dart.
 
----
-
-## 2. Workflow Triggers & Concurrency Controls
-
-Defined in [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml):
-
-```yaml
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-```
-
-- **PR Validation:** Triggers on all pull requests against `main` (opened, synchronized, reopened).
-- **Post-Merge Validation:** Triggers on all merged commits pushed to `main`.
-- **Permissions:** Minimal read-only token permissions (`contents: read`).
-- **Concurrency Cancellation:** In-flight CI runs for obsolete commits on the same pull request or branch are cancelled immediately to prevent runner saturation.
-
----
-
-## 3. Toolchain Specifications & Pinning Strategy
-
-| Component | Target / Environment | Version / Channel | Pinning / Upgrade Policy |
-| :--- | :--- | :--- | :--- |
-| **Runner OS** | GitHub Actions Virtual Environment | `ubuntu-24.04` (Ubuntu Noble) | Pinned runner image for stability |
-| **Flutter SDK** | `subosito/flutter-action@v2` | `3.47.9` (channel `stable`) | Explicitly pinned in `ci.yml`. Baseline: Flutter `3.47.9` |
-| **Dart SDK** | Bundled with Flutter SDK | Dart `3.13.7` (sound null safety, tall style format) | Aligned with pinned Flutter SDK. Minimum SDK constraint in `pubspec.yaml` is `>=3.0.0 <4.0.0`. |
-| **Python** | `actions/setup-python@v5` | Python `3.11` | Explicitly pinned in `ci.yml` for reproducible script execution (`generate_manifest.py`, `audit_assets.py`). |
-| **Pillow** | Python Image Library (`pip`) | Pinned `Pillow==12.3.0` | Installed in CI environment to enable deep byte/header integrity validation for WebP and PNG assets. |
-
-### Caching Architecture
-
-1. **Flutter Toolchain Cache:**
-   ```yaml
-   uses: subosito/flutter-action@v2
-   with:
-     flutter-version: '3.47.9'
-     channel: stable
-     cache: true
-   ```
-2. **Dart Pub Cache:**
-   ```yaml
-   uses: actions/cache@v4
-   with:
-     path: ~/.pub-cache
-     key: ${{ runner.os }}-flutter-3.47.9-pub-${{ hashFiles('pubspec.lock') }}
-     restore-keys: |
-       ${{ runner.os }}-flutter-3.47.9-pub-
-   ```
-
----
-
-## 4. The 9 Mandatory Pre-Merge Quality Gates
-
-To merge any code into `main`, the branch must pass all 9 gates sequentially:
-
-```mermaid
-flowchart TD
-    A["Pull Request / Push to main"] --> G1["Gate 1: Dependency Resolution\n(flutter pub get)"]
-    G1 --> G2["Gate 2: Code Formatting\n(dart format --set-exit-if-changed)"]
-    G2 --> G3["Gate 3: Static Analysis\n(flutter analyze --fatal-infos)"]
-    G3 --> G4["Gate 4: Automated Test Suite\n(flutter test --reporter expanded)"]
-    G4 --> G5["Gate 5: Manifest Synchronization\n(scripts/generate_manifest.py --check)"]
-    G5 --> G6["Gate 6: Asset Integrity Audit\n(scripts/audit_assets.py)"]
-    G6 --> G7["Gate 7: Version Triad Synchronization\n(python3 .agents/hooks/project_check.py --check)"]
-    G7 --> G8["Gate 8: Tooling & Setup Validation\n(python3 .agents/scripts/validate_setup.py)"]
-    G8 --> G9["Gate 9: Agent Automation Unit Tests\n(python3 -m unittest discover -s .agents/tests -v)"]
-    G9 --> PASS["✅ CI Passed — Ready to Merge"]
-```
-
-### Detailed Gate Breakdown
-
-#### Gate 1: Dependency Resolution
-- **Command:** `flutter pub get`
-- **Purpose:** Resolves and validates all transitive packages against `pubspec.yaml` and `pubspec.lock`. Fails on unresolvable version constraints or missing dependencies.
-
-#### Gate 2: Code Formatting
-- **Command:** `dart format --output=none --set-exit-if-changed lib test`
-- **Purpose:** Enforces deterministic Dart formatting across `lib/` and `test/` without allowing unformatted code into `main`. Fails with exit code 1 if any file requires formatting.
-
-#### Gate 3: Static Analysis & Lints
-- **Command:** `flutter analyze --fatal-infos`
-- **Purpose:** Executes the Dart analyzer configured by `analysis_options.yaml` (including strict casts, strict inference, strict raw types, const constructors, and single quotes). Flags info-level diagnostics as fatal errors.
-
-#### Gate 4: Automated Test Suite
-- **Command:** `flutter test --reporter expanded`
-- **Purpose:** Runs all unit tests (`test/unit/`) and widget tests (`test/widget/`). Verifies domain models, SemVer parsing, update decision matrices, character name extraction, and widget rendering.
-
-#### Gate 5: Topic/Pack Manifest Synchronization
-- **Command:** `python3 scripts/generate_manifest.py --check`
-- **Purpose:** Scans `assets/images/<Topic>/<Pack>/` on disk and compares against `lib/assets_manifest.dart`. Prevents newly committed card images from being missed in the compiled asset index or deleted files from leaving dangling references.
-
-#### Gate 6: Asset Integrity Audit
-- **Command:** `python3 scripts/audit_assets.py`
-- **Purpose:** Verifies image headers, detects corrupted files, scans for missing or orphaned assets, flags oversized files (>200 KB), and ensures file names adhere to ASCII/Unicode standards.
-
-#### Gate 7: Version Triad Synchronization (Read-Only)
-- **Command:** `python3 .agents/hooks/project_check.py --check`
-- **Purpose:** Enforces that the three version sources (`pubspec.yaml`, `version.json`, and `lib/core/constants/app_constants.dart`) are 100% in sync without mutating files. Fails with exit code 1 on any discrepancy.
-
-#### Gate 8: Agent Tooling & Setup Validation
-- **Command:** `python3 .agents/scripts/validate_setup.py`
-- **Purpose:** Runs 920 automated checks across repository rules, skills, sidecars, and hook definitions to ensure environment integrity.
-
-#### Gate 9: Agent Lifecycle & Automation Unit Tests
-- **Command:** `python3 -m unittest discover -s .agents/tests -v`
-- **Purpose:** Executes the Python unit test suite (43 tests) verifying lifecycle hooks, git commit/push assistants, sidecar isolation, and version calculation logic.
-
----
-
-## 5. Deliberate Failure Reproduction & Acceptance Verification
-
-As required by **T03 acceptance criteria**, each gate was verified by introducing intentional defects and observing that the gate fails fast with the expected exit code and descriptive error output.
-
-### Test 1: Deliberate Code Formatting Defect
-- **Injected Fault:** Appended unformatted code / trailing indentation to `lib/core/constants/app_constants.dart`.
-- **Command:** `dart format --output=none --set-exit-if-changed lib/core/constants/app_constants.dart`
-- **Outcome:** **Caught successfully.** Exit code: `1`.
-- **Output:**
-  ```text
-  Changed lib/core/constants/app_constants.dart
-  Formatted 1 file (1 changed) in 0.01 seconds.
-  Exit code: 1
-  ```
-
-### Test 2: Deliberate Static Analysis Error
-- **Injected Fault:** Introduced type mismatch `int deliberateSyntaxError = "wrong type";` in `lib/core/constants/app_constants.dart`.
-- **Command:** `flutter analyze --fatal-infos`
-- **Outcome:** **Caught successfully.** Exit code: `1`.
-- **Output:**
-  ```text
-  Analyzing BiGuess-Game...
-    error • A value of type 'String' can't be assigned to a variable of type 'int'.
-            Try changing the type of the variable, or casting the right-hand type to 'int'
-            • lib/core/constants/app_constants.dart:126:29 • invalid_assignment
-  1 issue found.
-  Exit code: 1
-  ```
-
-### Test 3: Deliberate Unit Test Failure
-- **Injected Fault:** Added failing test assertion `expect(1 + 1, equals(3))` in unit test suite.
-- **Command:** `flutter test test/unit/failing_test_scratch.dart`
-- **Outcome:** **Caught successfully.** Exit code: `1`.
-- **Output:**
-  ```text
-  00:00 +0: deliberate failure verification [E]
-    Expected: <3>
-      Actual: <2>
-    package:test_api                    expect
-    test/unit/failing_test_scratch.dart 4:5  main.<fn>
-
-  00:00 +0 -1: Some tests failed.
-  Exit code: 1
-  ```
-
-### Test 4: Deliberate Manifest Desynchronization
-- **Injected Fault:** Injected an extra comment line into `lib/assets_manifest.dart` without corresponding asset changes on disk.
-- **Command:** `python3 scripts/generate_manifest.py --check`
-- **Outcome:** **Caught successfully.** Exit code: `1`.
-- **Output:**
-  ```text
-  📊 Total: 2 topics, 7 packs, 1174 images.
-  ❌ Manifest is OUT OF SYNC with on-disk assets.
-  Run python3 scripts/generate_manifest.py to update it.
-  Exit code: 1
-  ```
-
-### Test 5: Deliberate Version Triad Desynchronization
-- **Injected Fault:** Manually altered `defaultVersion` in `lib/core/constants/app_constants.dart` to an out-of-sync value (`1.0.0`) while `pubspec.yaml` was `1.528.69`.
-- **Command:** `python3 .agents/hooks/project_check.py --check`
-- **Outcome:** **Caught successfully.** Exit code: `1`.
-- **Output:**
-  ```json
-  {"ok": false, "issues": ["AppConstants.defaultVersion differs from pubspec.yaml"]}
-  ```
-
----
-
-## 6. Pre-Merge Requirements & Branch Protection Policy
-
-To protect the integrity of `main`:
-
-1. **Required Status Checks:**
-   - GitHub branch protection rule on `main` must require the job:
-     `Fast Verification & Quality Gates` (`verify`)
-   - Branches must be up to date with `main` before merging.
-2. **No Direct Pushes to `main` for Production Features:**
-   - All substantive changes must go through a feature branch (`feat/*`, `fix/*`) and a Pull Request.
-3. **Zero Lint & Warning Tolerance:**
-   - `flutter analyze` runs with `--fatal-infos`. Any introduced deprecation, unused variable, or style guideline breach fails the build immediately.
-4. **Mandatory Version Increment:**
-   - Every merge commit or PR must have its version triad updated in accordance with the project's date-based versioning standard.
-
----
-
-## 7. Local Developer Runbook & Live Baseline Audit
-
-Developers can run the complete gate sequence locally using `scripts/baseline_check.sh`:
+All of the following must pass before merge:
 
 ```bash
-# Full verification with diagnostics and logging
-bash scripts/baseline_check.sh docs/migration/evidence/2026-11-06-t01-t03
-
-# Fast verification (omits platform diagnostics)
-bash scripts/baseline_check.sh --fast
+flutter pub get
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze --fatal-infos
+flutter test --reporter expanded
+python3 scripts/generate_manifest.py --check
+python3 scripts/audit_assets.py
+python3 .agents/hooks/project_check.py --check
+python3 .agents/scripts/validate_setup.py
+python3 -m unittest discover -s .agents/tests -v
 ```
 
-### Baseline Audit Results (`docs/migration/evidence/2026-11-06-t01-t03/summary.tsv`)
+The manifest check compares the Dart manifest to disk; it does not validate pubspec
+asset registration. The asset auditor returns failure for missing/corrupt assets;
+other findings can be warnings. Pillow must be installed for image verification.
+The version checker is read-only. It replaces the previous
+`release.py --version-only` invocation, which rewrites release metadata and can
+recompute native-change status/URLs. CI must check versions without repairing them.
 
-| Gate | Name | Exit Code | Result |
-| :---: | :--- | :---: | :---: |
-| 1 | `dependencies` | `0` | ✅ Passed |
-| 2 | `format` | `0` | ✅ Passed |
-| 3 | `analyze` | `0` | ✅ Passed |
-| 4 | `tests` | `0` | ✅ Passed |
-| 5 | `manifest` | `0` | ✅ Passed |
-| 6 | `assets` | `0` | ✅ Passed |
-| 7 | `versions` | `0` | ✅ Passed |
-| 8 | `agent_setup` | `0` | ✅ Passed |
-| 9 | `agent_tests` | `0` | ✅ Passed |
-| - | `statistics` | `0` | ✅ Passed |
-| - | `doctor` | `0` | ✅ Passed |
+Configure branch protection to require **Fast Verification & Quality Gates**.
+This audit did not verify or change server-side branch protection; a workflow file
+alone cannot enforce merge policy. Follow `AGENTS.md` for the scoped version/Git
+lifecycle after passing checks.
+
+## Executed evidence
+
+[Baseline summary](evidence/2026-11-06-t01-t03/summary.tsv) and
+[baseline report](BASELINE.md) record passing local positive gates: 35 Flutter tests,
+43 Python tests, analyzer, formatting, inventory, version and setup checks. Local
+Python was 3.15.0; hosted Python 3.11/Ubuntu behavior remains to be verified.
+`flutter doctor` exited 0 but had Android/network diagnostic timeouts, so it is not
+recorded as healthy. The debug APK built successfully; debug builds are part of
+the extended baseline, not this fast CI job.
+
+Deliberate defects were created in uniquely named temporary files and removed in
+`finally` cleanup. Full production source files were not overwritten:
+
+| Injection | Exact CI command | Observed outcome |
+| --- | --- | --- |
+| `final int deliberateCiTypeError = 'wrong type';` in temporary `lib/` Dart file | `flutter analyze --fatal-infos` | **1**, `invalid_assignment`; [log](evidence/2026-11-06-t01-t03/negative_analyze.txt) |
+| `expect(1 + 1, 3)` in temporary `test/` test | `flutter test --reporter expanded` | **1**, expected 3, actual 2; [log](evidence/2026-11-06-t01-t03/negative_test.txt) |
+
+[Machine summary](evidence/2026-11-06-t01-t03/negative_summary.json) records these
+expected failures. These prove local command failure propagation, not hosted runner
+execution. For reproduction, add the same temporary fixtures, run the exact command,
+expect nonzero, then remove them and rerun the positive gates before committing.
+
+The [baseline script](../../scripts/baseline_check.sh) also passed a mock-command
+control-flow check: an analyzer exit 7 was recorded, later checks including debug
+build ran, and the script returned 1; fast mode returned 0 and omitted the debug
+build. [Summary](evidence/2026-11-06-t01-t03/script_summary.json). These mock checks
+verify script orchestration only; actual Flutter execution is logged separately.
+
+The GitHub connector returned no PR-triggered runs for audited SHA `853f506`.
+Its wrapper only queries PR events, so that cannot establish push-run status.
+A read-only `gh run list` fallback failed with a TLS handshake timeout. Remaining
+T03 acceptance: obtain hosted PR and `main` run URLs/results and, if required by
+merge policy, verify the required status check in branch protection. Do not mark
+hosted acceptance complete based only on these local runs.
+
+## Local reproduction
+
+```bash
+bash scripts/baseline_check.sh --fast
+bash scripts/baseline_check.sh             # additionally stats, doctor, debug APK
+```
+
+The script uses the same nine gate commands and preserves each log/exit code under
+ignored `.agents/cache/baseline/` by default. An explicit output directory retains
+a shareable evidence set. Unlike sequential CI steps, it continues through failures
+to collect a complete baseline and returns nonzero if any command fails.

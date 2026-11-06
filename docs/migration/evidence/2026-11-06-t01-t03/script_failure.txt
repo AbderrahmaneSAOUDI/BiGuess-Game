@@ -1,0 +1,40 @@
+MOCK COMMANDS: verifies shell control flow only.
+Running dependencies (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/dependencies.txt)
+Running format (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/format.txt)
+Running analyze (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/analyze.txt)
+mock flutter analyze --fatal-infos
+Running tests (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/tests.txt)
+Running manifest (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/manifest.txt)
+Running assets (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/assets.txt)
+Running versions (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/versions.txt)
+Running agent_setup (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/agent_setup.txt)
+Running agent_tests (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/agent_tests.txt)
+Running statistics (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/statistics.txt)
+Running doctor (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/doctor.txt)
+Running debug_build (log: /tmp/biguess-baseline-smoke-butkvj5u/failure/debug_build.txt)
+check	exit_code
+dependencies	0
+format	0
+analyze	7
+tests	0
+manifest	0
+assets	0
+versions	0
+agent_setup	0
+agent_tests	0
+statistics	0
+doctor	0
+debug_build	0
+check	exit_code
+dependencies	0
+format	0
+analyze	7
+tests	0
+manifest	0
+assets	0
+versions	0
+agent_setup	0
+agent_tests	0
+statistics	0
+doctor	0
+debug_build	0

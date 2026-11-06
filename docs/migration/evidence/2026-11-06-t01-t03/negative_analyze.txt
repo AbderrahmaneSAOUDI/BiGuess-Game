@@ -1,0 +1,10 @@
+Command: flutter analyze --fatal-infos
+Injected file: lib/ci_negative_glsd5dvo.dart
+final int deliberateCiTypeError = 'wrong type';
+
+Analyzing BiGuess-Game...                                       
+
+   info • Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' • lib/ci_negative_glsd5dvo.dart:1:1 • prefer_const_declarations
+  error • A value of type 'String' can't be assigned to a variable of type 'int'. Try changing the type of the variable, or casting the right-hand type to 'int' • lib/ci_negative_glsd5dvo.dart:1:35 • invalid_assignment
+
+2 issues found. (ran in 4.4s)
