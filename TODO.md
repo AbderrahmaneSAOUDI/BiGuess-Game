@@ -111,9 +111,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 **Agent task:** Add an abstraction for asset images (legacy) and locally installed protected Pack images. Use app-private storage and practical protection/packaging, not public gallery paths. Benchmark/limit decoding overhead and caching; avoid claiming perfect DRM.
 **Acceptance:** Locally installed images render correctly offline, no public-gallery pollution, bounded memory for larger Packs, and legacy images still render during migration.
 
-### [ ] T12 — Extract a pure non-repeating Card selection engine
+### [x] T12 — Extract a pure non-repeating Card selection engine
 **Agent task:** Replace image-path-based selection in the **new** domain path with a pure shuffled local deck of Card IDs; apply cumulative difficulty, exclude duplicates until exhausted, reshuffle after exhaustion, and allow separate physical devices to select the same Card. Keep the legacy controller working until UI migration.
 **Acceptance:** Deterministic seeded tests cover difficulty, 0/1/N eligible cards, pool exhaustion, multiple Packs, duplicate IDs, and device-independent sessions.
+
+**Implemented:** `CardSelectionEngine` captures unique eligible Card IDs from the supplied local Packs, defaults to Easy, and draws from a shuffled deck without replacement. Empty pools return null; exhausted decks reshuffle from the captured IDs. Seeded tests cover the acceptance cases, reproducibility, shared image/name references, and isolation from later input mutations. Each instance owns its draw history; matching Cards on separate devices and repeats across exhausted deck boundaries are allowed. The legacy `GameRoundNotifier` / `SelectCharacterUseCase` path remains in place until UI migration.
 
 ### [ ] T13 — Implement the local GameSession state machine
 **Agent task:** Model configuration, start, active round index, assigned Card, Next Round, completion, exit, and replay routing. Game state remains temporary/in-memory. Use an immutable snapshot of selected installed content for a running game; no scores, winners, questions, rooms, or authentication. Ensure an active game in progress is never invalidated, modified, or interrupted by remote updates, deletions, or unpublishing. For Free games, completing the final round completes the session; restarting another game requires routing through the Home screen to reset the 10-round counter. Direct 1-tap in-session replay without returning to Home is a Pro capability.
