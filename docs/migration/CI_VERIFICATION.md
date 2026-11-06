@@ -90,6 +90,8 @@ verify script orchestration only; actual Flutter execution is logged separately.
 
 ## Hosted acceptance (completed 2026-11-06)
 
+The [published report on GitHub main](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/blob/main/docs/migration/CI_VERIFICATION.md) includes these retained results; [PR #2](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/pull/2) publishes the evidence after the implementation in PR #1.
+
 | Event | Commit | Run | Result |
 | --- | --- | --- | --- |
 | Pull request [#1](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/pull/1) | `1634363` | [42199913166](https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/actions/runs/42199913166) | **SUCCESS** |
@@ -127,7 +129,7 @@ bash scripts/baseline_check.sh --fast
 bash scripts/baseline_check.sh             # additionally stats, doctor, debug APK
 ```
 
-The script uses the same nine gate commands and preserves each log/exit code under
+The script uses the same required gate commands and preserves each log/exit code under
 ignored `.agents/cache/baseline/` by default. An explicit output directory retains
 a shareable evidence set. Unlike sequential CI steps, it continues through failures
 to collect a complete baseline and returns nonzero if any command fails.
