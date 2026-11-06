@@ -1,0 +1,18 @@
+{
+  "type": "PackPage",
+  "payload": {
+    "protocolVersion": 1,
+    "snapshot": "catalog:42",
+    "items": [
+      {
+        "id": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Geometric Shapes",
+        "topicId": "e7c2d22f-d890-50d4-8097-f70335e2ba7e",
+        "revision": 2,
+        "cardCount": 4,
+        "manifestSha256": "546d94ae20372094f5a425c1f2542030d5d1873085d710b79656ffc31a6b04bc"
+      }
+    ],
+    "nextCursor": "opaque-page-2"
+  }
+}

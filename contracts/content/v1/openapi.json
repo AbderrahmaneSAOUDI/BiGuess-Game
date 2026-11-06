@@ -1,0 +1,1284 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BiGuess Content API",
+    "version": "1.0.0",
+    "description": "Frozen T19 contract only. Servers are intentionally unspecified. See README.md for normative semantic constraints."
+  },
+  "servers": [
+    {
+      "url": "/content/v1"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/catalog/topics": {
+      "get": {
+        "operationId": "listTopics",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "description": "limit"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Opaque snapshot-bound cursor; omit for first page"
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Strong ETag from the identical representation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "TopicPage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/TopicPage"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong quoted SHA-256 of exact response bytes",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "public, max-age=60, must-revalidate",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged; empty body",
+            "headers": {
+              "ETag": {
+                "description": "Current ETag",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Caching policy",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/packs": {
+      "get": {
+        "operationId": "listPacks",
+        "parameters": [
+          {
+            "name": "topicId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Id"
+            },
+            "description": "topicId"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "description": "limit"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Opaque snapshot-bound cursor; omit for first page"
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Strong ETag from the identical representation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PackPage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/PackPage"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong quoted SHA-256 of exact response bytes",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "public, max-age=60, must-revalidate",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged; empty body",
+            "headers": {
+              "ETag": {
+                "description": "Current ETag",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Caching policy",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packs/{packId}/download": {
+      "get": {
+        "operationId": "getInitialDownload",
+        "parameters": [
+          {
+            "name": "packId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Id"
+            },
+            "description": "packId"
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Strong ETag from the identical representation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Download",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Download"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong quoted SHA-256 of exact response bytes",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "public, max-age=60, must-revalidate",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged; empty body",
+            "headers": {
+              "ETag": {
+                "description": "Current ETag",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Caching policy",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packs/{packId}/revisions/{revision}/manifest": {
+      "get": {
+        "operationId": "getPackManifest",
+        "parameters": [
+          {
+            "name": "packId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Id"
+            },
+            "description": "packId"
+          },
+          {
+            "name": "revision",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Revision"
+            },
+            "description": "revision"
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Strong ETag from the identical representation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/PublicManifest"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong quoted SHA-256 of exact response bytes",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "public, max-age=31536000, immutable; serving still checks availability",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged; empty body",
+            "headers": {
+              "ETag": {
+                "description": "Current ETag",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Caching policy",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packs/{packId}/delta": {
+      "get": {
+        "operationId": "getPackDelta",
+        "parameters": [
+          {
+            "name": "packId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Id"
+            },
+            "description": "packId"
+          },
+          {
+            "name": "fromRevision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Revision"
+            },
+            "description": "fromRevision"
+          },
+          {
+            "name": "toRevision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Revision"
+            },
+            "description": "toRevision"
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Strong ETag from the identical representation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Delta"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Strong quoted SHA-256 of exact response bytes",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "public, max-age=60, must-revalidate",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged; empty body",
+            "headers": {
+              "ETag": {
+                "description": "Current ETag",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Caching policy",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sync/revisions": {
+      "post": {
+        "operationId": "checkPackRevisions",
+        "description": "One result per submitted Pack, including retained tombstones for installed IDs absent from catalog. No authentication required.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas.json#/$defs/RevisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RevisionResponse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/RevisionResponse"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/studio/batches": {
+      "post": {
+        "operationId": "commitStudioBatch",
+        "security": [
+          {
+            "StudioBearer": []
+          }
+        ],
+        "description": "Atomic single-aggregate commit; server derives role and scope. See permission matrix and preconditions in README.",
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"rev-[1-9][0-9]*\"$"
+            },
+            "description": "Required for existing aggregate; mutually exclusive with If-None-Match"
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "const": "*",
+              "type": "string"
+            },
+            "description": "Required only when creating aggregate; mutually exclusive with If-Match"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "$ref": "./schemas.json#/$defs/Id"
+            },
+            "description": "Idempotency-Key"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas.json#/$defs/StudioBatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "StudioResult",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/StudioResult"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Aggregate ETag: \"rev-<revision>\"",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "no-store",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "426": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Structured protocol error. See README status mapping.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "StudioBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Verified Google identity plus server-side allowlist, role and scope; token claims alone do not grant role."
+      }
+    }
+  }
+}

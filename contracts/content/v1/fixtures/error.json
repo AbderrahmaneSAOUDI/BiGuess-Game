@@ -1,0 +1,13 @@
+{
+  "type": "Error",
+  "payload": {
+    "protocolVersion": 1,
+    "error": {
+      "code": "revision_conflict",
+      "message": "Refresh before retrying.",
+      "requestId": "request:1",
+      "retryable": false,
+      "currentRevision": 2
+    }
+  }
+}

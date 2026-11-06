@@ -1,0 +1,23 @@
+{
+  "type": "StudioBatch",
+  "payload": {
+    "protocolVersion": 1,
+    "aggregate": {
+      "resourceType": "pack",
+      "id": "4da4b18c-3665-5c02-9ae1-b76b25114407"
+    },
+    "operations": [
+      {
+        "resourceType": "card",
+        "id": "1be544bb-469a-5e3d-82d6-0c6ca7b49463",
+        "action": "update",
+        "value": {
+          "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+          "name": "Square",
+          "imageReference": "objects/85b55c0aa1137bd68670a240143beaf75450606ba86fd2362f181f5b0576ea26.webp",
+          "difficulty": 1
+        }
+      }
+    ]
+  }
+}

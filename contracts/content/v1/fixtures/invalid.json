@@ -1,0 +1,184 @@
+[
+  {
+    "fixture": "topics.json",
+    "pointer": "/protocolVersion",
+    "value": 2
+  },
+  {
+    "fixture": "topics.json",
+    "pointer": "/items/0/id",
+    "value": "bad id"
+  },
+  {
+    "fixture": "topics.json",
+    "pointer": "/items/0/name",
+    "value": "  padded"
+  },
+  {
+    "fixture": "topics.json",
+    "pointer": "/nextCursor",
+    "value": ""
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/schemaVersion",
+    "value": 2
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/cards/0/difficulty",
+    "value": true
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/cards/0/difficulty",
+    "value": 4
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/cards/0/packId",
+    "value": "wrong"
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/cards/0/subtitle",
+    "value": "forbidden"
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/pack/topicId",
+    "value": "wrong"
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/objects/0/sha256",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/objects/0/mediaType",
+    "value": "image/jpeg"
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/objects",
+    "value": []
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/provenance/cardRights",
+    "value": []
+  },
+  {
+    "fixture": "download.json",
+    "pointer": "/archiveSha256",
+    "value": "invalid"
+  },
+  {
+    "fixture": "download.json",
+    "pointer": "/manifestUrl",
+    "value": "file:///private/file"
+  },
+  {
+    "fixture": "download.json",
+    "pointer": "/revision",
+    "value": 0
+  },
+  {
+    "fixture": "download.json",
+    "pointer": "/manifestSchemaVersion",
+    "value": 2
+  },
+  {
+    "fixture": "delta.json",
+    "pointer": "/toRevision",
+    "value": 1
+  },
+  {
+    "fixture": "delta.json",
+    "pointer": "/removeCardIds",
+    "value": [
+      "1be544bb-469a-5e3d-82d6-0c6ca7b49463"
+    ]
+  },
+  {
+    "fixture": "delta.json",
+    "pointer": "/upsertCards",
+    "value": [
+      {
+        "id": "1be544bb-469a-5e3d-82d6-0c6ca7b49463",
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Square",
+        "imageReference": "objects/85b55c0aa1137bd68670a240143beaf75450606ba86fd2362f181f5b0576ea26.webp",
+        "difficulty": 1
+      },
+      {
+        "id": "1be544bb-469a-5e3d-82d6-0c6ca7b49463",
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Square",
+        "imageReference": "objects/85b55c0aa1137bd68670a240143beaf75450606ba86fd2362f181f5b0576ea26.webp",
+        "difficulty": 1
+      }
+    ]
+  },
+  {
+    "fixture": "revision-response.json",
+    "pointer": "/results/1/tombstone/packId",
+    "value": "wrong"
+  },
+  {
+    "fixture": "revision-response.json",
+    "pointer": "/results/1/tombstone/reason",
+    "value": "hidden"
+  },
+  {
+    "fixture": "revision-response.json",
+    "pointer": "/results/1/tombstone/deletedAt",
+    "value": "yesterday"
+  },
+  {
+    "fixture": "revision-response.json",
+    "pointer": "/results/2/tombstone",
+    "value": {
+      "revision": 1
+    }
+  },
+  {
+    "fixture": "error.json",
+    "pointer": "/error/code",
+    "value": "new_unknown_code"
+  },
+  {
+    "fixture": "studio-batch.json",
+    "pointer": "/operations/0/value/packId",
+    "value": "other"
+  },
+  {
+    "fixture": "studio-batch.json",
+    "pointer": "/operations/0/value/tags",
+    "value": []
+  },
+  {
+    "fixture": "studio-batch.json",
+    "pointer": "/operations/0/action",
+    "value": "deleteEverything"
+  },
+  {
+    "fixture": "studio-batch.json",
+    "pointer": "/aggregate/resourceType",
+    "value": "topic"
+  },
+  {
+    "fixture": "manifest.json",
+    "pointer": "/provenance",
+    "value": {
+      "mode": "legacy-development",
+      "packRights": {
+        "rights_status": "unverified",
+        "permission_to_publish": false,
+        "public_test_publishable": false
+      },
+      "cardRights": []
+    }
+  }
+]

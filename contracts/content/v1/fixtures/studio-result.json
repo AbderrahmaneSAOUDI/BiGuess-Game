@@ -1,0 +1,13 @@
+{
+  "type": "StudioResult",
+  "payload": {
+    "protocolVersion": 1,
+    "aggregate": {
+      "resourceType": "pack",
+      "id": "4da4b18c-3665-5c02-9ae1-b76b25114407"
+    },
+    "revision": 3,
+    "committedAt": "2026-11-06T12:00:00Z",
+    "actorId": "user:owner"
+  }
+}

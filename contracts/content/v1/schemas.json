@@ -1,0 +1,1477 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://biguess.example/contracts/content/v1/schemas.json",
+  "title": "BiGuess content protocol v1",
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+    },
+    "Name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S(?:[^\\u0000-\\u001f\\u007f]*\\S)?$"
+    },
+    "Revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "Hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "Url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://[^/\\s]+/[^\\s]*$"
+    },
+    "ObjectKey": {
+      "type": "string",
+      "pattern": "^objects/[0-9a-f]{64}\\.(webp|png|jpg)$"
+    },
+    "Instant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "Topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "revision"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Name"
+        },
+        "revision": {
+          "$ref": "#/$defs/Revision"
+        }
+      }
+    },
+    "Pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "topicId",
+        "name",
+        "revision",
+        "cardCount",
+        "manifestSha256"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "topicId": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Name"
+        },
+        "revision": {
+          "$ref": "#/$defs/Revision"
+        },
+        "cardCount": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 9007199254740991
+        },
+        "manifestSha256": {
+          "$ref": "#/$defs/Hash"
+        }
+      }
+    },
+    "Card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "packId",
+        "name",
+        "imageReference",
+        "difficulty"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "packId": {
+          "$ref": "#/$defs/Id"
+        },
+        "name": {
+          "$ref": "#/$defs/Name"
+        },
+        "imageReference": {
+          "$ref": "#/$defs/ObjectKey"
+        },
+        "difficulty": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        }
+      }
+    },
+    "ImageObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "sha256",
+        "sizeBytes",
+        "mediaType"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/ObjectKey"
+        },
+        "sha256": {
+          "$ref": "#/$defs/Hash"
+        },
+        "sizeBytes": {
+          "$ref": "#/$defs/Revision"
+        },
+        "mediaType": {
+          "type": "string",
+          "enum": [
+            "image/webp",
+            "image/png",
+            "image/jpeg"
+          ]
+        }
+      }
+    },
+    "Provenance": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "packRights",
+            "cardRights"
+          ],
+          "properties": {
+            "mode": {
+              "const": "cleared-test",
+              "type": "string"
+            },
+            "packRights": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "rights_status",
+                "permission_to_publish",
+                "public_test_publishable",
+                "source",
+                "license",
+                "attribution"
+              ],
+              "properties": {
+                "rights_status": {
+                  "const": "cleared",
+                  "type": "string"
+                },
+                "permission_to_publish": {
+                  "const": true
+                },
+                "public_test_publishable": {
+                  "const": true
+                },
+                "source": {
+                  "$ref": "#/$defs/Name"
+                },
+                "license": {
+                  "$ref": "#/$defs/Name"
+                },
+                "attribution": {
+                  "$ref": "#/$defs/Name"
+                }
+              }
+            },
+            "cardRights": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "rights_status",
+                  "permission_to_publish",
+                  "public_test_publishable",
+                  "source",
+                  "license",
+                  "attribution"
+                ],
+                "properties": {
+                  "id": {
+                    "$ref": "#/$defs/Id"
+                  },
+                  "rights_status": {
+                    "const": "cleared",
+                    "type": "string"
+                  },
+                  "permission_to_publish": {
+                    "const": true
+                  },
+                  "public_test_publishable": {
+                    "const": true
+                  },
+                  "source": {
+                    "$ref": "#/$defs/Name"
+                  },
+                  "license": {
+                    "$ref": "#/$defs/Name"
+                  },
+                  "attribution": {
+                    "$ref": "#/$defs/Name"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "packRights",
+            "cardRights"
+          ],
+          "properties": {
+            "mode": {
+              "const": "legacy-development",
+              "type": "string"
+            },
+            "packRights": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "rights_status",
+                "permission_to_publish",
+                "public_test_publishable"
+              ],
+              "properties": {
+                "rights_status": {
+                  "const": "unverified",
+                  "type": "string"
+                },
+                "permission_to_publish": {
+                  "const": false
+                },
+                "public_test_publishable": {
+                  "const": false
+                }
+              }
+            },
+            "cardRights": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        }
+      ]
+    },
+    "Manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "topic",
+        "pack",
+        "cards",
+        "objects",
+        "provenance"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "full",
+          "type": "string"
+        },
+        "topic": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "name": {
+              "$ref": "#/$defs/Name"
+            }
+          }
+        },
+        "pack": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "topicId",
+            "name",
+            "revision"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "topicId": {
+              "$ref": "#/$defs/Id"
+            },
+            "name": {
+              "$ref": "#/$defs/Name"
+            },
+            "revision": {
+              "$ref": "#/$defs/Revision"
+            }
+          }
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Card"
+          },
+          "minItems": 2
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ImageObject"
+          },
+          "minItems": 1
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      }
+    },
+    "TopicPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "snapshot",
+        "items",
+        "nextCursor"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/Id"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Topic"
+          },
+          "minItems": 0
+        },
+        "nextCursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "PackPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "snapshot",
+        "items",
+        "nextCursor"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/Id"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Pack"
+          },
+          "minItems": 0
+        },
+        "nextCursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "Download": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "packId",
+        "revision",
+        "manifestUrl",
+        "manifestSha256",
+        "archiveUrl",
+        "archiveSha256",
+        "sizeBytes",
+        "manifestSchemaVersion"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "packId": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision": {
+          "$ref": "#/$defs/Revision"
+        },
+        "manifestUrl": {
+          "$ref": "#/$defs/Url"
+        },
+        "manifestSha256": {
+          "$ref": "#/$defs/Hash"
+        },
+        "archiveUrl": {
+          "$ref": "#/$defs/Url"
+        },
+        "archiveSha256": {
+          "$ref": "#/$defs/Hash"
+        },
+        "sizeBytes": {
+          "$ref": "#/$defs/Revision"
+        },
+        "manifestSchemaVersion": {
+          "const": 1,
+          "type": "integer"
+        }
+      }
+    },
+    "KnownPack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "packId",
+        "revision"
+      ],
+      "properties": {
+        "packId": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision": {
+          "$ref": "#/$defs/Revision"
+        }
+      }
+    },
+    "RevisionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "packs"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "packs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/KnownPack"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      }
+    },
+    "Tombstone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "packId",
+        "revision",
+        "deletedAt",
+        "reason"
+      ],
+      "properties": {
+        "packId": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision": {
+          "$ref": "#/$defs/Revision"
+        },
+        "deletedAt": {
+          "$ref": "#/$defs/Instant"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "administrative_deletion"
+          ]
+        }
+      }
+    },
+    "PackStatus": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "packId",
+            "revision",
+            "status",
+            "manifestSha256"
+          ],
+          "properties": {
+            "packId": {
+              "$ref": "#/$defs/Id"
+            },
+            "revision": {
+              "$ref": "#/$defs/Revision"
+            },
+            "status": {
+              "const": "unchanged",
+              "type": "string"
+            },
+            "manifestSha256": {
+              "$ref": "#/$defs/Hash"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "packId",
+            "revision",
+            "status",
+            "manifestSha256"
+          ],
+          "properties": {
+            "packId": {
+              "$ref": "#/$defs/Id"
+            },
+            "revision": {
+              "$ref": "#/$defs/Revision"
+            },
+            "status": {
+              "const": "updateAvailable",
+              "type": "string"
+            },
+            "manifestSha256": {
+              "$ref": "#/$defs/Hash"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "packId",
+            "status",
+            "tombstone"
+          ],
+          "properties": {
+            "packId": {
+              "$ref": "#/$defs/Id"
+            },
+            "status": {
+              "const": "deleted",
+              "type": "string"
+            },
+            "tombstone": {
+              "$ref": "#/$defs/Tombstone"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "packId",
+            "status"
+          ],
+          "properties": {
+            "packId": {
+              "$ref": "#/$defs/Id"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "unavailable",
+                "unknown"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "RevisionResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "results"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PackStatus"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "Delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "packId",
+        "fromRevision",
+        "toRevision",
+        "targetManifestSha256",
+        "targetManifestUrl",
+        "upsertCards",
+        "removeCardIds",
+        "objects"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "packId": {
+          "$ref": "#/$defs/Id"
+        },
+        "fromRevision": {
+          "$ref": "#/$defs/Revision"
+        },
+        "toRevision": {
+          "$ref": "#/$defs/Revision"
+        },
+        "targetManifestSha256": {
+          "$ref": "#/$defs/Hash"
+        },
+        "targetManifestUrl": {
+          "$ref": "#/$defs/Url"
+        },
+        "upsertCards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Card"
+          },
+          "minItems": 0
+        },
+        "removeCardIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
+          "uniqueItems": true
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ImageObject"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "error"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "requestId",
+            "retryable",
+            "currentRevision"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "invalid_request",
+                "unsupported_protocol",
+                "unauthenticated",
+                "forbidden",
+                "not_found",
+                "unavailable",
+                "deleted",
+                "revision_conflict",
+                "precondition_required",
+                "cursor_expired",
+                "delta_unavailable",
+                "validation_failed",
+                "idempotency_conflict",
+                "rate_limited",
+                "internal_error"
+              ]
+            },
+            "message": {
+              "$ref": "#/$defs/Name"
+            },
+            "requestId": {
+              "$ref": "#/$defs/Id"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "currentRevision": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/Revision"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "Mutation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action",
+            "value"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "topic",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "create",
+              "type": "string"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "$ref": "#/$defs/Name"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action",
+            "value"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "topic",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "update",
+              "type": "string"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "$ref": "#/$defs/Name"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "topic",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "hide",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "topic",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "softDelete",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "topic",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "restore",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "topic",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "permanentDelete",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "topic",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "publish",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action",
+            "value"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "pack",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "create",
+              "type": "string"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "topicId"
+              ],
+              "properties": {
+                "name": {
+                  "$ref": "#/$defs/Name"
+                },
+                "topicId": {
+                  "$ref": "#/$defs/Id"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action",
+            "value"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "pack",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "update",
+              "type": "string"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "topicId"
+              ],
+              "properties": {
+                "name": {
+                  "$ref": "#/$defs/Name"
+                },
+                "topicId": {
+                  "$ref": "#/$defs/Id"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "pack",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "hide",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "pack",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "softDelete",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "pack",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "restore",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "pack",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "permanentDelete",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "pack",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "publish",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action",
+            "value"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "card",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "create",
+              "type": "string"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "packId",
+                "name",
+                "imageReference",
+                "difficulty"
+              ],
+              "properties": {
+                "packId": {
+                  "$ref": "#/$defs/Id"
+                },
+                "name": {
+                  "$ref": "#/$defs/Name"
+                },
+                "imageReference": {
+                  "$ref": "#/$defs/ObjectKey"
+                },
+                "difficulty": {
+                  "type": "integer",
+                  "enum": [
+                    1,
+                    2,
+                    3
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action",
+            "value"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "card",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "update",
+              "type": "string"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "packId",
+                "name",
+                "imageReference",
+                "difficulty"
+              ],
+              "properties": {
+                "packId": {
+                  "$ref": "#/$defs/Id"
+                },
+                "name": {
+                  "$ref": "#/$defs/Name"
+                },
+                "imageReference": {
+                  "$ref": "#/$defs/ObjectKey"
+                },
+                "difficulty": {
+                  "type": "integer",
+                  "enum": [
+                    1,
+                    2,
+                    3
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "card",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "hide",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "card",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "softDelete",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "card",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "restore",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "card",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "permanentDelete",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id",
+            "action"
+          ],
+          "properties": {
+            "resourceType": {
+              "const": "card",
+              "type": "string"
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "action": {
+              "const": "activate",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "StudioBatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "aggregate",
+        "operations"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "aggregate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id"
+          ],
+          "properties": {
+            "resourceType": {
+              "type": "string",
+              "enum": [
+                "topic",
+                "pack"
+              ]
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            }
+          }
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Mutation"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      }
+    },
+    "StudioResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "aggregate",
+        "revision",
+        "committedAt",
+        "actorId"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1,
+          "type": "integer"
+        },
+        "aggregate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resourceType",
+            "id"
+          ],
+          "properties": {
+            "resourceType": {
+              "type": "string",
+              "enum": [
+                "topic",
+                "pack"
+              ]
+            },
+            "id": {
+              "$ref": "#/$defs/Id"
+            }
+          }
+        },
+        "revision": {
+          "$ref": "#/$defs/Revision"
+        },
+        "committedAt": {
+          "$ref": "#/$defs/Instant"
+        },
+        "actorId": {
+          "$ref": "#/$defs/Id"
+        }
+      }
+    },
+    "PublicManifest": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Manifest"
+        },
+        {
+          "properties": {
+            "provenance": {
+              "properties": {
+                "mode": {
+                  "const": "cleared-test"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

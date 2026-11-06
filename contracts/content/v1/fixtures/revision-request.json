@@ -1,0 +1,28 @@
+{
+  "type": "RevisionRequest",
+  "payload": {
+    "protocolVersion": 1,
+    "packs": [
+      {
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "revision": 1
+      },
+      {
+        "packId": "pack:deleted",
+        "revision": 2
+      },
+      {
+        "packId": "pack:hidden",
+        "revision": 1
+      },
+      {
+        "packId": "pack:unchanged",
+        "revision": 2
+      },
+      {
+        "packId": "pack:unknown",
+        "revision": 1
+      }
+    ]
+  }
+}

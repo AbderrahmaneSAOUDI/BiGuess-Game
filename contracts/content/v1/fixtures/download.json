@@ -1,0 +1,14 @@
+{
+  "type": "Download",
+  "payload": {
+    "protocolVersion": 1,
+    "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+    "revision": 2,
+    "manifestUrl": "https://content.example/objects/546d94ae20372094f5a425c1f2542030d5d1873085d710b79656ffc31a6b04bc.json",
+    "manifestSha256": "546d94ae20372094f5a425c1f2542030d5d1873085d710b79656ffc31a6b04bc",
+    "archiveUrl": "https://content.example/objects/800161f08f6d3e8a51d1b10278750e44a31d6036822ca1ed0c2572db219046a7.biguesspack",
+    "archiveSha256": "800161f08f6d3e8a51d1b10278750e44a31d6036822ca1ed0c2572db219046a7",
+    "sizeBytes": 12531,
+    "manifestSchemaVersion": 1
+  }
+}

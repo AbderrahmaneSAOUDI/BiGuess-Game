@@ -1,0 +1,15 @@
+{
+  "type": "TopicPage",
+  "payload": {
+    "protocolVersion": 1,
+    "snapshot": "catalog:42",
+    "items": [
+      {
+        "id": "e7c2d22f-d890-50d4-8097-f70335e2ba7e",
+        "name": "Shapes",
+        "revision": 1
+      }
+    ],
+    "nextCursor": null
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "type": "RevisionResponse",
+  "payload": {
+    "protocolVersion": 1,
+    "results": [
+      {
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "status": "updateAvailable",
+        "revision": 2,
+        "manifestSha256": "546d94ae20372094f5a425c1f2542030d5d1873085d710b79656ffc31a6b04bc"
+      },
+      {
+        "packId": "pack:deleted",
+        "status": "deleted",
+        "tombstone": {
+          "packId": "pack:deleted",
+          "revision": 3,
+          "deletedAt": "2026-11-06T12:00:00Z",
+          "reason": "administrative_deletion"
+        }
+      },
+      {
+        "packId": "pack:hidden",
+        "status": "unavailable"
+      },
+      {
+        "packId": "pack:unchanged",
+        "status": "unchanged",
+        "revision": 2,
+        "manifestSha256": "546d94ae20372094f5a425c1f2542030d5d1873085d710b79656ffc31a6b04bc"
+      },
+      {
+        "packId": "pack:unknown",
+        "status": "unknown"
+      }
+    ]
+  }
+}

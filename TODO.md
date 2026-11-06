@@ -163,9 +163,11 @@ Do not infer or display a digital winner.
 
 # PHASE C — Shared content API and cloud foundation
 
-### [ ] T19 — Freeze versioned catalog, Pack, and sync API contracts
+### [x] T19 — Freeze versioned catalog, Pack, and sync API contracts
 **Agent task:** Define JSON schemas/OpenAPI for public catalog, Pack manifest, initial download, delta changes, revisions, tombstones, errors, and Studio mutations. Include stable IDs, pagination, ETags/revision checks, content hashes, and explicit protocol compatibility rules. No backend deployment required yet.
 **Acceptance:** Contract tests/fixtures reject incompatible payloads and can be consumed by Mobile and Studio without Flutter-specific coupling.
+
+**Implemented:** [Frozen content protocol v1](contracts/content/v1/README.md), OpenAPI 3.1 and JSON Schema 2020-12 definitions, portable positive/negative fixtures, and `.agents/tests/test_content_contract.py`. Reuses the existing full-Pack v1 format; includes semantic relationship/revision checks and real artifact digest verification. CI installs the pinned contract tooling. No backend deployment or app network client.
 
 ### [ ] T20 — Scaffold Cloudflare Workers, D1 migrations, and R2 bindings
 **Agent task:** Create an isolated `backend/` project with local development, migrations, typed environment bindings, nonproduction environments, deterministic seeds, and tests. D1 stores structured data; R2 stores optimized image/content objects. Never put API secrets into Flutter code or source control.

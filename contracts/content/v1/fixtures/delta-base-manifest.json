@@ -1,0 +1,122 @@
+{
+  "type": "Manifest",
+  "payload": {
+    "schemaVersion": 1,
+    "kind": "full",
+    "topic": {
+      "id": "e7c2d22f-d890-50d4-8097-f70335e2ba7e",
+      "name": "Shapes"
+    },
+    "pack": {
+      "id": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+      "name": "Geometric Shapes",
+      "topicId": "e7c2d22f-d890-50d4-8097-f70335e2ba7e",
+      "revision": 1
+    },
+    "cards": [
+      {
+        "id": "2bc9837a-4299-5f25-b461-1c5fae80a520",
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Star",
+        "imageReference": "objects/4700c86c93f1298a39f812e3ca65e55c73258d7f2fac052be1567605fe50e517.webp",
+        "difficulty": 3
+      },
+      {
+        "id": "2d194c6f-a82f-5bfe-85c8-106ea9bb1629",
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Circle",
+        "imageReference": "objects/d0448a122e05ed1ed7988b3d5228edfeee449cabd187df2a7a0b026d8014bb27.webp",
+        "difficulty": 1
+      },
+      {
+        "id": "b0f7e41b-4171-555e-bc8e-49be88a2a197",
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Triangle",
+        "imageReference": "objects/a2f00d39f70a46feb49692baaab6fb97191c6eb6df97f719ffd81d95a5898662.webp",
+        "difficulty": 2
+      },
+      {
+        "id": "card:removed",
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Square",
+        "imageReference": "objects/85b55c0aa1137bd68670a240143beaf75450606ba86fd2362f181f5b0576ea26.webp",
+        "difficulty": 1
+      }
+    ],
+    "objects": [
+      {
+        "key": "objects/4700c86c93f1298a39f812e3ca65e55c73258d7f2fac052be1567605fe50e517.webp",
+        "sha256": "4700c86c93f1298a39f812e3ca65e55c73258d7f2fac052be1567605fe50e517",
+        "sizeBytes": 2678,
+        "mediaType": "image/webp"
+      },
+      {
+        "key": "objects/85b55c0aa1137bd68670a240143beaf75450606ba86fd2362f181f5b0576ea26.webp",
+        "sha256": "85b55c0aa1137bd68670a240143beaf75450606ba86fd2362f181f5b0576ea26",
+        "sizeBytes": 766,
+        "mediaType": "image/webp"
+      },
+      {
+        "key": "objects/a2f00d39f70a46feb49692baaab6fb97191c6eb6df97f719ffd81d95a5898662.webp",
+        "sha256": "a2f00d39f70a46feb49692baaab6fb97191c6eb6df97f719ffd81d95a5898662",
+        "sizeBytes": 2120,
+        "mediaType": "image/webp"
+      },
+      {
+        "key": "objects/d0448a122e05ed1ed7988b3d5228edfeee449cabd187df2a7a0b026d8014bb27.webp",
+        "sha256": "d0448a122e05ed1ed7988b3d5228edfeee449cabd187df2a7a0b026d8014bb27",
+        "sizeBytes": 2734,
+        "mediaType": "image/webp"
+      }
+    ],
+    "provenance": {
+      "mode": "cleared-test",
+      "packRights": {
+        "source": "internally_authored_fixture",
+        "public_test_publishable": true,
+        "attribution": "BiGuess Engineering Team",
+        "permission_to_publish": true,
+        "license": "CC0-1.0 / MIT",
+        "rights_status": "cleared"
+      },
+      "cardRights": [
+        {
+          "id": "2bc9837a-4299-5f25-b461-1c5fae80a520",
+          "source": "internally_authored_fixture",
+          "public_test_publishable": true,
+          "attribution": "BiGuess Engineering Team",
+          "permission_to_publish": true,
+          "license": "CC0-1.0 / MIT",
+          "rights_status": "cleared"
+        },
+        {
+          "id": "2d194c6f-a82f-5bfe-85c8-106ea9bb1629",
+          "source": "internally_authored_fixture",
+          "public_test_publishable": true,
+          "attribution": "BiGuess Engineering Team",
+          "permission_to_publish": true,
+          "license": "CC0-1.0 / MIT",
+          "rights_status": "cleared"
+        },
+        {
+          "id": "b0f7e41b-4171-555e-bc8e-49be88a2a197",
+          "source": "internally_authored_fixture",
+          "public_test_publishable": true,
+          "attribution": "BiGuess Engineering Team",
+          "permission_to_publish": true,
+          "license": "CC0-1.0 / MIT",
+          "rights_status": "cleared"
+        },
+        {
+          "id": "card:removed",
+          "source": "internally_authored_fixture",
+          "public_test_publishable": true,
+          "attribution": "BiGuess Engineering Team",
+          "permission_to_publish": true,
+          "license": "CC0-1.0 / MIT",
+          "rights_status": "cleared"
+        }
+      ]
+    }
+  }
+}

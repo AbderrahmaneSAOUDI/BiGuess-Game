@@ -1,0 +1,24 @@
+{
+  "type": "Delta",
+  "payload": {
+    "protocolVersion": 1,
+    "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+    "fromRevision": 1,
+    "toRevision": 2,
+    "targetManifestSha256": "546d94ae20372094f5a425c1f2542030d5d1873085d710b79656ffc31a6b04bc",
+    "targetManifestUrl": "https://content.example/objects/546d94ae20372094f5a425c1f2542030d5d1873085d710b79656ffc31a6b04bc.json",
+    "upsertCards": [
+      {
+        "id": "1be544bb-469a-5e3d-82d6-0c6ca7b49463",
+        "packId": "4da4b18c-3665-5c02-9ae1-b76b25114407",
+        "name": "Square",
+        "imageReference": "objects/85b55c0aa1137bd68670a240143beaf75450606ba86fd2362f181f5b0576ea26.webp",
+        "difficulty": 1
+      }
+    ],
+    "removeCardIds": [
+      "card:removed"
+    ],
+    "objects": []
+  }
+}

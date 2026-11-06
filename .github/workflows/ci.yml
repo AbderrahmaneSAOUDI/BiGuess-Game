@@ -23,8 +23,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install image verification dependency
-        run: python3 -m pip install Pillow==12.3.0
+      - name: Install image and contract verification dependencies
+        run: python3 -m pip install Pillow==12.3.0 -r contracts/content/requirements.txt
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.9'
