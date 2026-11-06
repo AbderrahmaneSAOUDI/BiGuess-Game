@@ -2,10 +2,10 @@ name: gdg_guess_game
 description: A guess image game with multiple categories.
 publish_to: 'none'
 
-version: 1.528.76+21
+version: 1.528.77+22
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -22,6 +22,7 @@ dependencies:
   shorebird_code_push: ^2.0.7
   restart_app: ^1.3.2
   device_info_plus: ^13.2.0
+  sqlite3: ^3.9.0
   crypto: ^3.0.8
   archive: ^4.0.7
   image: ^4.5.4

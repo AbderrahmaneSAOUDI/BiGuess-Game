@@ -294,6 +294,84 @@ def inspect_image_file(file_path: Path) -> Tuple[TechnicalImportability, bytes]:
     )
 
 
+def _unique_fixture_object(pairs: List[Tuple[str, Any]]) -> Dict[str, Any]:
+    result: Dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"Duplicate fixture metadata key: {key}")
+        result[key] = value
+    return result
+
+
+def _fixture_manifest(directory: Path) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], Optional[str]]:
+    """Read explicit fixture declarations; invalid metadata never grants rights."""
+    try:
+        with (directory / "pack.json").open(encoding="utf-8") as stream:
+            metadata = json.load(stream, object_pairs_hook=_unique_fixture_object)
+        if not isinstance(metadata, dict) or metadata.get("schema_version") != "1.0.0":
+            raise ValueError("Missing or unsupported fixture manifest schema")
+        for kind in ("topic", "pack"):
+            row = metadata.get(kind)
+            if not isinstance(row, dict) or any(
+                not isinstance(row.get(key), str) or not row[key].strip()
+                or row[key].strip() != row[key] for key in ("id", "name")
+            ):
+                raise ValueError(f"Invalid fixture {kind} metadata")
+        cards = metadata.get("cards")
+        if not isinstance(cards, list):
+            raise ValueError("Fixture cards must be an array")
+        by_image: Dict[str, Dict[str, Any]] = {}
+        ids: Set[str] = set()
+        for card in cards:
+            if not isinstance(card, dict) or any(
+                not isinstance(card.get(key), str) or not card[key].strip()
+                or card[key].strip() != card[key] for key in ("id", "pack_id", "name", "image")
+            ):
+                raise ValueError("Invalid fixture Card metadata")
+            image = card["image"]
+            if image in (".", "..") or "/" in image or "\\" in image:
+                raise ValueError("Fixture image must name a file in its directory")
+            if card["pack_id"] != metadata["pack"]["id"]:
+                raise ValueError("Fixture Card references another Pack")
+            if type(card.get("difficulty")) is not int or card["difficulty"] not in (1, 2, 3):
+                raise ValueError("Invalid fixture Card difficulty")
+            if image in by_image or card["id"] in ids:
+                raise ValueError("Duplicate fixture Card ID or image declaration")
+            by_image[image] = card
+            ids.add(card["id"])
+        return metadata, by_image, None
+    except (OSError, UnicodeError, ValueError) as error:
+        return {}, {}, f"Invalid or missing fixture manifest: {error}"
+
+
+def _fixture_rights(pack: Dict[str, Any], card: Dict[str, Any], error: Optional[str]) -> RightsMetadata:
+    def explicitly_cleared(row: Dict[str, Any]) -> bool:
+        return (
+            row.get("rights_status") == "cleared"
+            and row.get("permission_to_publish") is True
+            and row.get("public_test_publishable") is True
+            and all(isinstance(row.get(key), str) and bool(row[key].strip())
+                    for key in ("source", "license", "attribution"))
+        )
+
+    cleared = error is None and explicitly_cleared(pack) and explicitly_cleared(card)
+    provenance = {
+        key: card.get(key) if isinstance(card.get(key), str) and card[key].strip()
+        else pack.get(key) if isinstance(pack.get(key), str) and pack[key].strip()
+        else "unverified"
+        for key in ("source", "attribution", "license")
+    }
+    return RightsMetadata(
+        rights_status="cleared" if cleared else "unverified",
+        permission_to_publish=cleared,
+        public_test_publishable=cleared,
+        quarantine_reason=None if cleared else (
+            error or "Fixture Pack and matching Card lack explicit publication clearance"
+        ),
+        **provenance,
+    )
+
+
 def scan_assets(
     images_dir: Path,
     repo_root: Path,
@@ -362,19 +440,12 @@ def scan_assets(
                         )
                     )
 
-    # 2. Scan confirmed fixture directories if provided
+    # 2. Fixture directory selection does not itself grant publication rights.
     if fixture_dirs:
         for fdir in fixture_dirs:
             if not fdir.exists():
                 continue
-            manifest_file = fdir / "pack.json"
-            meta: Dict[str, Any] = {}
-            if manifest_file.exists():
-                try:
-                    with open(manifest_file, "r", encoding="utf-8") as mf:
-                        meta = json.load(mf)
-                except Exception:
-                    pass
+            meta, fixture_cards, metadata_error = _fixture_manifest(fdir)
 
             topic_name = normalize_text(meta.get("topic", {}).get("name", "TestTopic"))
             pack_name = normalize_text(meta.get("pack", {}).get("name", fdir.name))
@@ -402,14 +473,10 @@ def scan_assets(
                 except ValueError:
                     rel_path = file_path.as_posix()
 
-                rights = RightsMetadata(
-                    rights_status="cleared",
-                    permission_to_publish=True,
-                    public_test_publishable=True,
-                    quarantine_reason=None,
-                    source="internally_authored_test_fixture",
-                    attribution="BiGuess Engineering Team",
-                    license="CC0-1.0 / MIT",
+                declared_card = fixture_cards.get(file_path.name, {})
+                rights = _fixture_rights(
+                    meta.get("pack", {}), declared_card,
+                    metadata_error or (None if declared_card else "Image has no matching fixture Card declaration"),
                 )
 
                 records.append(

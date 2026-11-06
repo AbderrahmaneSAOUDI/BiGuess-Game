@@ -37814,7 +37814,7 @@
         "permission_to_publish": true,
         "public_test_publishable": true,
         "quarantine_reason": null,
-        "source": "internally_authored_test_fixture",
+        "source": "internally_authored_fixture",
         "attribution": "BiGuess Engineering Team",
         "license": "CC0-1.0 / MIT",
         "notes": null
@@ -37846,7 +37846,7 @@
         "permission_to_publish": true,
         "public_test_publishable": true,
         "quarantine_reason": null,
-        "source": "internally_authored_test_fixture",
+        "source": "internally_authored_fixture",
         "attribution": "BiGuess Engineering Team",
         "license": "CC0-1.0 / MIT",
         "notes": null
@@ -37878,7 +37878,7 @@
         "permission_to_publish": true,
         "public_test_publishable": true,
         "quarantine_reason": null,
-        "source": "internally_authored_test_fixture",
+        "source": "internally_authored_fixture",
         "attribution": "BiGuess Engineering Team",
         "license": "CC0-1.0 / MIT",
         "notes": null
@@ -37910,7 +37910,7 @@
         "permission_to_publish": true,
         "public_test_publishable": true,
         "quarantine_reason": null,
-        "source": "internally_authored_test_fixture",
+        "source": "internally_authored_fixture",
         "attribution": "BiGuess Engineering Team",
         "license": "CC0-1.0 / MIT",
         "notes": null

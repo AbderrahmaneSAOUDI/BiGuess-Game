@@ -12,6 +12,7 @@ Verifies:
 
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -197,6 +198,95 @@ class ContentInventoryAndQuarantineTests(unittest.TestCase):
             self.assertEqual(cnt2, 4)
             exported_names = sorted([p.name for p in (target / "pub2").rglob("*.webp")])
             self.assertEqual(exported_names, ["Circle.webp", "Square.webp", "Star.webp", "Triangle.webp"])
+
+    def test_fixture_directory_option_cannot_clear_legacy_assets(self):
+        """Selecting a legacy directory as fixtures must not fabricate rights."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            records = scan_assets(Path(tmpdir) / "absent", REPO_ROOT,
+                                  [self.images_dir / "Anime" / "Attack on Titan"])
+            self.assertEqual(len(records), 131)
+            self.assertTrue(all(not r.rights.permission_to_publish for r in records))
+            self.assertTrue(all(r.rights.source == "unverified" for r in records))
+            self.assertEqual(export_public_test_assets(records, Path(tmpdir) / "public", REPO_ROOT), 0)
+
+    def test_missing_malformed_and_duplicate_fixture_metadata_stays_quarantined(self):
+        for manifest in (None, "{", "[]", '{"schema_version":"1.0.0","pack":null}',
+                         '{"schema_version":"1.0.0","schema_version":"1.0.0"}'):
+            with self.subTest(manifest=manifest), tempfile.TemporaryDirectory() as tmpdir:
+                fixture = Path(tmpdir) / "fixture"
+                shutil.copytree(self.fixtures_dir, fixture)
+                manifest_path = fixture / "pack.json"
+                if manifest is None:
+                    manifest_path.unlink()
+                else:
+                    manifest_path.write_text(manifest, encoding="utf-8")
+                records = scan_assets(Path(tmpdir) / "absent", REPO_ROOT, [fixture])
+                self.assertEqual(len(records), 4)
+                self.assertTrue(all(r.rights.rights_status == "unverified" for r in records))
+                self.assertTrue(all(r.rights.quarantine_reason for r in records))
+                self.assertEqual(export_public_test_assets(records, Path(tmpdir) / "public", REPO_ROOT), 0)
+
+    def test_fixture_pack_and_card_require_explicit_strict_clearance(self):
+        for level in ("pack", "card"):
+            for field, value in (
+                ("rights_status", "unverified"),
+                ("permission_to_publish", False), ("permission_to_publish", "true"),
+                ("permission_to_publish", 1), ("permission_to_publish", None),
+                ("public_test_publishable", False), ("public_test_publishable", "true"),
+                ("public_test_publishable", 1), ("public_test_publishable", None),
+                ("source", ""), ("license", None), ("attribution", " "),
+            ):
+                with self.subTest(level=level, field=field, value=value), tempfile.TemporaryDirectory() as tmpdir:
+                    fixture = Path(tmpdir) / "fixture"
+                    shutil.copytree(self.fixtures_dir, fixture)
+                    metadata = json.loads((fixture / "pack.json").read_text(encoding="utf-8"))
+                    row = metadata["pack"] if level == "pack" else metadata["cards"][0]
+                    row[field] = value
+                    (fixture / "pack.json").write_text(json.dumps(metadata), encoding="utf-8")
+                    records = scan_assets(Path(tmpdir) / "absent", REPO_ROOT, [fixture])
+                    circle = next(r for r in records if r.file_name == "Circle.webp")
+                    self.assertFalse(circle.rights.permission_to_publish)
+                    self.assertFalse(circle.rights.public_test_publishable)
+                    target = Path(tmpdir) / "public"
+                    exported = export_public_test_assets(records, target, REPO_ROOT)
+                    self.assertEqual(exported, 0 if level == "pack" else 3)
+                    self.assertFalse(any(target.rglob("Circle.webp")))
+
+    def test_undeclared_images_and_duplicate_card_declarations_do_not_gain_clearance(self):
+        for mode in ("undeclared", "duplicate_id", "duplicate_image", "wrong_pack"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmpdir:
+                fixture = Path(tmpdir) / "fixture"
+                shutil.copytree(self.fixtures_dir, fixture)
+                metadata = json.loads((fixture / "pack.json").read_text(encoding="utf-8"))
+                if mode == "undeclared":
+                    shutil.copyfile(fixture / "Circle.webp", fixture / "Undeclared.webp")
+                elif mode == "duplicate_id":
+                    metadata["cards"][1]["id"] = metadata["cards"][0]["id"]
+                elif mode == "duplicate_image":
+                    metadata["cards"][1]["image"] = metadata["cards"][0]["image"]
+                else:
+                    metadata["cards"][0]["pack_id"] = "another-pack"
+                (fixture / "pack.json").write_text(json.dumps(metadata), encoding="utf-8")
+                records = scan_assets(Path(tmpdir) / "absent", REPO_ROOT, [fixture])
+                target = Path(tmpdir) / "public"
+                self.assertEqual(export_public_test_assets(records, target, REPO_ROOT),
+                                 4 if mode == "undeclared" else 0)
+                self.assertFalse(any(target.rglob("Undeclared.webp")))
+
+    def test_fixture_export_preserves_declared_provenance(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fixture = Path(tmpdir) / "fixture"
+            shutil.copytree(self.fixtures_dir, fixture)
+            metadata = json.loads((fixture / "pack.json").read_text(encoding="utf-8"))
+            declared = {"source": "Original artist source", "license": "Custom test license",
+                        "attribution": "Fixture Author"}
+            metadata["cards"][0].update(declared)
+            (fixture / "pack.json").write_text(json.dumps(metadata), encoding="utf-8")
+            records = scan_assets(Path(tmpdir) / "absent", REPO_ROOT, [fixture])
+            circle = next(r for r in records if r.file_name == "Circle.webp")
+            self.assertTrue(circle.rights.permission_to_publish)
+            for field, expected in declared.items():
+                self.assertEqual(getattr(circle.rights, field), expected)
 
 
 if __name__ == "__main__":

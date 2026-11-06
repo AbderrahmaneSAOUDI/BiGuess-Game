@@ -75,6 +75,8 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 
 **Recheck (2026-11-06):** Reversible content inventory and rights quarantine gate implemented in `scripts/content_inventory.py` with reproducible JSON and report outputs (`docs/migration/content_inventory.json` and `docs/migration/CONTENT_INVENTORY_AND_RIGHTS.md`). All 1174 source assets (922 Anime across 6 packs + 252 Flags) reconcile 100% to disk, 0 corruptions, zero assets modified/deleted/renamed, with deterministic RFC 4122 UUIDv5 stable entity IDs. Technical importability is strictly decoupled from permission to publish; all 1174 legacy assets are quarantined as `unverified` and excluded from public test publishing by default. Confirmed-cleared test fixture pack created in `test/fixtures/cleared_shapes` (4 shapes, difficulties 1–3, CC0-1.0/MIT). Verified with 7 Python unit tests and Flutter unit tests.
 
+**Fix verification (2026-11-06):** Fixture-directory selection no longer grants clearance. The Pack and matching Card must explicitly declare clearance and provenance; absent, malformed, duplicate, unverified, or undeclared metadata remains quarantined. All 12 inventory tests pass, including the legacy-directory bypass regression; regenerated inventory preserves declared provenance.
+
 # PHASE B — Local-first domain and playable engine (still works without a backend)
 
 ### [x] T06 — Implement canonical Topic, Pack, Card, and Difficulty domain models
@@ -85,9 +87,11 @@ Identify and document any remaining operational/platform choices (e.g. minimum A
 **Agent task:** Add interfaces for reading Topics, Packs, and Cards, and implement an adapter over current `TopicPackDataSource` / `assets_manifest.dart`. Make screens/providers consume interfaces rather than direct manifest map lookups. Retain the existing Topic/Pack visual design and current game behavior temporarily.
 **Acceptance:** The current two-topic/seven-pack navigation still works and tests pass; data source swapping needs no screen rewrite.
 
-### [ ] T08 — Add local SQLite schema, migrations, and repository implementation
+### [x] T08 — Add local SQLite schema, migrations, and repository implementation
 **Agent task:** Add a local SQL implementation for Topics, Packs, Cards, installed-pack state, revisions, and deletion markers. Define safe schema migrations and query indexes for local search and card selection. Keep mutable active game state out of the database unless required by the blueprint.
 **Acceptance:** Integration tests create/open/upgrade/restart the database; relationships and constraints are enforced; local queries work without network; no bundled asset loss.
+
+**Implemented and rechecked (2026-11-06):** [Local storage contract](docs/migration/LOCAL_CONTENT_STORAGE.md), `ContentDatabase`, and `SqliteContentRepository` provide versioned native SQLite storage. Schema v3 keeps installed Card snapshots independent of newer cached metadata; installed revision and snapshot replacement commit atomically. Regression tests cover cached updates, restart, retry, activation failure, and v1/v2 upgrades. Ambiguous older databases fail upgrade without data loss rather than relabeling newer Cards as installed. The bundled gameplay provider remains the default.
 
 ### [x] T09 — Define a deterministic Pack format and local test Pack exporter
 **Agent task:** Specify an initial full-Pack manifest containing Pack/Topic IDs, revision, Card metadata, image object references, sizes, and SHA-256 hashes. Implement an offline exporter for verified test fixtures (and a development-only export path for legacy assets). Do not start with a network client.
