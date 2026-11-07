@@ -37,7 +37,7 @@ VERSION_JSON = REPO_ROOT / "version.json"
 
 # GitHub config
 GITHUB_USER = "AbderrahmaneSAOUDI"
-GITHUB_REPO = "BiGuess-Game"
+GITHUB_REPO = "BiGuess"
 APK_NAMES = {"universal": "app-release.apk"}
 
 

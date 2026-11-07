@@ -521,14 +521,14 @@ class ReleaseArtifactTests(QuietTests):
             self.assertEqual(payload["sha256_hashes"], {"universal": digest})
             self.assertEqual(payload["sha256"], digest)
             self.assertEqual(json.loads(manifest.read_text()), payload)
-            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.2.3/app-release.apk'
+            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess/releases/download/v1.2.3/app-release.apk'
             self.assertEqual(payload["apk_urls"], {"universal": url})
             self.assertEqual(payload["apk_url"], url)
 
     def test_metadata_only_sync_keeps_hash_only_for_same_version_build_and_artifact(self):
         with tempfile.TemporaryDirectory() as temporary:
             manifest = Path(temporary) / "version.json"
-            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.2.3/app-release.apk'
+            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess/releases/download/v1.2.3/app-release.apk'
             hashes = {"sha256_hashes": {"universal": "a" * 64}, "sha256": "a" * 64}
             for version in ("1.2.3+4", "1.2.3+5", "1.2.4+4"):
                 with self.subTest(version=version):
@@ -558,7 +558,7 @@ class ReleaseArtifactTests(QuietTests):
     def test_patch_keeps_known_base_url_and_hash_after_local_version_bumps(self):
         with tempfile.TemporaryDirectory() as temporary:
             manifest = Path(temporary) / 'version.json'
-            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.2.3/app-release.apk'
+            url = 'https://github.com/AbderrahmaneSAOUDI/BiGuess/releases/download/v1.2.3/app-release.apk'
             base = {'apk_url': url, 'apk_urls': {'universal': url}, 'sha256': 'a' * 64,
                     'sha256_hashes': {'universal': 'a' * 64}}
             manifest.write_text(json.dumps({'latest_version': '1.2.4', 'build_number': 5, **base}))

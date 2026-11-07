@@ -1,7 +1,7 @@
 # BiGuess — Ordered Coding-Agent Implementation Roadmap
 
 **Prepared:** 2026-11-05  
-**Repository:** https://github.com/AbderrahmaneSAOUDI/BiGuess-Game  
+**Repository:** https://github.com/AbderrahmaneSAOUDI/BiGuess  
 **Audited branch / HEAD:** `main` at `d4ab660faacd1c4f923278456b29f58755ae7040` (2026-09-26)  
 **Requirements baseline:** the supplied `BIGUESS_PRODUCT_BLUEPRINT.md` (10,154 lines), especially **Game Model**, **Content System**, **Technical Architecture**, **BiGuess Content Studio**, **Distribution & Updates**, **MVP**, and **Migration Plan From Current BiGuess**. The same-named file is also present in the repository.
 

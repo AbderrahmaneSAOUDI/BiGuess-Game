@@ -29,7 +29,7 @@ AUTO_COMMIT=false
 
 # ---- GitHub config ----
 GITHUB_USER="AbderrahmaneSAOUDI"
-GITHUB_REPO="BiGuess-Game"
+GITHUB_REPO="BiGuess"
 
 # ---- Parse args ----
 while [[ $# -gt 0 ]]; do

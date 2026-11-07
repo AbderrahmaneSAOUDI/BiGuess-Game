@@ -136,7 +136,7 @@ BiGuess is built with modern, declarative Flutter best practices:
 ### 📁 Project Structure
 
 ```text
-BiGuess-Game/
+BiGuess/
 ├── assets/
 │   ├── fonts/               # GoogleSans typography suite
 │   ├── images/              # Anime character asset catalogs (WebP)
@@ -170,8 +170,8 @@ BiGuess-Game/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/AbderrahmaneSAOUDI/BiGuess-Game.git
-   cd BiGuess-Game
+   git clone https://github.com/AbderrahmaneSAOUDI/BiGuess.git
+   cd BiGuess
    ```
 
 2. **Install dependencies:**

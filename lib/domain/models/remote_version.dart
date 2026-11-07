@@ -113,7 +113,7 @@ class RemoteVersion {
     }
     return apkUrl.isNotEmpty
         ? apkUrl
-        : 'https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-arm64-v8a-release.apk';
+        : 'https://github.com/AbderrahmaneSAOUDI/BiGuess/releases/latest/download/app-arm64-v8a-release.apk';
   }
 
   Map<String, dynamic> toJson() => {

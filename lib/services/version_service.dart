@@ -14,7 +14,7 @@ import '../domain/models/update_decision.dart';
 class VersionService {
   /// Remote URL serving the `version.json` manifest.
   static const String _versionJsonUrl =
-      'https://raw.githubusercontent.com/AbderrahmaneSAOUDI/BiGuess-Game/main/version.json';
+      'https://raw.githubusercontent.com/AbderrahmaneSAOUDI/BiGuess/main/version.json';
 
   /// Network timeout for the version check request.
   static const Duration _timeout = Duration(seconds: 8);

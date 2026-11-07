@@ -103,7 +103,7 @@ lint {
 
 ### 4.1 Audit of `version.json` & `/releases/latest/` URLs
 - **Vulnerability:** Legacy manifests referenced:
-  `https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/latest/download/app-{abi}-release.apk`
+  `https://github.com/AbderrahmaneSAOUDI/BiGuess/releases/latest/download/app-{abi}-release.apk`
 - **Hazard Analysis:**
   GitHub's `/releases/latest/` endpoint resolves **only to the latest published, non-prerelease, non-draft release**.
   If a release is created as a draft or prerelease, or if `version.json` on `main` is updated before GitHub release asset propagation completes, `/releases/latest/` points to the *previous* version.

@@ -1,12 +1,12 @@
 {
-  "latest_version": "1.529.100",
-  "build_number": 45,
+  "latest_version": "1.529.101",
+  "build_number": 46,
   "min_required_version": "0.30.0",
   "has_native_changes": true,
   "apk_urls": {
-    "universal": "https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.529.99/app-release.apk"
+    "universal": "https://github.com/AbderrahmaneSAOUDI/BiGuess/releases/download/v1.529.99/app-release.apk"
   },
-  "apk_url": "https://github.com/AbderrahmaneSAOUDI/BiGuess-Game/releases/download/v1.529.99/app-release.apk",
+  "apk_url": "https://github.com/AbderrahmaneSAOUDI/BiGuess/releases/download/v1.529.99/app-release.apk",
   "release_notes": "Bug fixes and improvements.",
   "sha256_hashes": {
     "universal": "dd425b8e2e85adf3f200ca291274070a04fab6be50006d2b4048ab71a93729f9"
