@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/domain/models/card.dart' as domain;
-import 'package:gdg_guess_game/domain/models/content_validator.dart';
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/domain/models/pack.dart';
-import 'package:gdg_guess_game/domain/models/topic.dart';
+import 'package:biguess/domain/models/card.dart' as domain;
+import 'package:biguess/domain/models/content_validator.dart';
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/domain/models/pack.dart';
+import 'package:biguess/domain/models/topic.dart';
 
 Map<String, dynamic> topicJson() => {
   'id': 'topic-01',

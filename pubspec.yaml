@@ -1,8 +1,8 @@
-name: gdg_guess_game
+name: biguess
 description: A guess image game with multiple categories.
 publish_to: 'none'
 
-version: 1.529.99+44
+version: 1.529.100+45
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

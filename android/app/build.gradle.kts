@@ -38,7 +38,7 @@ val isReleaseSigningConfigured = !releaseStoreFile.isNullOrBlank() &&
     !releaseKeyPassword.isNullOrBlank()
 
 android {
-    namespace = "com.flutter.gdg_guess_game"
+    namespace = "com.flutter.biguess"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.2.13676358"
 
@@ -48,7 +48,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.flutter.gdg_guess_game"
+        applicationId = "com.flutter.biguess"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

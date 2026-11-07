@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/core/utils/asset_loader.dart';
-import 'package:gdg_guess_game/data/datasources/topic_pack_data_source.dart';
-import 'package:gdg_guess_game/data/repositories/legacy_manifest_content_repository.dart';
-import 'package:gdg_guess_game/domain/models/content_validator.dart';
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/providers/game_controller.dart';
-import 'package:gdg_guess_game/providers/topic_pack_providers.dart';
+import 'package:biguess/core/utils/asset_loader.dart';
+import 'package:biguess/data/datasources/topic_pack_data_source.dart';
+import 'package:biguess/data/repositories/legacy_manifest_content_repository.dart';
+import 'package:biguess/domain/models/content_validator.dart';
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/providers/game_controller.dart';
+import 'package:biguess/providers/topic_pack_providers.dart';
 
 import '../support/test_content_repository.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/core/constants/app_constants.dart';
-import 'package:gdg_guess_game/core/utils/asset_loader.dart';
-import 'package:gdg_guess_game/data/datasources/topic_pack_data_source.dart';
+import 'package:biguess/core/constants/app_constants.dart';
+import 'package:biguess/core/utils/asset_loader.dart';
+import 'package:biguess/data/datasources/topic_pack_data_source.dart';
 
 void main() {
   group('TopicPackDataSource', () {

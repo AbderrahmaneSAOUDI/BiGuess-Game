@@ -1,4 +1,4 @@
-package com.flutter.gdg_guess_game
+package com.flutter.biguess
 
 import io.flutter.embedding.android.FlutterActivity
 

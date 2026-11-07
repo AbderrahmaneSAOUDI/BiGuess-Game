@@ -6,10 +6,10 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/data/local/local_pack_store.dart';
-import 'package:gdg_guess_game/data/local/private_pack_images.dart';
-import 'package:gdg_guess_game/presentation/images/content_image_loader.dart';
-import 'package:gdg_guess_game/presentation/widgets/animations/animated_character_card.dart';
+import 'package:biguess/data/local/local_pack_store.dart';
+import 'package:biguess/data/local/private_pack_images.dart';
+import 'package:biguess/presentation/images/content_image_loader.dart';
+import 'package:biguess/presentation/widgets/animations/animated_character_card.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 

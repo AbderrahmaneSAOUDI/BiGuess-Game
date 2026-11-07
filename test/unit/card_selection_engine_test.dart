@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/domain/models/card.dart';
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/domain/use_cases/card_selection_engine.dart';
+import 'package:biguess/domain/models/card.dart';
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/domain/use_cases/card_selection_engine.dart';
 
 Card card(
   String id, {

@@ -2,14 +2,14 @@ import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/domain/models/card.dart';
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/domain/models/game_session_configuration.dart';
-import 'package:gdg_guess_game/domain/models/game_session.dart';
-import 'package:gdg_guess_game/domain/models/pack.dart';
-import 'package:gdg_guess_game/domain/models/topic.dart';
-import 'package:gdg_guess_game/providers/game_session_controller.dart';
-import 'package:gdg_guess_game/providers/topic_pack_providers.dart';
+import 'package:biguess/domain/models/card.dart';
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/domain/models/game_session_configuration.dart';
+import 'package:biguess/domain/models/game_session.dart';
+import 'package:biguess/domain/models/pack.dart';
+import 'package:biguess/domain/models/topic.dart';
+import 'package:biguess/providers/game_session_controller.dart';
+import 'package:biguess/providers/topic_pack_providers.dart';
 
 Card card(
   String id, {

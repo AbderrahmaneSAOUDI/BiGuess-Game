@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/presentation/screens/game/game_screen.dart';
-import 'package:gdg_guess_game/presentation/widgets/animations/animated_character_card.dart';
-import 'package:gdg_guess_game/presentation/widgets/animations/animated_countdown.dart';
-import 'package:gdg_guess_game/providers/game_controller.dart';
-import 'package:gdg_guess_game/providers/game_settings_controller.dart';
-import 'package:gdg_guess_game/providers/topic_pack_providers.dart';
+import 'package:biguess/presentation/screens/game/game_screen.dart';
+import 'package:biguess/presentation/widgets/animations/animated_character_card.dart';
+import 'package:biguess/presentation/widgets/animations/animated_countdown.dart';
+import 'package:biguess/providers/game_controller.dart';
+import 'package:biguess/providers/game_settings_controller.dart';
+import 'package:biguess/providers/topic_pack_providers.dart';
 
 void main() {
   testWidgets(

@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/data/local/local_content_runtime.dart';
-import 'package:gdg_guess_game/data/local/local_pack_file.dart';
-import 'package:gdg_guess_game/data/local/local_pack_store.dart';
+import 'package:biguess/data/local/local_content_runtime.dart';
+import 'package:biguess/data/local/local_pack_file.dart';
+import 'package:biguess/data/local/local_pack_store.dart';
 
 void main() {
   test(

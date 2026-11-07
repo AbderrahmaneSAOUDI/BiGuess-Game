@@ -5,12 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/data/local/local_pack_store.dart';
-import 'package:gdg_guess_game/domain/models/card.dart' as domain;
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/presentation/images/content_image_loader.dart';
-import 'package:gdg_guess_game/presentation/screens/game/widgets/identity_card.dart';
-import 'package:gdg_guess_game/providers/content_image_provider.dart';
+import 'package:biguess/data/local/local_pack_store.dart';
+import 'package:biguess/domain/models/card.dart' as domain;
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/presentation/images/content_image_loader.dart';
+import 'package:biguess/presentation/screens/game/widgets/identity_card.dart';
+import 'package:biguess/providers/content_image_provider.dart';
 
 const _asset = 'assets/logos/biguess-icon.webp';
 

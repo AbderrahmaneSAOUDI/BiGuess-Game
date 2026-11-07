@@ -6,9 +6,9 @@ import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as image;
-import 'package:gdg_guess_game/data/local/local_pack_file.dart';
-import 'package:gdg_guess_game/data/local/local_pack_store.dart';
-import 'package:gdg_guess_game/data/local/private_pack_images.dart';
+import 'package:biguess/data/local/local_pack_file.dart';
+import 'package:biguess/data/local/local_pack_store.dart';
+import 'package:biguess/data/local/private_pack_images.dart';
 import 'package:path/path.dart' as p;
 
 class FailingStorage extends PackStorageIo {

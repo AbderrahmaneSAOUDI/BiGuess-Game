@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/domain/models/card.dart' as domain;
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/domain/models/entitlement.dart';
-import 'package:gdg_guess_game/domain/models/game_session.dart';
-import 'package:gdg_guess_game/presentation/screens/game/game_configuration_screen.dart';
-import 'package:gdg_guess_game/presentation/screens/game/game_screen.dart';
-import 'package:gdg_guess_game/presentation/screens/packs/packs_screen.dart';
-import 'package:gdg_guess_game/presentation/widgets/animations/animated_character_card.dart';
-import 'package:gdg_guess_game/presentation/widgets/animations/animated_countdown.dart';
-import 'package:gdg_guess_game/presentation/widgets/animations/animated_mystery_box.dart';
-import 'package:gdg_guess_game/providers/entitlement_provider.dart';
-import 'package:gdg_guess_game/providers/game_session_controller.dart';
-import 'package:gdg_guess_game/providers/game_settings_controller.dart';
-import 'package:gdg_guess_game/providers/topic_pack_providers.dart';
+import 'package:biguess/domain/models/card.dart' as domain;
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/domain/models/entitlement.dart';
+import 'package:biguess/domain/models/game_session.dart';
+import 'package:biguess/presentation/screens/game/game_configuration_screen.dart';
+import 'package:biguess/presentation/screens/game/game_screen.dart';
+import 'package:biguess/presentation/screens/packs/packs_screen.dart';
+import 'package:biguess/presentation/widgets/animations/animated_character_card.dart';
+import 'package:biguess/presentation/widgets/animations/animated_countdown.dart';
+import 'package:biguess/presentation/widgets/animations/animated_mystery_box.dart';
+import 'package:biguess/providers/entitlement_provider.dart';
+import 'package:biguess/providers/game_session_controller.dart';
+import 'package:biguess/providers/game_settings_controller.dart';
+import 'package:biguess/providers/topic_pack_providers.dart';
 
 import '../support/test_content_repository.dart';
 

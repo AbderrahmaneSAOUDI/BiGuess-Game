@@ -1,8 +1,8 @@
-import 'package:gdg_guess_game/domain/models/card.dart';
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/domain/models/pack.dart';
-import 'package:gdg_guess_game/domain/models/topic.dart';
-import 'package:gdg_guess_game/domain/repositories/content_repository.dart';
+import 'package:biguess/domain/models/card.dart';
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/domain/models/pack.dart';
+import 'package:biguess/domain/models/topic.dart';
+import 'package:biguess/domain/repositories/content_repository.dart';
 
 /// Independent repository with IDs unrelated to labels or bundled folder keys.
 class TestContentRepository implements ContentRepository {

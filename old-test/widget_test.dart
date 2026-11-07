@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/domain/models/remote_version.dart';
-import 'package:gdg_guess_game/domain/models/sem_ver.dart';
-import 'package:gdg_guess_game/domain/models/update_decision.dart';
-import 'package:gdg_guess_game/main.dart';
-import 'package:gdg_guess_game/presentation/widgets/common/glass_icon_button.dart';
-import 'package:gdg_guess_game/providers/game_providers.dart';
-import 'package:gdg_guess_game/screens/categories_screen.dart';
-import 'package:gdg_guess_game/screens/game_screen.dart';
-import 'package:gdg_guess_game/services/version_service.dart';
-import 'package:gdg_guess_game/utils/asset_loader.dart';
-import 'package:gdg_guess_game/widgets/animations/animated_character_card.dart';
-import 'package:gdg_guess_game/widgets/animations/animated_countdown.dart';
-import 'package:gdg_guess_game/widgets/animations/animated_glass_app_bar_background.dart';
-import 'package:gdg_guess_game/widgets/animations/animated_mystery_box.dart';
-import 'package:gdg_guess_game/widgets/animations/interactive_scale_card.dart';
+import 'package:biguess/domain/models/remote_version.dart';
+import 'package:biguess/domain/models/sem_ver.dart';
+import 'package:biguess/domain/models/update_decision.dart';
+import 'package:biguess/main.dart';
+import 'package:biguess/presentation/widgets/common/glass_icon_button.dart';
+import 'package:biguess/providers/game_providers.dart';
+import 'package:biguess/screens/categories_screen.dart';
+import 'package:biguess/screens/game_screen.dart';
+import 'package:biguess/services/version_service.dart';
+import 'package:biguess/utils/asset_loader.dart';
+import 'package:biguess/widgets/animations/animated_character_card.dart';
+import 'package:biguess/widgets/animations/animated_countdown.dart';
+import 'package:biguess/widgets/animations/animated_glass_app_bar_background.dart';
+import 'package:biguess/widgets/animations/animated_mystery_box.dart';
+import 'package:biguess/widgets/animations/interactive_scale_card.dart';
 
 void main() {
   group('AssetLoader Unit Tests', () {

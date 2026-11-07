@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/domain/models/remote_version.dart';
-import 'package:gdg_guess_game/domain/models/sem_ver.dart';
-import 'package:gdg_guess_game/domain/models/update_decision.dart';
-import 'package:gdg_guess_game/services/version_service.dart';
+import 'package:biguess/domain/models/remote_version.dart';
+import 'package:biguess/domain/models/sem_ver.dart';
+import 'package:biguess/domain/models/update_decision.dart';
+import 'package:biguess/services/version_service.dart';
 
 void main() {
   group('SemVer parsing and comparisons', () {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/domain/models/game_record.dart';
-import 'package:gdg_guess_game/services/cloud_database_service.dart';
+import 'package:biguess/domain/models/game_record.dart';
+import 'package:biguess/services/cloud_database_service.dart';
 
 void main() {
   group('GameRecord Model', () {

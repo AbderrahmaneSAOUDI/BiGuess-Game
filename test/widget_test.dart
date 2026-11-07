@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/main.dart';
+import 'package:biguess/main.dart';
 
 void main() {
   testWidgets('BiGuessApp smoke test renders topics screen', (

@@ -212,7 +212,7 @@ class AboutGameTab extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'BiGuess Game is a fast-paced, face-to-face guessing game built for anime enthusiasts, party gaming, and tech community gatherings. Players test their franchise knowledge, memory, and deductive questioning in real time.',
+                    'BiGuess is a fast-paced, face-to-face guessing game built for anime enthusiasts, party gaming, and tech community gatherings. Players test their franchise knowledge, memory, and deductive questioning in real time.',
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.45,

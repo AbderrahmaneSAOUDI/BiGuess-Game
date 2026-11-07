@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdg_guess_game/data/repositories/sqlite_content_repository.dart';
-import 'package:gdg_guess_game/domain/models/card.dart';
-import 'package:gdg_guess_game/domain/models/difficulty.dart';
-import 'package:gdg_guess_game/domain/models/pack.dart';
-import 'package:gdg_guess_game/domain/models/pack_selection.dart';
-import 'package:gdg_guess_game/domain/models/topic.dart';
-import 'package:gdg_guess_game/domain/use_cases/select_packs_use_case.dart';
+import 'package:biguess/data/repositories/sqlite_content_repository.dart';
+import 'package:biguess/domain/models/card.dart';
+import 'package:biguess/domain/models/difficulty.dart';
+import 'package:biguess/domain/models/pack.dart';
+import 'package:biguess/domain/models/pack_selection.dart';
+import 'package:biguess/domain/models/topic.dart';
+import 'package:biguess/domain/use_cases/select_packs_use_case.dart';
 
 void main() {
   test(
