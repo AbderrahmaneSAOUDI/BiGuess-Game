@@ -234,6 +234,18 @@ export async function mutate(request: Request, env: Env, principal: Principal, r
       // changes. Draft product edits do not rewrite immutable manifests (T25/T35).
       if (['hide', 'softDelete', 'restore', 'permanentDelete'].includes(action)) {
         const table = e.resource_type === 'topic' ? 'catalog_topics' : 'catalog_packs';
+        if (e.resource_type === 'card') {
+          // Remember validation-only suppression, so a validated routine Card
+          // revision can resume a previously visible Pack without Owner review.
+          statements.push(env.DB.prepare(`INSERT INTO publication_suppression (pack_id, resume_published)
+            SELECT id, published FROM catalog_packs WHERE id = ?
+            ON CONFLICT(pack_id) DO UPDATE SET resume_published = MAX(publication_suppression.resume_published, excluded.resume_published)`)
+            .bind(e.parent_id));
+        } else if (e.resource_type === 'pack') {
+          // Explicit Pack visibility/lifecycle intent always overrides any
+          // earlier Card-only validation suppression.
+          statements.push(env.DB.prepare('DELETE FROM publication_suppression WHERE pack_id = ?').bind(e.id));
+        }
         statements.push(e.resource_type === 'card'
           ? env.DB.prepare('UPDATE catalog_packs SET published = 0 WHERE id = ?').bind(e.parent_id)
           : env.DB.prepare(`UPDATE ${table} SET published = 0, deleted = ? WHERE id = ?`)

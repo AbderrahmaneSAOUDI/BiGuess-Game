@@ -1,4 +1,4 @@
-# Content API (T20–T22)
+# Content API (T20–T25)
 
 Isolated TypeScript Cloudflare Worker, D1 migrations and private R2 objects.
 `../biguess-api/` remains the separate legacy game-record API. No Flutter client,
@@ -6,7 +6,8 @@ gameplay dependency, cloud resource, deployment or production credential is adde
 
 The public catalog implements the frozen [v1 contract](../../contracts/content/v1/README.md).
 Immutable signed publications and anonymous downloads are described in
-[PUBLISHING.md](PUBLISHING.md). Studio mutations and sync remain separate tickets.
+[PUBLISHING.md](PUBLISHING.md). Authenticated administrative batches are described
+in [STUDIO.md](STUDIO.md); anonymous revision checks and deltas in [SYNC.md](SYNC.md).
 The initial `storage_fixtures` table remains isolated from catalog data.
 
 ## Public read-only catalog
@@ -73,7 +74,8 @@ The latter reads D1 metadata, fetches R2 bytes, checks length/SHA-256 and return
 the fixture as WebP. Its expected hash is in `fixtures/metadata.json`. It exists
 only in the local environment; staging returns 404. Health is process liveness,
 not a database-readiness assertion. Missing schema/seed/object and corrupt bytes
-return 503 without exposing SQL errors. No HTTP write routes exist.
+return 503 without exposing SQL errors. The infrastructure fixture has no HTTP
+write route; authenticated Studio mutations use a separate namespace.
 
 `fixtures/image.webp` is an original 8×8 solid-color lossless WebP (38 bytes),
 with no third-party content. Its bytes, key, hash and SQL are fixed in source;
@@ -234,3 +236,14 @@ these are separate roadmap work. Hide permission never implies deletion.
 `npm test` exercises the real bundled Worker with locally signed RSA tokens and
 intercepted Google JWKS discovery. There is no production test-key/auth-bypass
 binding, and the tests require neither real credentials nor network access to Google.
+
+### Pack sync transport (T25)
+
+[Revision checks and exact deltas](SYNC.md) implement anonymous
+`POST /content/v1/sync/revisions` and
+`GET /content/v1/packs/{packId}/delta?fromRevision=A&toRevision=B`.
+Only validated immutable publications are distributed; Card changes reuse
+unchanged image objects. Explicit installed IDs discover durable Pack deletion
+tombstones after catalog removal or permanent purge. Apply local migration
+`0005_distribution.sql` after the previous migrations. No cloud deployment,
+initial Studio publishing workflow or Mobile sync client is added.

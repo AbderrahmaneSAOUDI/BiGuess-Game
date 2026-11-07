@@ -3,6 +3,7 @@ import { authenticate, authorize, studioOperation, StudioError } from './studio-
 import { catalog } from './catalog';
 import { download } from './download';
 import { mutate } from './studio-mutations';
+import { sync } from './sync';
 
 interface Fixture {
   object_key: string;
@@ -58,6 +59,7 @@ export default {
         return studioError(503, 'auth_unavailable');
       }
     }
+    if (path === '/content/v1/sync/revisions' || /^\/content\/v1\/packs\/[^/]+\/delta$/.test(path)) return sync(request, env);
     if (path.startsWith('/content/v1/packs/')) return download(request, env);
     if (path === '/content' || path.startsWith('/content/')) return catalog(request, env);
     if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);

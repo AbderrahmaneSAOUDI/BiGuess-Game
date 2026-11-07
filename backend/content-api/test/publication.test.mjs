@@ -1,15 +1,29 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, cpSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { createHash, generateKeyPairSync, verify } from 'node:crypto';
+import { createHash, generateKeyPairSync, verify, sign } from 'node:crypto';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { root } from '../scripts/local.mjs';
 import { prepare } from '../scripts/prepare.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+const canonical = value => Array.isArray(value) ? `[${value.map(canonical).join(',')}]`
+  : value && typeof value === 'object' ? `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${canonical(value[k])}`).join(',')}}`
+  : JSON.stringify(value);
+function rewrite(bundle, edit) {
+  bundle = structuredClone(bundle);
+  const manifest = JSON.parse(Buffer.from(bundle.manifest, 'base64'));
+  edit(manifest, bundle);
+  const bytes = Buffer.from(canonical(manifest) + '\n');
+  bundle.manifest = bytes.toString('base64');
+  bundle.receipt.statement.manifestSha256 = hash(bytes);
+  bundle.receipt.statement.manifestSizeBytes = bytes.length;
+  bundle.receipt.signature = sign(null, Buffer.from(JSON.stringify(bundle.receipt.statement) + '\n'), privateKey).toString('base64');
+  return bundle;
+}
 const { privateKey, publicKey } = generateKeyPairSync('ed25519');
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 const temporary = mkdtempSync(join(tmpdir(), 'biguess-publication-'));
@@ -36,7 +50,7 @@ async function setup(t) {
     d1Databases: { DB: 'publication-test' }, r2Buckets: { CONTENT: 'publication-test' } }));
   t.after(() => mf.dispose());
   const db = await mf.getD1Database('DB');
-  for (const file of ['0002_catalog.sql', '0003_publications.sql']) {
+  for (const file of ['0002_catalog.sql', '0003_publications.sql', '0004_studio.sql', '0005_distribution.sql']) {
     const sql = readFileSync(new URL(`../migrations/${file}`, import.meta.url), 'utf8')
       .split('\n').filter(line => !line.trim().startsWith('--')).join(' ');
     await db.exec(sql);
@@ -168,4 +182,92 @@ test('D1 projection failure rolls back activation and history; a retry uses the 
   await db.exec('DROP TRIGGER reject_projection');
   await success(await publish(2, 1));
   assert.equal((await catalog())[0].revision, 2);
+});
+
+
+test('signed but invalid product, rights, schema and image data never activate a revision', async t => {
+  const { publish, db } = await setup(t);
+  const edits = [
+    m => m.cards[0].difficulty = 4,
+    m => m.cards[0].packId = 'other-pack',
+    m => m.cards[0].name = ' Untrimmed ',
+    m => m.cards[0].description = 'Unapproved semantic field',
+    m => m.cards = m.cards.slice(0, 1),
+    m => m.cards[1].id = m.cards[0].id,
+    m => m.provenance.packRights.permission_to_publish = false,
+    m => m.provenance.cardRights.pop(),
+    m => m.provenance.cardRights[0].public_test_publishable = false,
+    m => m.objects.push(m.objects[0]),
+    m => m.objects[0].mediaType = ['image/webp'],
+    (m, b) => {
+      const old = m.objects[0]; const bytes = Buffer.from('signed non-image');
+      const sha256 = hash(bytes); const key = `objects/${sha256}.webp`;
+      delete b.objects[old.key]; b.objects[key] = bytes.toString('base64');
+      for (const c of m.cards) if (c.imageReference === old.key) c.imageReference = key;
+      m.objects[0] = { key, sha256, sizeBytes: bytes.length, mediaType: 'image/webp' };
+      m.objects.sort((a, b) => a.key.localeCompare(b.key));
+    },
+  ];
+  for (const edit of edits) {
+    assert.equal((await publish(1, 0, {}, rewrite(fixtures.get(1), edit))).status, 409);
+    assert.equal(await db.prepare('SELECT count(*) AS n FROM publication_heads').first('n'), 0);
+    assert.equal(await db.prepare('SELECT count(*) AS n FROM studio_entities').first('n'), 0);
+  }
+});
+
+test('publication hydrates authoring records and cannot overwrite a newer draft or deletion', async t => {
+  const { publish, db, packId, catalog } = await setup(t);
+  await success(await publish(1, 0));
+  const pack = await db.prepare("SELECT * FROM studio_entities WHERE resource_type = 'pack' AND id = ?").bind(packId).first();
+  assert.equal(pack.revision, 1);
+  assert.equal(await db.prepare("SELECT count(*) AS n FROM studio_entities WHERE resource_type = 'card'").first('n'), 4);
+  const value = { ...JSON.parse(pack.value), name: 'Reviewed Shapes' };
+  await db.prepare("UPDATE studio_entities SET value = ?, revision = 2 WHERE resource_type = 'pack' AND id = ?")
+    .bind(JSON.stringify(value), packId).run();
+  await db.exec('UPDATE studio_generation SET generation = generation + 1');
+  await db.prepare('INSERT INTO publication_suppression VALUES (?, 1)').bind(packId).run();
+  await db.exec('UPDATE catalog_packs SET published = 0');
+  assert.equal((await publish(3, 1)).status, 409, 'cannot leap over a pending draft revision');
+  assert.equal((await publish(2, 1)).status, 409, 'same revision must match the draft content');
+  assert.deepEqual(await catalog(), []);
+  assert.equal(await db.prepare('SELECT resume_published FROM publication_suppression WHERE pack_id = ?').bind(packId).first('resume_published'), 1);
+  const fixtureDirectory = join(temporary, 'reviewed-fixture');
+  cpSync(new URL('../../../test/fixtures/cleared_shapes', import.meta.url), fixtureDirectory, { recursive: true });
+  const path = join(fixtureDirectory, 'pack.json'); const fixture = JSON.parse(readFileSync(path));
+  fixture.pack.name = 'Reviewed Shapes'; writeFileSync(path, JSON.stringify(fixture));
+  const bundleAt = revision => {
+    const archive = join(temporary, `reviewed-${revision}.biguesspack`);
+    execFileSync('python3', ['../../scripts/export_pack.py', 'fixture', path, '--revision', String(revision), '--output', archive], { cwd: root });
+    return prepare(archive, pem);
+  };
+  await success(await publish(2, 1, {}, bundleAt(2)));
+  assert.equal((await catalog())[0].name, 'Reviewed Shapes');
+  await db.prepare("UPDATE studio_entities SET state = 'deleted', revision = 3 WHERE resource_type = 'pack' AND id = ?").bind(packId).run();
+  await db.prepare("INSERT INTO studio_tombstones VALUES ('pack', ?, 3, '2026-11-07T00:00:00Z')").bind(packId).run();
+  await db.exec('UPDATE studio_generation SET generation = generation + 1');
+  assert.equal((await publish(4, 2, {}, bundleAt(4))).status, 409, 'publication never restores deleted content');
+  assert.equal((await catalog())[0].revision, 2);
+  assert.equal(await db.prepare('SELECT revision FROM publication_heads').first('revision'), 2);
+});
+
+
+test('publication and administrative commits share a generation guard with atomic rollback', async t => {
+  const { publish, db, packId } = await setup(t);
+  const before = await db.prepare('SELECT generation FROM studio_generation').first('generation');
+  await success(await publish(1, 0));
+  const published = await db.prepare('SELECT generation FROM studio_generation').first('generation');
+  assert.equal(published, before + 1);
+  // An administrative validation begun before the publication cannot commit.
+  await assert.rejects(db.prepare('INSERT INTO studio_commits VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .bind('owner', 'stale-admin', 'fingerprint', '[]', '{}', 'stale-admin', before).run(), /studio_conflict/);
+  await db.exec('UPDATE studio_generation SET generation = generation + 1');
+  // A publication validation begun before an administrative commit cannot commit
+  // either; its dependent projection writes roll back with the guard failure.
+  await assert.rejects(db.batch([
+    db.prepare('INSERT INTO publication_commits VALUES (?, 2, ?)').bind(packId, published),
+    db.prepare("UPDATE catalog_packs SET name = 'Lost update' WHERE id = ?").bind(packId),
+  ]), /publication_conflict/);
+  assert.equal(await db.prepare('SELECT revision FROM publication_heads').first('revision'), 1);
+  assert.equal(await db.prepare('SELECT count(*) AS n FROM publication_commits').first('n'), 1);
+  assert.notEqual(await db.prepare('SELECT name FROM catalog_packs').first('name'), 'Lost update');
 });

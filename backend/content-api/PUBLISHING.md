@@ -1,7 +1,7 @@
 # Immutable Pack publications (T22)
 
 T22 builds on the T21 catalog migration (`0002_catalog.sql`). Apply additive
-`0003_publications.sql` after it. No cloud migration or deployment is performed
+`0003_publications.sql`, `0004_studio.sql`, and `0005_distribution.sql` in order. No cloud migration or deployment is performed
 by preparation or tests. There is no public publishing HTTP route. Studio
 publishing/rights approval and mobile download installation remain later tickets.
 
@@ -68,9 +68,15 @@ The publication function verifies the trusted signature and artifacts, then:
    `archives/<sha256>.biguesspack` using R2's create-only ETag precondition and
    upload checksum. Existing keys are read and verified, never overwritten.
 2. Reads back and checks every referenced image, manifest and archive.
-3. Runs one D1 batch inserting immutable history, moving current/previous heads
-   and projecting Topic/Pack catalog metadata. SQL triggers enforce compare and
-   swap, increasing revisions, immutable Pack/Topic relationships and history.
+3. Reads administrative records and their mutation generation in one D1 snapshot.
+   Publication must advance the committed head and every retained Pack tombstone.
+   Deleted/purged identities and Topic/Pack relationship changes are rejected. A
+   pending Studio revision must be published at exactly that revision with exactly
+   its product fields and active Cards; a signed artifact cannot overwrite it.
+4. Runs one D1 batch checking that generation, inserting immutable history, moving
+   current/previous heads and projecting catalog and authoring records together.
+   SQL triggers enforce compare and swap, increasing revisions, administrative
+   deletion fences, immutable Pack/Topic relationships and history.
 
 A write failure before the D1 batch leaves only undiscoverable orphan objects.
 A SQL failure rolls back the entire metadata batch. A competing publisher with
@@ -79,9 +85,34 @@ retry after an ambiguous successful commit receives a conflict; reconcile the
 stored head/receipt rather than inventing another publication. Retrying a failed
 pre-commit attempt safely reuses matching immutable objects.
 
-Existing catalog visibility/deletion flags are preserved; publishing does not
-restore hidden/deleted records. New fixture records start published through this
-trusted primitive. This is not Studio's Owner approval workflow (T35).
+Existing explicit Topic/Pack visibility is preserved; publication never restores
+administratively deleted/purged records. New fixture records start published
+through this trusted primitive. A Card visibility mutation temporarily suppresses
+its old Pack snapshot and records whether it was previously public. A complete,
+validated matching draft may resume that prior publication only while the Pack
+remains active; an explicit Pack hide removes this permission. The suppression
+marker is cleared in the same successful transaction and survives failed validation.
+This is not Studio's Owner approval workflow (T35).
+
+T25 uses the same monotonic revision sequence for authoring and publication. The
+first trusted publication hydrates Studio Topic/Pack/Card records. For projections
+created before T25, missing Card authoring records are hydrated from the verified
+previous immutable manifest during publication. Direct operator fixture updates
+without pending edits may advance revisions; omitted Cards become hidden identity
+records rather than being erased. Deleted/purged Card identities cannot reappear.
+This keeps future Studio revision checks and deletion cascades connected to the
+actual published content. Both publication and Studio writes advance a shared
+mutation generation, so either writer rejects a snapshot invalidated by the other.
+
+The Worker now rechecks exact PublicManifest fields, canonical JSON bytes, sorted
+unique Card/object/rights identities, canonical four-field Card relationships,
+difficulty1–3, at least two eligible Cards, exact required object sets and complete
+cleared-test rights records before any successful distribution. Referenced images
+must agree with their byte hashes, lengths, declared media types and format headers.
+Full image decoding and archive-entry verification remain in the offline preparer;
+only pinned operator signatures are accepted. These runtime checks also protect
+manifest reads/deltas and conditional responses, rather than trusting signatures
+as a substitute for product validation.
 
 All history and R2 objects are retained indefinitely by this implementation;
 there is no garbage collector, delete or overwrite path. Keep the bucket private,
@@ -143,5 +174,8 @@ every interrupted upload stage, no catalog drift during writes, competing
 publishers, transaction rollback on catalog failure, retained revisions, forward
 rollback, frozen JSON contracts, anonymous access, visibility before cache
 revalidation, immutable-key collision refusal, and full downloaded-archive/image
-validation. `test/publication-worker.ts` provides a test-only publishing boundary
+validation. T25 adds signed-but-invalid schema/rights/image rejection, authoring
+hydration, pending-draft mismatch rejection, deletion fences, suppression retention
+and resumption, and shared-generation rollback tests.
+`test/publication-worker.ts` provides a test-only publishing boundary
 and fault injection; the deploy entrypoint never imports it.

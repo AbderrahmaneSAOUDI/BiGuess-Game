@@ -67,16 +67,18 @@ contract's 30-day minimum). Authorization is checked again on retries.
 artifacts. The migration fences pre-existing catalog Topic/Pack identities and
 revisions; importing their Card authoring data from frozen R2 manifests is not an
 SQL migration. Newly created Cards are maintained here. No draft edit rewrites
-old manifests, receipts or archives. Pack revision/delta distribution is T25;
-validated publication is T35.
+old manifests, receipts or archives. Pack revision checks and delta distribution are implemented in [T25](SYNC.md);
+initial approval and the Studio publishing workflow remain T35.
 
 Soft deletion retains the record and cascades Topic → Packs → Cards. Descendant
 Packs receive their own next revision. Every affected entity gets a concise audit
 entry (batch, UID, role, resource, action, revision, timestamp) and an append-only
 tombstone. Hiding creates no tombstones. Visibility/deletion changes immediately
 suppress existing public discovery/new downloads; Card hiding/deletion suppresses
-the old Pack projection until a validated replacement can be published. Installed
-offline gameplay is independent. Public tombstone/delta transport belongs to T25.
+the old Pack projection until a validated replacement can be published. A Card-only
+suppression marker lets a valid routine publication resume prior visibility; an
+explicit Pack hide/deletion clears that intent. Installed offline gameplay is
+independent. [T25 sync endpoints](SYNC.md) transport Pack tombstones and deltas.
 
 Restore requires a nondeleted parent and restores only the selected entity into
 hidden state; descendants require explicit restoration. It never republishes
@@ -92,7 +94,8 @@ generation, then commits records, audit, tombstones, public suppression and
 idempotency together. A concurrent administrative change, even to a different
 aggregate, may conservatively cause a 412. No partially validated commit or silent
 merge is possible. Operator-only publication/import must be coordinated with
-administrative writes; publication integration is a later ticket.
+administrative writes. T25 trusted publications participate in the same generation
+guard; the Studio approval UI/workflow remains a later ticket.
 
 `npm run typecheck` and `npm test` verify the bundled Worker with real signed
 Firebase fixtures, D1 transactions and R2 bytes. No production token or cloud
