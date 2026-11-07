@@ -78,6 +78,16 @@ class UpdateController extends StateNotifier<UpdateState> {
   /// silently without surfacing errors to avoid interrupting gameplay.
   Future<void> checkForUpdates({bool silent = false}) async {
     if (!mounted) return;
+    if (!kReleaseMode) {
+      state = UpdateCompleted(
+        silent
+            ? ''
+            : 'Updates require the signed release app. Debug/profile builds use '
+                  'development signing. Install the release APK '
+                  'to test updates; removing a development installation erases its local data.',
+      );
+      return;
+    }
     state = const UpdateChecking();
 
     try {
@@ -170,6 +180,20 @@ class UpdateController extends StateNotifier<UpdateState> {
           );
 
         case UpdateFullApk():
+          if (remote.apkUrls.keys.length == 1 &&
+              remote.apkUrls.containsKey('arm64-v8a') &&
+              deviceAbis.isNotEmpty &&
+              !deviceAbis.contains('arm64-v8a')) {
+            if (!mounted) return;
+            state = silent
+                ? const UpdateCompleted()
+                : const UpdateError(
+                    message:
+                        'This release requires a 64-bit ARM Android device.',
+                    canRetry: false,
+                  );
+            return;
+          }
           state = UpdateAvailable(
             decision: decision,
             currentVersion: local.toString(),
@@ -220,9 +244,17 @@ class UpdateController extends StateNotifier<UpdateState> {
 
   Future<void> downloadAndInstallApk(UpdateFullApk decision) async {
     if (!mounted) return;
+    if (!kReleaseMode) {
+      state = const UpdateError(
+        message: 'Install the signed release app to use APK updates.',
+        canRetry: false,
+      );
+      return;
+    }
 
     // Clean stale APKs first
     await _otaInstaller.cleanStaleApks();
+    if (!mounted) return;
 
     state = const UpdateDownloading(progress: 0, speedText: '', etaText: '');
 

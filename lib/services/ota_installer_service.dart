@@ -40,17 +40,25 @@ class OtaInstallerService {
   static const String _apkFileName = 'update.apk';
 
   final Dio _dio;
+  final Future<Directory> Function() _temporaryDirectory;
+  final Future<List<Directory>?> Function() _externalCacheDirectories;
   CancelToken? _cancelToken;
 
-  OtaInstallerService({Dio? dio})
-    : _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              connectTimeout: const Duration(seconds: 15),
-              receiveTimeout: const Duration(minutes: 5),
-            ),
-          );
+  OtaInstallerService({
+    Dio? dio,
+    Future<Directory> Function()? temporaryDirectory,
+    Future<List<Directory>?> Function()? externalCacheDirectories,
+  }) : _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory,
+       _externalCacheDirectories =
+           externalCacheDirectories ?? getExternalCacheDirectories,
+       _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               connectTimeout: const Duration(seconds: 15),
+               receiveTimeout: const Duration(minutes: 5),
+             ),
+           );
 
   // ---------------------------------------------------------------------------
   // Cache cleanup & Inspection
@@ -60,12 +68,12 @@ class OtaInstallerService {
   Future<void> cleanStaleApks() async {
     final dirs = <Directory>[];
     try {
-      final cacheDir = await getExternalCacheDirectories();
+      final cacheDir = await _externalCacheDirectories();
       if (cacheDir != null) dirs.addAll(cacheDir);
     } catch (_) {}
 
     try {
-      dirs.add(await getTemporaryDirectory());
+      dirs.add(await _temporaryDirectory());
     } catch (_) {}
 
     for (final dir in dirs) {
@@ -92,7 +100,7 @@ class OtaInstallerService {
   /// Returns the completed APK file from disk if it exists.
   Future<File?> getDownloadedApk() async {
     try {
-      final cacheDir = await getTemporaryDirectory();
+      final cacheDir = await _temporaryDirectory();
       final file = File('${cacheDir.path}/$_apkFileName');
       if (file.existsSync()) return file;
     } catch (_) {}
@@ -115,7 +123,7 @@ class OtaInstallerService {
   }) async {
     _cancelToken = CancelToken();
 
-    final cacheDir = await getTemporaryDirectory();
+    final cacheDir = await _temporaryDirectory();
     final tmpPath = '${cacheDir.path}/$_tempFileName';
     final finalPath = '${cacheDir.path}/$_apkFileName';
 
@@ -130,58 +138,70 @@ class OtaInstallerService {
     var lastSampleTime = DateTime.now();
     var lastSampleBytes = 0;
 
-    await _dio.download(
-      url,
-      tmpPath,
-      cancelToken: _cancelToken,
-      onReceiveProgress: (received, total) {
-        final now = DateTime.now();
-        final elapsed = now.difference(lastSampleTime).inMilliseconds;
-
-        // Sample speed every ~500ms
-        if (elapsed >= 500) {
-          final bytesInInterval = received - lastSampleBytes;
-          final bytesPerSecond = bytesInInterval / (elapsed / 1000);
-          speedSamples.add(bytesPerSecond);
-          if (speedSamples.length > 5) speedSamples.removeAt(0);
-          lastSampleTime = now;
-          lastSampleBytes = received;
-        }
-
-        // Calculate rolling average speed
-        final avgSpeed = speedSamples.isEmpty
-            ? 0.0
-            : speedSamples.reduce((a, b) => a + b) / speedSamples.length;
-
-        // Calculate ETA
-        final remaining = total > 0 ? total - received : 0;
-        final etaSeconds = avgSpeed > 0 ? (remaining / avgSpeed).ceil() : 0;
-
-        final fraction = total > 0 ? (received / total).clamp(0.0, 1.0) : 0.0;
-
-        onProgress?.call(
-          DownloadProgress(
-            received: received,
-            total: total,
-            fraction: fraction,
-            speedText: _formatSpeed(avgSpeed),
-            etaText: etaSeconds > 0 ? '~${etaSeconds}s left' : '',
-          ),
-        );
-      },
-    );
-
-    // Atomic rename: tmp → final with copy fallback
-    File completed;
     try {
-      completed = await File(tmpPath).rename(finalPath);
-    } catch (_) {
-      completed = await File(tmpPath).copy(finalPath);
+      await _dio.download(
+        url,
+        tmpPath,
+        cancelToken: _cancelToken,
+        onReceiveProgress: (received, total) {
+          final now = DateTime.now();
+          final elapsed = now.difference(lastSampleTime).inMilliseconds;
+
+          // Sample speed every ~500ms
+          if (elapsed >= 500) {
+            final bytesInInterval = received - lastSampleBytes;
+            final bytesPerSecond = bytesInInterval / (elapsed / 1000);
+            speedSamples.add(bytesPerSecond);
+            if (speedSamples.length > 5) speedSamples.removeAt(0);
+            lastSampleTime = now;
+            lastSampleBytes = received;
+          }
+
+          // Calculate rolling average speed
+          final avgSpeed = speedSamples.isEmpty
+              ? 0.0
+              : speedSamples.reduce((a, b) => a + b) / speedSamples.length;
+
+          // Calculate ETA
+          final remaining = total > 0 ? total - received : 0;
+          final etaSeconds = avgSpeed > 0 ? (remaining / avgSpeed).ceil() : 0;
+
+          final fraction = total > 0 ? (received / total).clamp(0.0, 1.0) : 0.0;
+
+          onProgress?.call(
+            DownloadProgress(
+              received: received,
+              total: total,
+              fraction: fraction,
+              speedText: _formatSpeed(avgSpeed),
+              etaText: etaSeconds > 0 ? '~${etaSeconds}s left' : '',
+            ),
+          );
+        },
+      );
+
+      // Atomic rename: tmp → final with copy fallback
+      File completed;
       try {
-        await File(tmpPath).delete();
-      } catch (_) {}
+        completed = await File(tmpPath).rename(finalPath);
+      } catch (_) {
+        completed = await File(tmpPath).copy(finalPath);
+        try {
+          await File(tmpPath).delete();
+        } catch (_) {}
+      }
+      return completed;
+    } finally {
+      _cancelToken = null;
+      // Failed and cancelled transfers must not retain a partial APK.
+      if (await tmpFile.exists()) {
+        try {
+          await tmpFile.delete();
+        } catch (_) {
+          // Startup cleanup retries if the filesystem is temporarily busy.
+        }
+      }
     }
-    return completed;
   }
 
   /// Cancels an in-flight download if one is active.

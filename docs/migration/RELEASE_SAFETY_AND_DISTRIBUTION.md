@@ -2,14 +2,23 @@
 
 This document formalizes the release safety architecture, vulnerability audit findings, and intended distribution policy established in milestone **T04** (`GATE: Repair Android release safety without shipping`).
 
-**Distribution decision, 2026-11-06:** the owner selected **one universal APK with
-Shorebird OTA**. New base releases publish `app-release.apk` for ARMv7, ARM64, and
-x86_64, with a tag-pinned URL and matching default/universal SHA-256 fields.
-`release.py` uses Shorebird's managed Flutter engine.
-Publish a universal Shorebird base before patching it; patches retain its APK URL
-and checksum. Local standard split builds and legacy ABI manifests remain
-supported. This decision supersedes T04's original split-only distribution
-policy; historical audit findings below describe that earlier format.
+**Distribution decision, 2026-11-07:** the owner selected **one ARM64 APK with
+Shorebird OTA** to reduce download and installed size. New base releases build
+`app-release.apk` with `--target-platform android-arm64`, retaining Shorebird's
+managed engine. The pinned URL and default/`arm64-v8a` checksums refer to the
+same binary. ARMv7 and x86_64 are excluded from these new releases.
+This supersedes the previous universal-APK policy. Existing universal bases
+remain patchable, preserving their original APK metadata. Local standard split
+builds remain available for development.
+
+Debug/profile builds installed with `flutter run` do not use release signing or
+the Shorebird release engine. The updater explains this before any download.
+To test production updates, install the signed release APK; Android cannot
+replace an existing debug-signed app with a release signed by a different key.
+Removing that development installation erases its local data.
+Downloaded APKs are removed on the next app startup, after the Android installer
+has had an opportunity to read them; failed/cancelled partial downloads are
+removed immediately. This does not delete installed Packs or Shorebird files.
 
 The [Phase A/B follow-up review](PHASE_AB_REVIEW.md) also fixes release tooling:
 failed checks stop builds/patches, `--dry-run` is a read-only plan, APK URLs are
@@ -160,7 +169,7 @@ lint {
 - **Policy:**
   When planning Shorebird hot-patches, teams must either:
   a) Maintain the base release's minor version in Shorebird patch metadata, or
-  b) Accept that cross-day base releases require universal APK distribution.
+  b) Accept that cross-day base releases require a new ARM64 APK.
 
 ---
 
@@ -174,7 +183,7 @@ lint {
    - Published base releases use `shorebird release android --artifact apk`.
    - One `app-release.apk` includes `armeabi-v7a`, `arm64-v8a`, and `x86_64`.
    - The larger base download enables subsequent compatible Shorebird patches.
-   - Explicit `--no-shorebird` builds one universal Flutter APK without OTA. Local standard builds can still split per ABI; they do not register Shorebird bases.
+   - Explicit `--no-shorebird` builds one ARM64 Flutter APK without OTA. Local standard builds can still split per ABI; they do not register Shorebird bases.
 3. **Pre-Release Release Gates:**
    Before any production release is authorized or published:
    - Full automated test suite passes (`flutter test`).

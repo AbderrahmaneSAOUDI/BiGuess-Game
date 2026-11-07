@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 BiGuess Game - Release Automation Pipeline
-Build a universal Shorebird APK, upload release assets, then publish update metadata.
+Build an ARM64 Shorebird APK, upload release assets, then publish update metadata.
 """
 
 import argparse
@@ -38,7 +38,7 @@ VERSION_JSON = REPO_ROOT / "version.json"
 # GitHub config
 GITHUB_USER = "AbderrahmaneSAOUDI"
 GITHUB_REPO = "BiGuess"
-APK_NAMES = {"universal": "app-release.apk"}
+APK_NAMES = {"arm64-v8a": "app-release.apk"}
 
 
 # =============================================================================
@@ -279,7 +279,7 @@ def sync_version_json(
     base_apk_metadata: Optional[dict] = None,
 ) -> dict:
     """
-    Generate version metadata and hashes for the selected universal artifact.
+    Generate version metadata and hashes for the selected ARM64 artifact.
     OTA patches retain the already-published base artifact metadata.
     """
     ver_part = version.split("+")[0]
@@ -315,9 +315,9 @@ def sync_version_json(
 
     apk_base = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/download/v{ver_part}"
     
-    # One immutable universal artifact serves every supported device ABI.
+    # One immutable ARM64 artifact serves supported modern Android phones.
     apk_urls = {kind: f"{apk_base}/{name}" for kind, name in APK_NAMES.items()}
-    default_apk_url = apk_urls["universal"]
+    default_apk_url = apk_urls["arm64-v8a"]
 
     payload = {
         "latest_version": ver_part,
@@ -337,7 +337,7 @@ def sync_version_json(
         payload["sha256_hashes"] = {
             abi: calculate_sha256(by_name[name]) for abi, name in APK_NAMES.items()
         }
-        payload["sha256"] = payload["sha256_hashes"]["universal"]
+        payload["sha256"] = payload["sha256_hashes"]["arm64-v8a"]
     elif (existing.get("latest_version") == ver_part and existing.get("build_number") == build
           and existing.get("apk_url") == default_apk_url and existing.get("apk_urls") == apk_urls):
         for key in ("sha256_hashes", "sha256"):
@@ -378,7 +378,7 @@ def update_app_constants(version: str) -> None:
 # =============================================================================
 
 def find_release_apks(built_after: Optional[float] = None) -> list[Path]:
-    """Find the universal APK, rejecting empty or stale output from a partial build."""
+    """Find the ARM64 APK, rejecting empty or stale output from a partial build."""
     directories = [
         REPO_ROOT / "build/app/outputs/flutter-apk",
         REPO_ROOT / "build/app/outputs/apk/release",
@@ -391,7 +391,7 @@ def find_release_apks(built_after: Optional[float] = None) -> list[Path]:
                          and path.stat().st_size > 0
                          and (built_after is None or path.stat().st_mtime >= built_after - 1)), None)
         if artifact is None:
-            print(f"Missing or stale release artifact: {name}. A fresh universal APK is required.")
+            print(f"Missing or stale release artifact: {name}. A fresh ARM64 APK is required.")
             return []
         selected.append(artifact)
     return selected
@@ -404,13 +404,13 @@ def build_apks(
     dry_run: bool = False,
     verbose: bool = False,
 ) -> list[Path]:
-    """Build one universal release APK via Shorebird or explicit standard Flutter."""
+    """Build one ARM64 release APK via Shorebird or explicit standard Flutter."""
     sb_bin = find_shorebird_bin() if use_shorebird else None
     if use_shorebird and not sb_bin:
         print("Shorebird was requested but is unavailable. No build was started.")
         return []
     builder_label = "Shorebird Engine" if sb_bin else "Standard Flutter"
-    print(f"\n{BOLD}{BLUE}▶ Building one universal release APK via {builder_label}...{RESET}")
+    print(f"\n{BOLD}{BLUE}▶ Building one ARM64 release APK via {builder_label}...{RESET}")
 
     if clean and run(["flutter", "clean"]).returncode != 0:
         return []
@@ -427,13 +427,13 @@ def build_apks(
 
     if sb_bin:
         # Build and register base release with Shorebird
-        cmd = [sb_bin, "release", "android", "--artifact", "apk"]
+        cmd = [sb_bin, "release", "android", "--artifact", "apk", "--target-platform", "android-arm64"]
         if dry_run:
             cmd.append("--dry-run")
         if verbose:
             cmd.append("--verbose")
     else:
-        cmd = ["flutter", "build", "apk", "--release"]
+        cmd = ["flutter", "build", "apk", "--release", "--target-platform", "android-arm64"]
         if verbose:
             cmd.append("--verbose")
 
@@ -629,11 +629,11 @@ def pipeline_preview(args: argparse.Namespace, mode: Optional[str] = None) -> in
     print("Validation during execution: flutter analyze and flutter test"
           if not args.skip_checks else "Validation during execution: skipped by request")
     if mode == "patch":
-        print("Artifact: retain the universal base APK URL and checksum; no new APK.")
+        print("Artifact: retain the registered base APK URL and checksum; no new APK.")
     elif getattr(args, "no_shorebird", False):
-        print("Artifact: one universal app-release.apk without Shorebird OTA.")
+        print("Artifact: one ARM64 app-release.apk without Shorebird OTA.")
     else:
-        print("Artifact: one universal app-release.apk with Shorebird OTA.")
+        print("Artifact: one ARM64 app-release.apk with Shorebird OTA.")
     print("Build, upload, version writes, Git commit, tag, and push are all skipped.")
     return 0
 
@@ -706,7 +706,7 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
         # Look for existing APKs
         apk_paths = find_release_apks()
         if not apk_paths:
-            print("No universal app-release.apk found. Remove --skip-build to build it.")
+            print("No ARM64 app-release.apk found. Remove --skip-build to build it.")
             return 1
         print(f"{YELLOW}⏭️  Skipping build — using {len(apk_paths)} existing APK(s){RESET}")
 
@@ -753,20 +753,23 @@ def pipeline_full_release(args: argparse.Namespace) -> int:
 
 
 def read_patch_apk_metadata(version: str) -> dict:
-    """A patch uses the immutable universal APK already published for its base."""
+    """A patch uses the immutable ARM64 APK already published for its base."""
     try:
         manifest = json.loads(VERSION_JSON.read_text())
         base_version = version.split("+", 1)[0]
         expected = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/releases/download/v{base_version}/app-release.apk"
         hashes = manifest.get("sha256_hashes", {})
-        digest = hashes.get("universal") if isinstance(hashes, dict) else None
+        urls = manifest.get("apk_urls")
+        # Existing universal bases remain patchable during the ARM64 transition.
+        abi = "arm64-v8a" if urls == {"arm64-v8a": expected} else "universal"
+        digest = hashes.get(abi) if isinstance(hashes, dict) else None
         if (manifest.get("apk_url") != expected
-                or manifest.get("apk_urls") != {"universal": expected}
+                or urls != {abi: expected}
                 or not isinstance(digest, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", digest)
                 or manifest.get("sha256") != digest):
-            raise ValueError("Missing matching universal base APK metadata")
+            raise ValueError("Missing matching Shorebird base APK metadata")
     except (OSError, ValueError, TypeError, AttributeError) as error:
-        raise ValueError("Publish the matching universal Shorebird base release before creating an OTA patch.") from error
+        raise ValueError("Publish the matching Shorebird base release before creating an OTA patch.") from error
     return {key: manifest[key] for key in ("apk_url", "apk_urls", "sha256", "sha256_hashes")}
 
 
@@ -933,13 +936,13 @@ def pipeline_auto_release(args: argparse.Namespace) -> int:
             print(f"      • {f}")
         if len(changed_files) > 5:
             print(f"      ... and {len(changed_files) - 5} more")
-        print(f"\n{BOLD}{MAGENTA}➡️  Auto-selected Mode: 📦 FULL BASE RELEASE (universal APK + GitHub Release){RESET}")
+        print(f"\n{BOLD}{MAGENTA}➡️  Auto-selected Mode: 📦 FULL BASE RELEASE (ARM64 APK + GitHub Release){RESET}")
         print(f"{DIM}   Reason: Native platform code/dependencies were modified.{RESET}\n")
         return pipeline_full_release(args)
 
     elif is_major_or_minor:
         print(f"   {YELLOW}🏷️  Major/Minor version bump requested ({args.bump}){RESET}")
-        print(f"\n{BOLD}{MAGENTA}➡️  Auto-selected Mode: 📦 FULL BASE RELEASE (universal APK + GitHub Release){RESET}")
+        print(f"\n{BOLD}{MAGENTA}➡️  Auto-selected Mode: 📦 FULL BASE RELEASE (ARM64 APK + GitHub Release){RESET}")
         print(f"{DIM}   Reason: Major/Minor version transitions require a new base release.{RESET}\n")
         return pipeline_full_release(args)
 
@@ -1130,7 +1133,7 @@ def main() -> int:
     )
     pipe_group.add_argument(
         "--full-release", "--release", action="store_true",
-        help="Build a universal Shorebird base APK and create a GitHub release",
+        help="Build an ARM64 Shorebird base APK and create a GitHub release",
     )
     pipe_group.add_argument(
         "--version-only", action="store_true",
@@ -1144,8 +1147,8 @@ def main() -> int:
         "--check", "--check-update", action="store_true",
         help="Verify remote version.json manifest & update pipeline status",
     )
-    pipe_group.add_argument("--split-apk", "--split-per-abi", action="store_true", help="Unsupported for universal releases; use build_app.py for local split builds")
-    pipe_group.add_argument("--no-shorebird", action="store_true", help="Build one standard Flutter universal APK without Shorebird OTA")
+    pipe_group.add_argument("--split-apk", "--split-per-abi", action="store_true", help="Unsupported for ARM64 releases; use build_app.py for local split builds")
+    pipe_group.add_argument("--no-shorebird", action="store_true", help="Build one standard Flutter ARM64 APK without Shorebird OTA")
     pipe_group.add_argument("--dry-run", action="store_true", help="Preview the plan only; do not build, write files, upload, commit, tag, or push")
     pipe_group.add_argument("--allow-native-diffs", action="store_true", help="Force patch even if native diffs are detected")
     pipe_group.add_argument("--skip-build", action="store_true", help="Skip APK build (use existing)")
@@ -1160,7 +1163,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.split_apk:
-        parser.error("Universal releases do not support --split-apk/--split-per-abi. Use scripts/build_app.py for local split builds.")
+        parser.error("ARM64 releases do not support --split-apk/--split-per-abi. Use scripts/build_app.py for local split builds.")
     if args.dry_run:
         return pipeline_preview(args)
     if getattr(args, "check", False):

@@ -10,10 +10,14 @@ import 'providers/topic_pack_providers.dart';
 import 'data/local/local_content_runtime.dart';
 import 'presentation/screens/topics/topics_screen.dart';
 import 'presentation/images/content_image_loader.dart';
+import 'services/ota_installer_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ContentImageLoader.configureCache();
+  if (Platform.isAndroid) {
+    await OtaInstallerService().cleanStaleApks();
+  }
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
