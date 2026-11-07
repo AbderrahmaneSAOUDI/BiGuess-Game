@@ -113,7 +113,7 @@ test('Collector may read content and create/edit/hide Packs and Cards; Owner-onl
     await expect(await request(`/studio/v1/${resource}`, jwt), 501, 'not_implemented');
     for (const [method, suffix] of [['POST', ''], ['PATCH', '/id'], ['POST', '/id/hide']]) {
       await expect(await request(`/studio/v1/${resource}${suffix}`, jwt, method, { name: 'Example' }),
-        resource === 'topics' ? 403 : 501, resource === 'topics' ? 'forbidden' : 'not_implemented');
+        resource === 'topics' ? 403 : 422, resource === 'topics' ? 'forbidden' : 'validation_failed');
     }
     await expect(await request(`/studio/v1/${resource}/id/publish`, jwt, 'POST'), 403, 'forbidden');
   }
@@ -126,19 +126,22 @@ test('every deletion and restoration route rejects Collector and permits Owner p
   const request = await setup(t);
   const collector = await token(); const owner = await token('owner');
   await expect(await request('/content/v1/studio/packs/id/restore', collector, 'POST'), 403, 'forbidden');
-  await expect(await request('/content/v1/studio/packs/id/restore', owner, 'POST'), 501, 'not_implemented');
+  await expect(await request('/content/v1/studio/packs/id/restore', owner, 'POST'), 400, 'invalid_request');
   assert.deepEqual(await expect(await request('/content/v1/studio/session', collector), 200), users[1]);
   for (const resource of ['topics', 'packs', 'cards', 'users']) {
     for (const [method, suffix] of [['DELETE', '/id'], ['POST', '/id/soft-delete'],
       ['POST', '/id/permanent-delete'], ['POST', '/id/restore']]) {
       const path = `/studio/v1/${resource}${suffix}`;
       await expect(await request(path, collector, method, { role: 'owner_admin' }), 403, 'forbidden');
-      // T24 owns mutations. 501 proves authorization passed, without fake writes.
-      await expect(await request(path, owner, method), 501, 'not_implemented');
+      // Content requests reach strict body validation; user administration remains deferred.
+      await expect(await request(path, owner, method), resource === 'users' ? 501 : 400,
+        resource === 'users' ? 'not_implemented' : 'invalid_request');
       await expect(await request(path, undefined, method), 401, 'unauthenticated');
     }
     for (const [method, suffix] of [['POST', ''], ['PATCH', '/id'], ['POST', '/id/hide'], ['POST', '/id/publish']]) {
-      await expect(await request(`/studio/v1/${resource}${suffix}`, owner, method), 501, 'not_implemented');
+      const deferred = resource === 'users' || suffix.endsWith('/publish');
+      await expect(await request(`/studio/v1/${resource}${suffix}`, owner, method), deferred ? 501 : 400,
+        deferred ? 'not_implemented' : 'invalid_request');
     }
   }
   for (const jwt of [collector, owner]) {

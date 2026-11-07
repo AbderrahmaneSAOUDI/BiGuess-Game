@@ -223,12 +223,13 @@ remain anonymous; Mobile gameplay requires no player account.
 The explicit route map in `src/studio-auth.ts` protects `/studio/v1/{topics,packs,cards,users}`:
 collection POST is create, item PATCH is edit, item DELETE is soft-delete, and item
 POST suffixes are `hide`, `publish`, `soft-delete`, `permanent-delete`, `restore`.
-Unknown methods/routes (including batches) fail closed. Authorized content/user
-operations currently return 501: **T24 owns actual reads/mutations**, field validation,
-revision checks, audit and tombstones. This boundary grants no arbitrary PATCH
-fields: T24 must reject protected deletion, restoration, publication and role
-fields on Collector edits, and authorize each batch operation before any write.
-Hide permission must never be implemented as deletion.
+Unknown methods/routes fail closed. Content creation/editing, hiding and Owner
+administrative lifecycle operations now share the versioned atomic
+[Studio mutation implementation](STUDIO.md). `POST /studio/v1/batches` and
+`/content/v1/studio/batches` validate and authorize every operation before writing.
+Item mutation routes accept a single matching operation in the same StudioBatch
+envelope. Studio content reads, user management and publishing still return 501;
+these are separate roadmap work. Hide permission never implies deletion.
 
 `npm test` exercises the real bundled Worker with locally signed RSA tokens and
 intercepted Google JWKS discovery. There is no production test-key/auth-bypass

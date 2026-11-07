@@ -78,8 +78,8 @@ export function authorize(principal: Principal, resource: Resource, action: Acti
   throw new StudioError(403, 'forbidden');
 }
 
-// Explicit route/action mapping. T24 must validate field schemas and authorize
-// EACH operation of any future batch before writing. Unknown routes fail closed.
+// Explicit item route/action mapping. The batch handler validates schemas and
+// authorizes every operation before writing. Unknown routes fail closed.
 export function studioOperation(method: string, path: string):
   { resource: Resource; action: Action } | undefined {
   if (method === 'GET' && path === '/studio/v1/session') return { resource: 'session', action: 'read' };

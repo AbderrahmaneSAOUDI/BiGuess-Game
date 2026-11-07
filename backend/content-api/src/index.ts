@@ -2,6 +2,7 @@ import type { Env } from './env';
 import { authenticate, authorize, studioOperation, StudioError } from './studio-auth';
 import { catalog } from './catalog';
 import { download } from './download';
+import { mutate } from './studio-mutations';
 
 interface Fixture {
   object_key: string;
@@ -37,11 +38,16 @@ export default {
     if (studioPath === '/studio' || studioPath.startsWith('/studio/')) {
       try {
         const principal = await authenticate(request, env);
+        if (request.method === 'POST' && studioPath === '/studio/v1/batches') {
+          return mutate(request, env, principal);
+        }
         const operation = studioOperation(request.method, studioPath);
         if (!operation) return studioError(404, 'not_found');
         authorize(principal, operation.resource, operation.action);
         if (operation.resource === 'session') return json(principal);
-        // T23 installs the boundary; content reads/writes belong to T24.
+        if (operation.resource !== 'users' && operation.action !== 'read' && operation.action !== 'publish') {
+          return mutate(request, env, principal, { resource: operation.resource, action: operation.action, path: studioPath });
+        }
         return studioError(501, 'not_implemented');
       } catch (error) {
         if (error instanceof StudioError) {
